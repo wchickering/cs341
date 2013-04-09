@@ -1,0 +1,26 @@
+drop table if exists item;
+create table item (
+    itemId int not null,
+    parentItemId int,
+    name varchar(100) not null,
+    baseItemPrice decimal(5,2) not null,
+    salePrice decimal(5,2) not null,
+    upc int not null,
+    categoryPath varchar(100) not null,
+    shortDescription varchar(100),
+    longDescription varchar(512),
+    brandName varchar(100) not null,
+    thumbnailImage varchar(100) not null,
+    mediumImage varchar(100) not null,
+    largeImage varchar(100) not null,
+    productTrackingUrl varchar(100) not null,
+    freeShipping boolean not null,
+    ninetySevenCentShipping boolean not null,
+    standardShipRate decimal(5,2),
+    twoThreeDayShippingRate decimal(5,2),
+    overnightShippingRate decimal(5,2),
+    size varchar(100),
+    color varchar(100),
+    availableOnline boolean not null,
+    primary key (itemId)
+) engine=MyISAM;
