@@ -19,6 +19,9 @@ def main():
     global queryid
     global numErrors
     last_line = None
+    last_visitorid = None
+    last_wmsessionid = None
+    last_rawquery = None
     for line in fileinput.input(sys.argv[1]):
         lineNum = lineNum + 1
         if last_line == line:
