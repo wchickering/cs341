@@ -9,9 +9,6 @@ import json
 # Locally defined modules
 import encodeField
 
-# PARAMS
-inputFile = '000000_0'
-
 # GLOBALS
 lineNum = 0
 numErrors = 0
@@ -19,8 +16,13 @@ numErrors = 0
 def main():
     global numErrors
     global lineNum
-    for line in fileinput.input(inputFile):
+    last_line = None
+    for line in fileinput.input(sys.argv[1]):
         lineNum = lineNum + 1
+        if last_line == line:
+            continue
+        else:
+            last_line = line
         try:
             query = json.loads(line)
             position = 0

@@ -9,9 +9,6 @@ import json
 # Locally defined modules
 import encodeField
 
-# PARAMS
-inputFile = 'items_reformatted.json'
-
 # GLOBALS
 lineNum = 0
 numErrors = 0
@@ -19,7 +16,7 @@ numErrors = 0
 def main():
     global lineNum
     global numErrors
-    for line in fileinput.input(inputFile):
+    for line in fileinput.input(sys.argv[1]):
         lineNum = lineNum + 1
         try:
             record = json.loads(line)
