@@ -6,6 +6,7 @@ create table itemclick (
     itemId int not null,
     Ordered boolean not null,
     InCart boolean not null,
+    QueryPosition int not null,
     PagePosition int not null,
     primary key (itemclickid)
 ) engine=MyISAM;
