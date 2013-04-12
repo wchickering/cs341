@@ -9,7 +9,7 @@ def normalizeQuery(rawquery):
     return ';'.join(sorted(unicodedata.normalize('NFKD', rawquery)\
                            .encode('ascii','ignore').lower().split()))
 
-def main():
+def main(separator='\t'):
     rawqueryid_dict = {}
     lineNum = 0
     jsonErrors = 0
@@ -38,7 +38,7 @@ def main():
             rawqueryid_dict[normQuery] = rawqueryid
             rawqueryid += 1
         for itemid in shownitems:
-            print '%d\t%d'%(itemid, rawqueryid_dict[normQuery])
+            print '%d%s%d'%(itemid, separator, rawqueryid_dict[normQuery])
 
 if __name__ == '__main__':
   main()
