@@ -24,9 +24,7 @@ recreated.
 
 Now we need to put the data in the table::
 
-    $ mysql -u <username> <walmartdb> --local-infile < loadPageView.sql
-
-The file the name ``000000_0_pageView.csv`` is hard-coded into loadPageView.sql.
+    $ sed "s/__INFILE__/\\'000000_0_pageview.csv\\'/" loadPageView.sql | mysql -u <username> <walmartdb> --local-infile
 
 That's it! It takes a few minutes (forever!!) on Bill's machine.
 
