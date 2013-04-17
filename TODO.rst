@@ -22,7 +22,10 @@ TODO
 
     **Output:** (JSON) filtered Walmart data
 
-* TODO (charles) similarity calculation python module
+* DONE 2013-04-16 (charles) similarity calculation python module
+
+  + DONE 2013-04-16 implement intersection size, union size, and jaccard
+    similarity
 
 * TODO (jamie) testGen program to generate test input
 
@@ -39,4 +42,8 @@ TODO
     The reRank program takes in the output of the testGen and run the algorithm
     for reordering the shown itmes for a query based on a user's previously
     clicked items.
+
+  + DONE 2013-04-16 write skeleton program
+  + TODO verify sorting or reordered shown items
+  + TODO write loadQuery function (need testGen output)
 
