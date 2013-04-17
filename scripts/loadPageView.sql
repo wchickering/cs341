@@ -1,4 +1,4 @@
-load data local infile '000000_0_pageview.csv'
+load data local infile __INFILE__
 into table pageView
 fields terminated by ',' enclosed by '"' escaped by '\\'
 lines terminated by '\n'

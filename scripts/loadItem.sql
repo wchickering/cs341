@@ -1,4 +1,4 @@
-load data local infile 'items.csv'
+load data local infile __INFILE__
 into table item
 fields terminated by ',' enclosed by '"' escaped by '\\'
 lines terminated by '\n'
