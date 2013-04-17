@@ -9,13 +9,9 @@ import json
 # Locally defined modules
 import encodeField
 
-# GLOBALS
-lineNum = 0
-numErrors = 0
-
 def main():
-    global lineNum
-    global numErrors
+    lineNum = 0
+    numErrors = 0
     for line in fileinput.input(sys.argv[1]):
         lineNum = lineNum + 1
         try:
