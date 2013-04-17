@@ -1,5 +1,6 @@
-.swp
-.pyc
-.json
-.csv
+*.swp
+*.pyc
+*.json
+*.csv
+*.corpus
 
