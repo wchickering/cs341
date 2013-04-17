@@ -5,7 +5,7 @@ create table item (
     name varchar(100) not null,
     baseItemPrice decimal(5,2) not null,
     salePrice decimal(5,2) not null,
-    upc int not null,
+    upc bigint not null,
     categoryPath varchar(100) not null,
     shortDescription varchar(100),
     longDescription varchar(512),
