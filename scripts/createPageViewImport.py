@@ -49,6 +49,7 @@ def main():
             output = encodeField.encode(lineNum) + ',' + \
                      encodeField.encode(queryid) + ',' + \
                      encodeField.encode(record['visitorid']) + ',' + \
+                     encodeField.encode(record['searchtimestamp']) + ',' + \
                      encodeField.encode(record['wmsessionid']) + ',' + \
                      encodeField.encode(record['rawquery']) + ',' + \
                      encodeField.encode(itemShowCount) + ',' + \
