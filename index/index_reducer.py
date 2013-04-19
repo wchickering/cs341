@@ -4,6 +4,9 @@ from itertools import groupby
 from operator import itemgetter
 import sys
 
+# import local modules
+import compresssion
+
 def read_mapper_output(file, separator='\t'):
     for line in file:
         yield line.rstrip().split(separator, 1)
