@@ -55,7 +55,7 @@ class Query:
                      "clicked_shown_items":self.clicked_shown_items}))
 
 
-def reorderShownItems(query, indexFn, metric):
+def reorderShownItems(query, indexFn):
     reorderedShownItems = []
     for shownItem in query.shown_items:
         reorderedShownItems.append(tuple([shownItem, 0]))
@@ -65,7 +65,10 @@ def reorderShownItems(query, indexFn, metric):
             if (options.JACCARD):
                 reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
                                                           shownItemRawQueryIds)
-    return reorderedShownItems.sort(key=lambda a: a[1])
+            elif (options.INTERSECT):
+                reorderedShownItems[-1][1] += sim.intersectSize(prevRawQueryIds,\
+                                                                shownItemRawQueryIds)
+    return sorted(reorderedShownItems, key=lambda a: a[1])
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter

@@ -66,11 +66,15 @@ def main():
             # otherwise, print last line and restart query
             else:
                 if lineNum != 1:
-                    output = encodeField.encode(shown_items) + ',' + \
-                             encodeField.encode(previously_clicked_items) + ',' + \
-                             encodeField.encode(clicked_shown_items)
-                    #print shown_items, sep, previously_clicked_items, sep, clicked_shown_items
-                    print output
+                    record = {}
+                    record["shown_items"] = shown_items
+                    record["previously_clicked_items"] = previously_clicked_items
+                    record["clicked_shown_items"] = clicked_shown_items
+                             
+                    # print shown_items, sep, previously_clicked_items, sep, clicked_shown_items
+                    print json.dumps(record)
+                    continue
+
                 # now add clicks to total clicks and clear the chambers
                 previously_clicked_items = previously_clicked_items + clicked_shown_items
                 shown_items = shownitems
