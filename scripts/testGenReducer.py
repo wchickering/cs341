@@ -27,9 +27,9 @@ def main():
         last_rawquery = None
         last_shownitems = None
         # also keep track of this query (+ clicks) and total clicks for this visitor
-        query_shown = []
-        total_clicked = []
-        query_clicked = []
+        shown_items = []
+        previously_clicked_items = []
+        clicked_shown_items = []
   
         # sort by query data columns in order they are output by mapper
         group = sorted(group, key=itemgetter(1))
@@ -53,37 +53,37 @@ def main():
   
             # check if this is same query as last 
             if sessionid == last_sessionid and rawquery == last_rawquery:
-                # if this has new query results, add them to query_shown so far
-                if not (set(shownitems) <= set(query_shown)): 
-                    query_shown = query_shown + shownitems
-                    query_clicked = query_clicked + clickeditems
+                # if this has new query results, add them to shown_items so far
+                if not (set(shownitems) <= set(shown_items)): 
+                    shown_items = shown_items + shownitems
+                    clicked_shown_items = clicked_shown_items + clickeditems
                     continue
                 # if repeat view but click this time, add the click
-                elif not (set(clickeditems) <= set(query_clicked)):
-                    query_clicked = query_clicked + clickeditems
+                elif not (set(clickeditems) <= set(clicked_shown_items)):
+                    clicked_shown_items = clicked_shown_items + clickeditems
                     continue
   
             # otherwise, print last line and restart query
             else:
                 if lineNum != 1:
-                    output = encodeField.encode(query_shown) + ',' + \
-                             encodeField.encode(total_clicked) + ',' + \
-                             encodeField.encode(query_clicked)
-                    #print query_shown, sep, total_clicked, sep, query_clicked
+                    output = encodeField.encode(shown_items) + ',' + \
+                             encodeField.encode(previously_clicked_items) + ',' + \
+                             encodeField.encode(clicked_shown_items)
+                    #print shown_items, sep, previously_clicked_items, sep, clicked_shown_items
                     print output
                 # now add clicks to total clicks and clear the chambers
-                total_clicked = total_clicked + query_clicked
-                query_shown = shownitems
-                query_clicked = clickeditems
+                previously_clicked_items = previously_clicked_items + clicked_shown_items
+                shown_items = shownitems
+                clicked_shown_items = clickeditems
                 last_sessionid = sessionid
                 last_rawquery = rawquery
         # print last one    
         record = {}
-        record["query_shown"] = query_shown
-        record["total_clicked"] = total_clicked
-        record["query_clicked"] = query_clicked
+        record["shown_items"] = shown_items
+        record["previously_clicked_items"] = previously_clicked_items
+        record["clicked_shown_items"] = clicked_shown_items
                  
-        # print query_shown, sep, total_clicked, sep, query_clicked
+        # print shown_items, sep, previously_clicked_items, sep, clicked_shown_items
         print json.dumps(record)
 
 if __name__ == '__main__':

@@ -14,6 +14,7 @@ import sys
 sys.path.append('../modules')
 import Similarity as sim
 import re
+import json
 
 global options
 
@@ -34,27 +35,25 @@ class Query:
         items shown to the user in a query
     previously_clicked_items : list
         previously clicked items by the user
-    clicked_query_items : list
+    clicked_shown_items : list
         items the user clicked in this query
 
     Examples
     ========
     >>> import reRank as rr
     """
-    def __init__(self, shown_items=[], previously_clicked_items=[],
-                 clicked_query_items=[]):
-        self.shown_items = shown_items
-        self.previously_clicked_items = previously_clicked_items
-        self.clicked_query_items = clicked_query_items
+    def __init__(self, jsonStr):
+        record = json.loads(jsonStr)
+        self.shown_items = record['shown_items']
+        self.previously_clicked_items=record['previously_clicked_items']
+        self.clicked_shown_items=record['clicked_shown_items']
 
     def __repr__(self):
-        return "Query(shown_items=%r, previously_clicked_items=%r, clicked_query_items=%r)"\
-               % (self.shown_items,\
-                  self.previously_clicked_items,\
-                  self.clicked_query_items)
+        return "Query(%s)" % repr(json.dumps({\
+                     "shown_items":self.shown_items,\
+                     "previously_clicked_items":self.previously_clicked_items,\
+                     "clicked_shown_items":self.clicked_shown_items}))
 
-def loadQuery(jsonQuery):
-    return
 
 def reorderShownItems(query, indexFn, metric):
     reorderedShownItems = []
@@ -119,9 +118,9 @@ def main():
         parser.print_usage()
         sys.exit()
 
-    #for line in inputFile:
-        #query = loadQuery(line)
-        #print str(reorderShownItems(query, options.indexFn))
+    for line in inputFile:
+        query = Query(line)
+        print str(reorderShownItems(query, options.indexFn))
 
     sys.exit()
 
