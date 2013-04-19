@@ -11,7 +11,7 @@ def main():
     last_line = None
     duplicates = 0
     parseErrors = 0
-    constrainedQueries = 0
+    #constrainedQueries = 0
     for line in fileinput.input(sys.argv[1]):
         lineNum = lineNum + 1
         if last_line == line:
@@ -27,17 +27,18 @@ def main():
             # skip malformed json 
             parseErrors += 1
             continue
-        if len(search_attributes) != 1 or\
-           'search_constraint' not in search_attributes or\
-           search_attributes['search_constraint'] != '0':
-            # skip if search constraints used
-            constrainedQueries += 1
-            continue
-        print line
+        #if len(search_attributes) != 1 or\
+        #   'search_constraint' not in search_attributes or\
+        #   search_attributes['search_constraint'] != '0':
+        #    # skip if search constraints used
+        #    constrainedQueries += 1
+        #    sys.stderr.write(line)
+        #    continue
+        sys.stdout.write(line)
     # display statistics
     print >> sys.stderr, 'duplicates = ' + str(duplicates) +\
-                       ', parseErrors = ' + str(parseErrors) +\
-                       ', constrainedQueries = ' + str(constrainedQueries)
+                       ', parseErrors = ' + str(parseErrors) #+\
+                       #', constrainedQueries = ' + str(constrainedQueries)
 
 if __name__ == '__main__':
     main()
