@@ -3,42 +3,31 @@
 import sys
 import fileinput
 import json
-import unicodedata
-
-def normalizeQuery(rawquery):
-    return ';'.join(sorted(unicodedata.normalize('NFKD', rawquery)\
-                           .encode('ascii','ignore').lower().split()))
 
 def main(separator='\t'):
-    rawqueryid_dict = {}
     lineNum = 0
-    jsonErrors = 0
-    unicodeErrors = 0
-    rawqueryid = 0
-    last_line = None
+    uniqueQuery_dict = {}
+    uniqueQueryId = 0
+    query_key = None
+    last_visitorid = None
+    last_wmsessionid = None
+    last_rawquery = None
     for line in sys.stdin:
         lineNum += 1
-        if last_line == line:
-            continue
-        else:
-            last_line = line
-        try:
-            record = json.loads(line)
-            rawquery = record['rawquery']
-            shownitems = record['shownitems']
-        except:
-            jsonErrors += 1
-            continue
-        try:
-            normQuery = normalizeQuery(rawquery)
-        except:
-            unicodeErrors += 1
-            continue
-        if normQuery not in rawqueryid_dict:
-            rawqueryid_dict[normQuery] = rawqueryid
-            rawqueryid += 1
+        record = json.loads(line)
+        if last_visitorid != record['visitorid'] or \
+           last_wmsessionid != record['wmsessionid'] or \
+           last_rawquery != record['rawquery']:
+            query_key = ','.join([str(i) for i in record['shownitems']])
+            last_visitorid = record['visitorid']
+            last_wmsessionid = record['wmsessionid']
+            last_rawquery = record['rawquery']
+        shownitems = record['shownitems']
+        if query_key not in uniqueQuery_dict:
+            uniqueQuery_dict[query_key] = uniqueQueryId
+            uniqueQueryId += 1
         for itemid in shownitems:
-            print '%d%s%d'%(itemid, separator, rawqueryid_dict[normQuery])
+            print '%d%s%d'%(itemid, separator, uniqueQuery_dict[query_key])
 
 if __name__ == '__main__':
   main()
