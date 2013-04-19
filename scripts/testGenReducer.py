@@ -1,10 +1,11 @@
 #!/usr/bin/python
+# To execute, do something like:
+# > python testGenMapper.py < 000000_0_filt.json | sort -k1,1n -k2,2 -k3,3 -k4,4n | python testGenReducer.py > testdata.json
 
 from itertools import groupby
 from operator import itemgetter
 import sys
 import re
-import encodeField
 import json
 
 def read_mapper_output(file, separator='\t'):
@@ -32,7 +33,8 @@ def main():
         query_clicked = []
   
         # sort by query data columns in order they are output by mapper
-        group = sorted(group, key=itemgetter(1))
+        # BC: SORTING SHOULD BE TAKEN CARE OF BY MAP REDUCE FRAMEWORK
+        #group = sorted(group, key=itemgetter(1))
         lineNum = 0
   
         # loop through values for this key to consolidate and then print out full queries,
@@ -42,48 +44,50 @@ def main():
         #   prints the previous one when the query has changed. This means we need to exclude
         #   the first case and add a print once the loop is finished
         for visitorid, queryDataString in group:
-            lineNum = lineNum + 1
-            # unfold data in quesryData
-            queryData = queryDataString.split(sep)
-            sessionid = queryData[0]
-            rawquery = queryData[1]
-            timestamp = int(queryData[2])
-            shownitems = string_to_intlist(queryData[3])
-            clickeditems = string_to_intlist(queryData[4])
+            try:
+                lineNum = lineNum + 1
+                # unfold data in quesryData
+                queryData = queryDataString.split(sep)
+                sessionid = queryData[0]
+                rawquery = queryData[1]
+                timestamp = int(queryData[2])
+                shownitems = string_to_intlist(queryData[3])
+                clickeditems = string_to_intlist(queryData[4])
   
-            # check if this is same query as last 
-            if sessionid == last_sessionid and rawquery == last_rawquery:
-                # if this has new query results, add them to query_shown so far
-                if not (set(shownitems) <= set(query_shown)): 
-                    query_shown = query_shown + shownitems
-                    query_clicked = query_clicked + clickeditems
-                    continue
-                # if repeat view but click this time, add the click
-                elif not (set(clickeditems) <= set(query_clicked)):
-                    query_clicked = query_clicked + clickeditems
-                    continue
+                # check if this is same query as last 
+                if sessionid == last_sessionid and rawquery == last_rawquery:
+                    # if this has new query results, add them to query_shown so far
+                    if not (set(shownitems) <= set(query_shown)): 
+                        query_shown = query_shown + shownitems
+                        query_clicked = query_clicked + clickeditems
+                        continue
+                    # if repeat view but click this time, add the click
+                    elif not (set(clickeditems) <= set(query_clicked)):
+                        query_clicked = query_clicked + clickeditems
+                        continue
   
-            # otherwise, print last line and restart query
-            else:
-                if lineNum != 1:
-                    output = encodeField.encode(query_shown) + ',' + \
-                             encodeField.encode(total_clicked) + ',' + \
-                             encodeField.encode(query_clicked)
-                    #print query_shown, sep, total_clicked, sep, query_clicked
-                    print output
-                # now add clicks to total clicks and clear the chambers
-                total_clicked = total_clicked + query_clicked
-                query_shown = shownitems
-                query_clicked = clickeditems
-                last_sessionid = sessionid
-                last_rawquery = rawquery
+                # otherwise, print last line and restart query
+                else:
+                    if lineNum != 1:
+                        record = {}
+                        record['query_shown'] = query_shown
+                        record['total_clicked'] = total_clicked
+                        record['query_clicked'] = query_clicked
+                        print json.dumps(record)
+                    # now add clicks to total clicks and clear the chambers
+                    total_clicked = total_clicked + query_clicked
+                    query_shown = shownitems
+                    query_clicked = clickeditems
+                    last_sessionid = sessionid
+                    last_rawquery = rawquery
+            except:
+                print >> sys.stderr, 'Exception thrown for queryDataString:\n' + queryDataString
+                raise
         # print last one    
         record = {}
         record["query_shown"] = query_shown
         record["total_clicked"] = total_clicked
         record["query_clicked"] = query_clicked
-                 
-        # print query_shown, sep, total_clicked, sep, query_clicked
         print json.dumps(record)
 
 if __name__ == '__main__':
