@@ -5,7 +5,7 @@ from operator import itemgetter
 import sys
 
 # import local modules
-import compresssion
+import compression
 
 def read_mapper_output(file, separator='\t'):
     for line in file:
