@@ -52,12 +52,12 @@ def reorderShownItems(query, indexFd, posting_dict, options):
     for shownItem in query.shown_items:
         reorderedShownItems.append([shownItem, 0])
         for previouslyClickedItem in query.previously_clicked_items:
-            prevRawQueryIds = idx.get_posting(indexFd, posting_dict, previouslyClickedItem)
-            shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, shownItem)
+            prevRawQueryIds = idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem))
+            shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
             if (options.JACCARD):
                 reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
                                                           shownItemRawQueryIds)
-    return [x[0] for x in sorted(reorderedShownItems, key=lambda a: a[1])]
+    return [x[0] for x in sorted(reorderedShownItems, key=lambda a: a[1], reverse=True)]
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -79,7 +79,7 @@ def main():
                             dest="verbose")
     verboseGroup.add_option("-q", "--quiet", action="store_false",\
                             dest="verbose")
-    verboseGroup.add_option("-m", "--markReordered", action="store_false",\
+    verboseGroup.add_option("-m", "--markReordered", action="store_true",\
                             dest="markReordered")
     parser.add_option_group(verboseGroup)
                             
@@ -128,8 +128,9 @@ def main():
         query = Query(line)
         output = {}
         output['shown_items'] = query.shown_items
-        output['reordered_shown_items'] = query.shown_items
-        output['clicked_shown_items'] = query.shown_items
+        output['reordered_shown_items'] =\
+            reorderShownItems(query, indexFd, posting_dict, options)
+        output['clicked_shown_items'] = query.clicked_shown_items
         if (options.markReordered):
             if (output['shown_items'] != output['reordered_shown_items']):
                 print '*',
