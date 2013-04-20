@@ -27,8 +27,10 @@ def main(separator='\t'):
                 uniqueQueryIds.append(uniqueQueryId)
                 last_uniqueQueryId = uniqueQueryId
         uniqueQueryIds_dgap = compression.dgap_encode(uniqueQueryIds)
-        posting_dict[current_itemid] = sys.stdout.tell()
-        sys.stdout.write('%s%s%s\n' % (current_itemid, separator, ','.join(str(i) for i in uniqueQueryIds_dgap)))
+        uniqueQueryIds_vb = compression.vb_encode(uniqueQueryIds_dgap)
+        posting_dict[current_itemid] = (sys.stdout.tell(), len(uniqueQueryIds_vb))
+        #sys.stdout.write('%s%s%s\n' % (current_itemid, separator, ','.join(str(i) for i in uniqueQueryIds_dgap)))
+        sys.stdout.write(b''.join(uniqueQueryIds_vb))
     posting_dict_f = open('posting.dict', 'w')
     print >> posting_dict_f, json.dumps(posting_dict)
 
