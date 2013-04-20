@@ -14,7 +14,10 @@ def main():
     posting_dict_f = open(sys.argv[2])
     posting_dict = index_query.get_posting_dict(posting_dict_f)
     uniqueQueryIds = index_query.get_posting(index_f, posting_dict, sys.argv[3])
-    print str(uniqueQueryIds)
+    if uniqueQueryIds is None:
+        print 'no postings found'
+    else:
+        print str(uniqueQueryIds)
 
 if __name__ == '__main__':
     main()

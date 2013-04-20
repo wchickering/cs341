@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # To execute, do something like:
-# > python index_mapper.py < 000000_0_filt.json | sort -k1,1n -k2,2n | python index_reducer.py > corpus.index
+# prompt$ python index_mapper.py < 000000_0_filt.json | sort -k1,1n -k2,2n | python index_reducer.py > 000000_0.index
 
 from itertools import groupby
 from operator import itemgetter
@@ -27,8 +27,10 @@ def main(separator='\t'):
                 uniqueQueryIds.append(uniqueQueryId)
                 last_uniqueQueryId = uniqueQueryId
         uniqueQueryIds_dgap = compression.dgap_encode(uniqueQueryIds)
-        posting_dict[current_itemid] = sys.stdout.tell()
-        sys.stdout.write('%s%s%s\n' % (current_itemid, separator, ','.join(str(i) for i in uniqueQueryIds_dgap)))
+        uniqueQueryIds_vb = compression.vb_encode(uniqueQueryIds_dgap)
+        posting_dict[current_itemid] = (sys.stdout.tell(), len(uniqueQueryIds_vb))
+        #sys.stdout.write('%s%s%s\n' % (current_itemid, separator, ','.join(str(i) for i in uniqueQueryIds_dgap)))
+        sys.stdout.write(b''.join(uniqueQueryIds_vb))
     posting_dict_f = open('posting.dict', 'w')
     print >> posting_dict_f, json.dumps(posting_dict)
 
