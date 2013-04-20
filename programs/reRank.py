@@ -68,13 +68,13 @@ def reorderShownItems(query, indexFn):
             elif (options.INTERSECT):
                 reorderedShownItems[-1][1] += sim.intersectSize(prevRawQueryIds,\
                                                                 shownItemRawQueryIds)
-    return sorted(reorderedShownItems, key=lambda a: a[1])
+    return [x[0] for x in sorted(reorderedShownItems, key=lambda a: a[1])]
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
     import sys
     
-    usage = "usage: %prog [options] <filename>"
+    usage = "usage: %prog [options] --index <index filename> <filename>"
     parser = OptionParser(usage=usage)
     helpFormatter = HelpFormatter(indent_increment=2,\
                                   max_help_position=10,\
@@ -123,7 +123,7 @@ def main():
 
     for line in inputFile:
         query = Query(line)
-        print str(reorderShownItems(query, options.indexFn))
+        print "\t".join([str(query.shown_items), str(reorderShownItems(query, options.indexFn)), str(query.clicked_shown_items)])
 
     sys.exit()
 
