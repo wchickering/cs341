@@ -68,10 +68,43 @@ def jaccard(l1, l2, delim=',', verbose=False):
     >>> sim.jaccard("a,b,c,d".split(','), "b,c,e,f,g,h".split(','))
     0.25
     """
-    if verbose:
-        print "intersection: " + str(list(set(l1).intersection(set(l2))))
-        print "union: " + str(list(set(l1).union(set(l2))))
-    return (float)(intersectSize(l1, l2, delim=delim)) / unionSize(l1, l2, delim=delim)
+#    if verbose:
+#        print "intersection: " + str(list(set(l1).intersection(set(l2))))
+#        print "union: " + str(list(set(l1).union(set(l2))))
+#    return (float)(intersectSize(l1, l2, delim=delim)) / unionSize(l1, l2, delim=delim)
+    return jaccard2(l1, l2)
+
+def jaccard2(l1, l2):
+    interSize = 0
+    unionSize = 0
+    i = 0
+    j = 0
+    while i < len(l1) and j < len(l2):
+        if l1[i] == l2[j]:
+            interSize += 1
+            unionSize += 1
+            i += 1
+            j += 1
+            continue
+        if l1[i] > l2[j]:
+            unionSize += 1
+            j += 1
+            continue
+        else:
+            unionSize += 1
+            i += 1
+            continue
+    while i < len(l1):
+        unionSize += 1
+        i += 1
+    while j < len(l2):
+        unionSize += 1
+        j += 1
+    if unionSize == 0:
+        return 0.0
+    else:
+        return float(interSize)/unionSize
+          
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter

@@ -47,13 +47,27 @@ class Query:
                      "clicked_shown_items":self.clicked_shown_items}))
 
 
+#def reorderShownItems(query, indexFd, posting_dict, options):
+#    reorderedShownItems = []
+#    for shownItem in query.shown_items:
+#        reorderedShownItems.append([shownItem, 0])
+#        for previouslyClickedItem in query.previously_clicked_items:
+#            prevRawQueryIds = idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem))
+#            shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
+#            if (options.JACCARD):
+#                reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
+#                                                          shownItemRawQueryIds)
+#    return [x[0] for x in sorted(reorderedShownItems, key=lambda a: a[1], reverse=True)]
+
 def reorderShownItems(query, indexFd, posting_dict, options):
+    prevQueryLists = []
+    for previouslyClickedItem in query.previously_clicked_items:
+        prevQueryLists.append(idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem)))
     reorderedShownItems = []
     for shownItem in query.shown_items:
         reorderedShownItems.append([shownItem, 0])
-        for previouslyClickedItem in query.previously_clicked_items:
-            prevRawQueryIds = idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem))
-            shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
+        shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
+        for prevRawQueryIds in prevQueryLists:
             if (options.JACCARD):
                 reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
                                                           shownItemRawQueryIds)
