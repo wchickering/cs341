@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # To execute, do something like:
-# > python index_mapper.py < 000000_0_filt.json | sort -k1,1n -k2,2n | python index_reducer.py > corpus.index
+# prompt$ python index_mapper.py < 000000_0_filt.json | sort -k1,1n -k2,2n | python index_reducer.py > 000000_0.index
 
 from itertools import groupby
 from operator import itemgetter
