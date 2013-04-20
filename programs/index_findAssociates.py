@@ -20,10 +20,10 @@ def main():
     for i in range(len(itemids)):
         queryIds1 = index_query.get_posting(index_f, posting_dict, itemids[i])
         for j in range(i+1, len(itemids)):
-            queryIds2 = index_query.get_posting(index_f, posting_dict, itemids[i])
-            #if Similarity.jaccard(','.join([str(i) for i in queryIds1]), ','.join([str(i) for i in queryIds2])) > 0:
-            if Similarity.jaccard(queryIds1, queryIds2) > 0:
-                print str(itemids[i]) + ', ' + str(itemids[j])
+            queryIds2 = index_query.get_posting(index_f, posting_dict, itemids[j])
+            sim = Similarity.jaccard(queryIds1, queryIds2) 
+            if sim > 0.0:
+                print str(itemids[i]) + ', ' + str(itemids[j]) + ' (' + str(sim) + ')'
 
 if __name__ == '__main__':
     main()
