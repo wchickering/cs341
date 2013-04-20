@@ -11,10 +11,11 @@ __author__ = """Charles Celerier <cceleri@cs.stanford.edu>,
 __date__ = """16 April 2013"""
 
 import sys
-sys.path.append('../modules')
-import Similarity as sim
 import re, json
-import index_query
+
+# import local modules
+import Similarity as sim
+import index_query as idx
 
 global options
 
@@ -53,8 +54,8 @@ def reorderShownItems(query, indexFd, posting_dict):
     for shownItem in query.shown_items:
         reorderedShownItems.append(tuple([shownItem, 0]))
         for previouslyClickedItem in query.previously_clicked_items:
-            prevRawQueryIds = index_query.get_posting(indexFd, posting_dict, previouslyClickedItem)
-            shownItemRawQueryIds = index_query.get_posting(indexFd, posting_dict, shownItem)
+            prevRawQueryIds = idx.get_posting(indexFd, posting_dict, previouslyClickedItem)
+            shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, shownItem)
             if (options.JACCARD):
                 reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
                                                           shownItemRawQueryIds)
@@ -118,7 +119,7 @@ def main():
 
 
     posting_dict_f = open(options.dictionaryFn)
-    posting_dict = index_query.get_posting_dict(posting_dict_f)
+    posting_dict = idx.get_posting_dict(posting_dict_f)
     indexFd = open(options.indexFn)
 
     for line in inputFile:
