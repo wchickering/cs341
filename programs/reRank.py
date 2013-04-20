@@ -17,8 +17,6 @@ import re, json
 import Similarity as sim
 import index_query as idx
 
-global options
-
 class Query:
     """Represents information about a query
 
@@ -37,7 +35,7 @@ class Query:
     >>> import reRank as rr
     """
     def __init__(self, jsonStr):
-        record = json.loads(jsonStr)
+        record = json.loads(jsonStr, parse_int=str)
         self.shown_items = record['shown_items']
         self.previously_clicked_items=record['previously_clicked_items']
         self.clicked_shown_items=record['clicked_shown_items']
@@ -49,20 +47,17 @@ class Query:
                      "clicked_shown_items":self.clicked_shown_items}))
 
 
-def reorderShownItems(query, indexFd, posting_dict):
+def reorderShownItems(query, indexFd, posting_dict, options):
     reorderedShownItems = []
     for shownItem in query.shown_items:
-        reorderedShownItems.append(tuple([shownItem, 0]))
+        reorderedShownItems.append([shownItem, 0])
         for previouslyClickedItem in query.previously_clicked_items:
             prevRawQueryIds = idx.get_posting(indexFd, posting_dict, previouslyClickedItem)
             shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, shownItem)
             if (options.JACCARD):
                 reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
                                                           shownItemRawQueryIds)
-            elif (options.INTERSECT):
-                reorderedShownItems[-1][1] += sim.intersectSize(prevRawQueryIds,\
-                                                                shownItemRawQueryIds)
-    return sorted(reorderedShownItems, key=lambda a: a[1])
+    return [x[0] for x in sorted(reorderedShownItems, key=lambda a: a[1])]
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -124,7 +119,7 @@ def main():
 
     for line in inputFile:
         query = Query(line)
-        print "\t".join([str(query.shown_items), str(reorderShownItems(query, indexFd, posting_dict)), str(query.clicked_shown_items)])
+        print "\t".join([str(query.shown_items), str(reorderShownItems(query, indexFd, posting_dict, options)), str(query.clicked_shown_items)])
 
     sys.exit()
 

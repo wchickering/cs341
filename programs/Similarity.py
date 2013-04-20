@@ -11,13 +11,13 @@ __author__ = """Charles Celerier <cceleri@cs.stanford.edu>,
 
 __date__ = """13 April 2013"""
 
-def unionSize(s1, s2, delim=',', verbose=False):
+def unionSize(l1, l2, delim=',', verbose=False):
     """Returns the size of the union of tokens in the comma delimited strings
 
     Parameters
     ==========
 
-    s1, s2: str
+    l1, l2: str
             comma delimited string of tokens
 
     Examples
@@ -28,19 +28,17 @@ def unionSize(s1, s2, delim=',', verbose=False):
     >>> sim.unionSize("a,b","b,d")
     3
     """
-    tokens_1 = set(s1.split(delim))
-    tokens_2 = set(s2.split(delim))
     if verbose:
-        print "union: " + str(list(tokens_1.union(tokens_2)))
-    return len(tokens_1.union(tokens_2))
+        print "union: " + str(list(set(l1).union(set(l2))))
+    return len(set(l1).union(set(l2)))
 
-def intersectSize(s1, s2, delim=',', verbose=False):
+def intersectSize(l1, l2, delim=',', verbose=False):
     """Returns the number of tokens in both comma delimited strings
 
     Parameters
     ==========
 
-    s1, s2: str
+    l1, l2: str
             comma delimited string of tokens
 
     Examples
@@ -49,19 +47,17 @@ def intersectSize(s1, s2, delim=',', verbose=False):
     >>> sim.intersectSize("a,b", "b,c")
     1
     """
-    tokens_1 = set(s1.split(delim))
-    tokens_2 = set(s2.split(delim))
     if verbose:
-        print "intersection: " + str(list(tokens_1.intersection(tokens_2)))
-    return len(tokens_1.intersection(tokens_2))
+        print "intersection: " + str(list(set(l1).intersection(set(l2))))
+    return len(set(l1).intersection(set(l2)))
 
-def jaccard(s1, s2, delim=',', verbose=False):
+def jaccard(l1, l2, delim=',', verbose=False):
     """Returns the jaccard similarity of the two comma delimited token sets
 
     Parameters
     ==========
 
-    s1, s2: str
+    l1, l2: str
                   comma delimited string of tokens
     delim: str
            token delimiter
@@ -73,11 +69,9 @@ def jaccard(s1, s2, delim=',', verbose=False):
     0.3333333333333333
     """
     if verbose:
-        tokens_1 = set(s1.split(delim))
-        tokens_2 = set(s2.split(delim))
-        print "intersection: " + str(list(tokens_1.intersection(tokens_2)))
-        print "union: " + str(list(tokens_1.union(tokens_2)))
-    return (float)(intersectSize(s1, s2, delim=delim)) / unionSize(s1, s2, delim=delim)
+        print "intersection: " + str(list(set(l1).intersection(set(l2))))
+        print "union: " + str(list(set(l1).union(set(l2))))
+    return (float)(intersectSize(l1, l2, delim=delim)) / unionSize(l1, l2, delim=delim)
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
