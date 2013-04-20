@@ -35,7 +35,7 @@ class Query:
     >>> import reRank as rr
     """
     def __init__(self, jsonStr):
-        record = json.loads(jsonStr, parse_int=str)
+        record = json.loads(jsonStr)
         self.shown_items = record['shown_items']
         self.previously_clicked_items=record['previously_clicked_items']
         self.clicked_shown_items=record['clicked_shown_items']
@@ -63,7 +63,11 @@ def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
     import sys
     
-    usage = "usage: %prog [options] --index <index filename> --dict <dictionary filename> <filename>"
+    usage = "usage: %prog [options] "\
+            + "<-j> "\
+            + "--index <index filename> "\
+            + "--dict <dictionary filename> " \
+            + "<filename>"
     parser = OptionParser(usage=usage)
     helpFormatter = HelpFormatter(indent_increment=2,\
                                   max_help_position=10,\
@@ -119,7 +123,11 @@ def main():
 
     for line in inputFile:
         query = Query(line)
-        print "\t".join([str(query.shown_items), str(reorderShownItems(query, indexFd, posting_dict, options)), str(query.clicked_shown_items)])
+        output = {}
+        output['shown_items'] = query.shown_items
+        output['reordered_shown_items'] = query.shown_items
+        output['clicked_shown_items'] = query.shown_items
+        print json.dumps(output)
 
     sys.exit()
 
