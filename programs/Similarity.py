@@ -23,9 +23,9 @@ def unionSize(l1, l2, delim=',', verbose=False):
     Examples
     ========
     >>> import Similarity as sim
-    >>> sim.unionSize("a,b","c,d")
+    >>> sim.unionSize("a,b".split(','),"c,d".split(','))
     4
-    >>> sim.unionSize("a,b","b,d")
+    >>> sim.unionSize("a,b".split(','),"b,d".split(','))
     3
     """
     if verbose:
@@ -44,7 +44,7 @@ def intersectSize(l1, l2, delim=',', verbose=False):
     Examples
     ========
     >>> import Similarity as sim
-    >>> sim.intersectSize("a,b", "b,c")
+    >>> sim.intersectSize("a,b".split(','), "b,c".split(','))
     1
     """
     if verbose:
@@ -65,8 +65,8 @@ def jaccard(l1, l2, delim=',', verbose=False):
     Examples
     ========
     >>> import Similarity as sim
-    >>> sim.jaccard("a,b,c,d", "b,c,e,f,g,h")
-    0.3333333333333333
+    >>> sim.jaccard("a,b,c,d".split(','), "b,c,e,f,g,h".split(','))
+    0.25
     """
     if verbose:
         print "intersection: " + str(list(set(l1).intersection(set(l2))))
