@@ -13,17 +13,10 @@ __date__ = """16 April 2013"""
 import sys
 sys.path.append('../modules')
 import Similarity as sim
-import re
-import json
+import re, json
+import index_query
 
 global options
-
-def lookupRawQueryIds(itemId, indexFn):
-    index = open(indexFn, 'r')
-    for line in index:
-        if re.search("^"+itemId, line):
-            return line.split('\t')[1]
-    return None
 
 class Query:
     """Represents information about a query
@@ -55,13 +48,13 @@ class Query:
                      "clicked_shown_items":self.clicked_shown_items}))
 
 
-def reorderShownItems(query, indexFn):
+def reorderShownItems(query, indexFd, posting_dict):
     reorderedShownItems = []
     for shownItem in query.shown_items:
         reorderedShownItems.append(tuple([shownItem, 0]))
         for previouslyClickedItem in query.previously_clicked_items:
-            prevRawQueryIds = lookupRawQueryIds(previouslyClickedItem, indexFn)
-            shownItemRawQueryIds = lookupRawQueryIds(shownItem, indexFn)
+            prevRawQueryIds = index_query.get_posting(indexFd, posting_dict, previouslyClickedItem)
+            shownItemRawQueryIds = index_query.get_posting(indexFd, posting_dict, shownItem)
             if (options.JACCARD):
                 reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
                                                           shownItemRawQueryIds)
@@ -74,7 +67,7 @@ def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
     import sys
     
-    usage = "usage: %prog [options] <filename>"
+    usage = "usage: %prog [options] --index <index filename> --dict <dictionary filename> <filename>"
     parser = OptionParser(usage=usage)
     helpFormatter = HelpFormatter(indent_increment=2,\
                                   max_help_position=10,\
@@ -95,11 +88,13 @@ def main():
 
     parser.add_option_group(metricsGroup)
 
-    indexGroup = OptionGroup(parser, "Index options")
-    indexGroup.add_option("--index", dest="indexFn", help="index filename")
-    parser.add_option_group(indexGroup)
+    fileGroup = OptionGroup(parser, "Index options")
+    fileGroup.add_option("--index", dest="indexFn", help="index filename")
+    parser.add_option_group(fileGroup)
+    fileGroup.add_option("--dict", dest="dictionaryFn", help="dictionary filename")
+    parser.add_option_group(fileGroup)
 
-    parser.set_defaults(verbose=False, indexFn=None)
+    parser.set_defaults(verbose=False, indexFn=None, dictionaryFn=None)
 
     (options, args) = parser.parse_args()
 
@@ -113,7 +108,7 @@ def main():
         parser.print_usage()
         sys.exit()
 
-    if not options.indexFn:
+    if ((not options.indexFn) or (not options.dictionaryFn)):
         parser.print_usage()
         sys.exit()
 
@@ -121,9 +116,14 @@ def main():
         parser.print_usage()
         sys.exit()
 
+
+    posting_dict_f = open(options.dictionaryFn)
+    posting_dict = index_query.get_posting_dict(posting_dict_f)
+    indexFd = open(options.indexFn)
+
     for line in inputFile:
         query = Query(line)
-        print str(reorderShownItems(query, options.indexFn))
+        print "\t".join([str(query.shown_items), str(reorderShownItems(query, indexFd, posting_dict)), str(query.clicked_shown_items)])
 
     sys.exit()
 
