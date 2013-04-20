@@ -79,6 +79,8 @@ def main():
                             dest="verbose")
     verboseGroup.add_option("-q", "--quiet", action="store_false",\
                             dest="verbose")
+    verboseGroup.add_option("-m", "--markReordered", action="store_false",\
+                            dest="markReordered")
     parser.add_option_group(verboseGroup)
                             
     metricsGroup = OptionGroup(parser, "Metrics")
@@ -94,7 +96,8 @@ def main():
     fileGroup.add_option("--dict", dest="dictionaryFn", help="dictionary filename")
     parser.add_option_group(fileGroup)
 
-    parser.set_defaults(verbose=False, indexFn=None, dictionaryFn=None)
+    parser.set_defaults(verbose=False, indexFn=None, dictionaryFn=None,\
+                        markReordered=False)
 
     (options, args) = parser.parse_args()
 
@@ -127,6 +130,9 @@ def main():
         output['shown_items'] = query.shown_items
         output['reordered_shown_items'] = query.shown_items
         output['clicked_shown_items'] = query.shown_items
+        if (options.markReordered):
+            if (output['shown_items'] != output['reordered_shown_items']):
+                print '*',
         print json.dumps(output)
 
     sys.exit()
