@@ -11,7 +11,7 @@ def get_posting_dict(posting_dict_f):
 
 def get_posting(index_f, posting_dict, itemid):
     if itemid not in posting_dict:
-        return None
+        return []
     index_f.seek(posting_dict[itemid])
     idx, plist = index_f.readline().split('\t')
     assert(idx == str(itemid))
