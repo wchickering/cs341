@@ -1,8 +1,11 @@
 #!/usr/bin/python
 
-import index_query
-import os
 import sys
+import os
+
+# import local modules
+sys.path.append('../modules')
+import index_query
 
 def main():
     if len(sys.argv) != 4:
