@@ -44,13 +44,15 @@ filter_data : $(filtered_data)
 # build the index and posting.dict for RAWDATA
 build_index : $(build_index)
 
-# get testGen output
 reorder_queries : $(reordered_queries)
 
 # Here we make empty targets for each program so that make can tell when a program
 # has been modified and needs to rebuild a target
 programs = index_mapper.py index_reducer.py filterData.py\
-		   testGenMapper.py testGenReducer.py reRank.py
+           testGenMapper.py testGenReducer.py reRank.py
 $(addprefix programs/, $(programs)):
 
-.PHONY : build_index filtered_data reorder_queries
+clean : $(raw_data)
+	rm -f $(raw_data).*
+
+.PHONY : clean build_index filtered_data reorder_queries
