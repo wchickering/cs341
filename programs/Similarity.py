@@ -11,57 +11,53 @@ __author__ = """Charles Celerier <cceleri@cs.stanford.edu>,
 
 __date__ = """13 April 2013"""
 
-def unionSize(s1, s2, delim=',', verbose=False):
+def unionSize(l1, l2, delim=',', verbose=False):
     """Returns the size of the union of tokens in the comma delimited strings
 
     Parameters
     ==========
 
-    s1, s2: str
+    l1, l2: str
             comma delimited string of tokens
 
     Examples
     ========
     >>> import Similarity as sim
-    >>> sim.unionSize("a,b","c,d")
+    >>> sim.unionSize("a,b".split(','),"c,d".split(','))
     4
-    >>> sim.unionSize("a,b","b,d")
+    >>> sim.unionSize("a,b".split(','),"b,d".split(','))
     3
     """
-    tokens_1 = set(s1.split(delim))
-    tokens_2 = set(s2.split(delim))
     if verbose:
-        print "union: " + str(list(tokens_1.union(tokens_2)))
-    return len(tokens_1.union(tokens_2))
+        print "union: " + str(list(set(l1).union(set(l2))))
+    return len(set(l1).union(set(l2)))
 
-def intersectSize(s1, s2, delim=',', verbose=False):
+def intersectSize(l1, l2, delim=',', verbose=False):
     """Returns the number of tokens in both comma delimited strings
 
     Parameters
     ==========
 
-    s1, s2: str
+    l1, l2: str
             comma delimited string of tokens
 
     Examples
     ========
     >>> import Similarity as sim
-    >>> sim.intersectSize("a,b", "b,c")
+    >>> sim.intersectSize("a,b".split(','), "b,c".split(','))
     1
     """
-    tokens_1 = set(s1.split(delim))
-    tokens_2 = set(s2.split(delim))
     if verbose:
-        print "intersection: " + str(list(tokens_1.intersection(tokens_2)))
-    return len(tokens_1.intersection(tokens_2))
+        print "intersection: " + str(list(set(l1).intersection(set(l2))))
+    return len(set(l1).intersection(set(l2)))
 
-def jaccard(s1, s2, delim=',', verbose=False):
+def jaccard(l1, l2, delim=',', verbose=False):
     """Returns the jaccard similarity of the two comma delimited token sets
 
     Parameters
     ==========
 
-    s1, s2: str
+    l1, l2: str
                   comma delimited string of tokens
     delim: str
            token delimiter
@@ -69,15 +65,46 @@ def jaccard(s1, s2, delim=',', verbose=False):
     Examples
     ========
     >>> import Similarity as sim
-    >>> sim.jaccard("a,b,c,d", "b,c,e,f,g,h")
-    0.3333333333333333
+    >>> sim.jaccard("a,b,c,d".split(','), "b,c,e,f,g,h".split(','))
+    0.25
     """
-    if verbose:
-        tokens_1 = set(s1.split(delim))
-        tokens_2 = set(s2.split(delim))
-        print "intersection: " + str(list(tokens_1.intersection(tokens_2)))
-        print "union: " + str(list(tokens_1.union(tokens_2)))
-    return (float)(intersectSize(s1, s2, delim=delim)) / unionSize(s1, s2, delim=delim)
+#    if verbose:
+#        print "intersection: " + str(list(set(l1).intersection(set(l2))))
+#        print "union: " + str(list(set(l1).union(set(l2))))
+#    return (float)(intersectSize(l1, l2, delim=delim)) / unionSize(l1, l2, delim=delim)
+    return jaccard2(l1, l2)
+
+def jaccard2(l1, l2):
+    interSize = 0
+    unionSize = 0
+    i = 0
+    j = 0
+    while i < len(l1) and j < len(l2):
+        if l1[i] == l2[j]:
+            interSize += 1
+            unionSize += 1
+            i += 1
+            j += 1
+            continue
+        if l1[i] > l2[j]:
+            unionSize += 1
+            j += 1
+            continue
+        else:
+            unionSize += 1
+            i += 1
+            continue
+    while i < len(l1):
+        unionSize += 1
+        i += 1
+    while j < len(l2):
+        unionSize += 1
+        j += 1
+    if unionSize == 0:
+        return 0.0
+    else:
+        return float(interSize)/unionSize
+          
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter

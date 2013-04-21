@@ -78,7 +78,6 @@ def vb_decode(bytes):
       number = 0xFF & byte
     i += 1
     numbers.append(number)
-  print >> sys.stderr, numbers
   return numbers
 
 def gamma_encode(arr):
