@@ -1,34 +1,56 @@
-RAWDATA ?= DEADBEEF
-rd := data/$(RAWDATA)
+RAWDATA ?= DEADBEEFRAW
+INDEX   ?= DEADBEEFINDEX
 
-filtered_data = $(rd).filtered
-index_file    = $(rd).corpus.index
-posting_dict  = $(rd).posting.dict
+raw_data  := data/$(RAWDATA)
+use_index := data/$(INDEX)
+use_posting_dict := data/$(basename $(notdir $(use_index))).posting.dict
+
+filtered_data      = $(raw_data).filtered
+build_index        = $(raw_data).index
+build_posting_dict = $(raw_data).posting.dict
+linked_queries     = $(raw_data).linked_queries
+reordered_queries  = $(raw_data).reordered_queries
 
 # target for checking that RAWDATA was specified and existed
-$(rd):
-ifeq ($(RAWDATA), DEADBEEF)
+$(raw_data):
+ifeq ($(RAWDATA), DEADBEEFRAW)
 	$(error RAWDATA not specified!)
 endif
 ifeq ($(wildcard $@),)
 	$(error $@ does not exist!)
 endif
 
-$(filtered_data): $(rd) programs/filterData.py
-	cat $(rd) | python programs/filterData.py $(rd) > $(filtered_data)
+$(use_index):
+ifeq ($(INDEX), DEADBEEFINDEX)
+	$(error INDEX not specified!)
+endif
+	$(MAKE) RAWDATA=$(basename $(notdir $(use_index))) build_index
 
-$(index_file): $(filtered_data) programs/index_mapper.py programs/index_reducer.py
-	cat $(filtered_data) | python programs/index_mapper.py | sort -k1n -k2n | python programs/index_reducer.py > $(index_file) && mv posting.dict $(posting_dict)
+$(filtered_data): $(raw_data) programs/filterData.py
+	cat $(raw_data) | python programs/filterData.py $(raw_data) > $@
+
+$(build_index): $(filtered_data) programs/index_mapper.py programs/index_reducer.py
+	cat $(filtered_data) | python programs/index_mapper.py | sort -k1n -k2n | python programs/index_reducer.py > $@ && mv posting.dict $(build_posting_dict)
+
+$(linked_queries): $(filtered_data) programs/testGenMapper.py programs/testGenReducer.py
+	cat $(filtered_data) | python programs/testGenMapper.py | sort -k1,1n -k2,2 -k3,3 -k4,4n | python programs/testGenReducer.py > $@
+
+$(reordered_queries): $(linked_queries) $(use_index) programs/reRank.py
+	python programs/reRank.py -j -m --index $(use_index) --dict $(use_posting_dict) $(linked_queries) > $@
 
 # filter RAWDATA
-filtered_data : $(filtered_data) 
+filter_data : $(filtered_data) 
 
 # build the index and posting.dict for RAWDATA
-index_file : $(index_file)
+build_index : $(build_index)
+
+# get testGen output
+reorder_queries : $(reordered_queries)
 
 # Here we make empty targets for each program so that make can tell when a program
 # has been modified and needs to rebuild a target
-programs = index_mapper.py index_reducer.py filterData.py
+programs = index_mapper.py index_reducer.py filterData.py\
+		   testGenMapper.py testGenReducer.py reRank.py
 $(addprefix programs/, $(programs)):
 
-.PHONY : index_file filtered_data all
+.PHONY : build_index filtered_data reorder_queries
