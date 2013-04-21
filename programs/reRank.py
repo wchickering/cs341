@@ -63,6 +63,9 @@ def reorderShownItems(query, indexFd, posting_dict, options):
     prevQueryLists = []
     for previouslyClickedItem in query.previously_clicked_items:
         prevQueryLists.append(idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem)))
+    if prevQueryLists == []:
+        return query.shown_items
+
     reorderedShownItems = []
     for shownItem in query.shown_items:
         reorderedShownItems.append([shownItem, 0])
