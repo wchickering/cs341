@@ -17,6 +17,14 @@ import re, json
 import Similarity as sim
 import index_query as idx
 
+# global stats
+num_reranks = 0
+num_nonzero_scores = 0
+
+def printStats():
+    print >> sys.stderr, 'num reranks = ' + str(num_reranks)
+    print >> sys.stderr, 'num_nonzero_scores = ' + str(num_nonzero_scores)
+
 class Query:
     """Represents information about a query
 
@@ -46,35 +54,55 @@ class Query:
                      "previously_clicked_items":self.previously_clicked_items,\
                      "clicked_shown_items":self.clicked_shown_items}))
 
-
-#def reorderShownItems(query, indexFd, posting_dict, options):
-#    reorderedShownItems = []
-#    for shownItem in query.shown_items:
-#        reorderedShownItems.append([shownItem, 0])
-#        for previouslyClickedItem in query.previously_clicked_items:
-#            prevRawQueryIds = idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem))
-#            shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
-#            if (options.JACCARD):
-#                reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
-#                                                          shownItemRawQueryIds)
-#    return [x[0] for x in sorted(reorderedShownItems, key=lambda a: a[1], reverse=True)]
-
 def reorderShownItems(query, indexFd, posting_dict, options):
+    global num_reranks
+    global num_nonzero_scores
+
+    # Retrieve queryLists for previously clicked items
     prevQueryLists = []
     for previouslyClickedItem in query.previously_clicked_items:
         prevQueryLists.append(idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem)))
     if prevQueryLists == []:
         return query.shown_items
 
-    reorderedShownItems = []
+    # Determine the top k scores 
+    top_scores = []
+    item_scores = []
     for shownItem in query.shown_items:
-        reorderedShownItems.append([shownItem, 0])
-        shownItemRawQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
-        for prevRawQueryIds in prevQueryLists:
+        shownItemQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
+        score = 0
+        for i in range(len(query.previously_clicked_items)):
+            # ignore previously clicked items themselves
+            if query.previously_clicked_items[i] == shownItem:
+                score = 0
+                break
             if (options.JACCARD):
-                reorderedShownItems[-1][1] += sim.jaccard(prevRawQueryIds,\
-                                                          shownItemRawQueryIds)
-    return [x[0] for x in sorted(reorderedShownItems, key=lambda a: a[1], reverse=True)]
+                score += sim.jaccard(prevQueryLists[i], shownItemQueryIds)
+        if score > 0:
+            num_nonzero_scores += 1
+            for i in range(len(top_scores)):
+                if score > top_scores[i]:
+                    top_scores.insert(i, score)
+                    if len(top_scores) >= 5: # only re-rank top 5 (NEED TO REMOVE MAGIC NUMBER!!)
+                        top_scores.pop()
+            if len(top_scores) < 5: # (EEK!! ANOTHER ONE!!)
+                top_scores.append(score)
+        item_scores.append(score)
+    if (len(top_scores) == 0):
+        return query.shown_items
+
+    # Re-rank query results based on top k scores
+    reranked_items = list(query.shown_items)
+    i = 0
+    for j in range(len(reranked_items)):
+        if i >= len(top_scores):
+            break
+        if item_scores[j] == top_scores[i]:
+            item = reranked_items.pop(j)
+            reranked_items.insert(i, item)
+            num_reranks += 1
+            i += 1
+    return reranked_items
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -141,18 +169,23 @@ def main():
     posting_dict = idx.get_posting_dict(posting_dict_f)
     indexFd = open(options.indexFn)
 
-    for line in inputFile:
-        query = Query(line)
-        output = {}
-        output['shown_items'] = query.shown_items
-        output['reordered_shown_items'] =\
-            reorderShownItems(query, indexFd, posting_dict, options)
-        output['clicked_shown_items'] = query.clicked_shown_items
-        if (options.markReordered):
-            if (output['shown_items'] != output['reordered_shown_items']):
-                print '*',
-        print json.dumps(output)
+    try:
+        for line in inputFile:
+            query = Query(line)
+            output = {}
+            output['shown_items'] = query.shown_items
+            output['reordered_shown_items'] =\
+                reorderShownItems(query, indexFd, posting_dict, options)
+            output['clicked_shown_items'] = query.clicked_shown_items
+            if (options.markReordered):
+                if (output['shown_items'] != output['reordered_shown_items']):
+                    print '*',
+            print json.dumps(output)
+    except:
+        printStats()
+        raise
 
+    printStats()
     sys.exit()
 
 if __name__ == '__main__':
