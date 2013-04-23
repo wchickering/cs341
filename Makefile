@@ -40,7 +40,7 @@ $(filtered_test_data): $(use_index) $(test_data) programs/filterTestData.py
 	cat $(test_data) | python programs/filterTestData.py $(use_index) $(use_posting_dict) > $@
 
 $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
-	python programs/reRank.py -m --index $(use_index) --dict $(use_posting_dict) $(filtered_test_data) > $@
+	python programs/reRank.py --index $(use_index) --dict $(use_posting_dict) $(filtered_test_data) > $@
 
 # filter RAWDATA
 filter_data : $(filtered_data) 
