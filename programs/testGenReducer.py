@@ -57,14 +57,20 @@ def main():
                 # check if this is same query as last 
                 if sessionid == last_sessionid and rawquery == last_rawquery:
                     # if this has new query results, add them to shown_items so far
-                    if not (set(shownitems) <= set(shown_items)): 
-                        shown_items = shown_items + shownitems
-                        clicked_shown_items = clicked_shown_items + clickeditems
-                        continue
-                    # if repeat view but click this time, add the click
-                    elif not (set(clickeditems) <= set(clicked_shown_items)):
-                        clicked_shown_items = clicked_shown_items + clickeditems
-                        continue
+                    #if not (set(shownitems) <= set(shown_items)): 
+                    #    shown_items = shown_items + shownitems
+                    #    clicked_shown_items = clicked_shown_items + clickeditems
+                    #    continue
+                    ## if repeat view but click this time, add the click
+                    #elif not (set(clickeditems) <= set(clicked_shown_items)):
+                    #    clicked_shown_items = clicked_shown_items + clickeditems
+                    #    continue
+                    for item in shownitems:
+                        if item not in shown_items:
+                            shown_items.append(item)
+                    for item in clickeditems:
+                        if item not in clicked_shown_items:
+                            clicked_shown_items.append(item)
   
                 # otherwise, print last line and restart query
                 else:

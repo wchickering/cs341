@@ -4,7 +4,9 @@ import sys
 import json
 
 def main():
+    line_num = 0
     for line in sys.stdin:
+        line_num += 1
         record = json.loads(line)
         shown_items = record['shown_items']
         reordered_shown_items = record['reordered_shown_items']
@@ -12,7 +14,7 @@ def main():
         for item in clicked_shown_items:
             if item in shown_items:
                 delta = reordered_shown_items.index(item) - shown_items.index(item)
-                print 'delta\t%d' % (delta)
+                print 'delta\t%d' % (delta) 
 
 if __name__ == '__main__':
     main()
