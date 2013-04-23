@@ -36,7 +36,7 @@ $(linked_queries): $(filtered_data) programs/testGenMapper.py programs/testGenRe
 	cat $(filtered_data) | python programs/testGenMapper.py | sort -k1,1n -k2,2 -k3,3 -k4,4n | python programs/testGenReducer.py > $@
 
 $(reordered_queries): $(linked_queries) $(use_index) programs/reRank.py
-	python programs/reRank.py -j -m --index $(use_index) --dict $(use_posting_dict) $(linked_queries) > $@
+	python programs/reRank.py -j --index $(use_index) --dict $(use_posting_dict) $(linked_queries) > $@
 
 # filter RAWDATA
 filter_data : $(filtered_data) 
