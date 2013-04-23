@@ -30,12 +30,18 @@ for line in sys.stdin:
 
         prevQueryLists = []
         for previouslyClickedItem in query.previously_clicked_items:
-            prevQueryLists.append(idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem)))
+            prevQueryLists.append(idx.get_posting(indexFd, posting_dict,\
+                    str(previouslyClickedItem)))
 
         for shownItem in query.shown_items:
-            shownItemQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
+            if shownItem in query.previously_clicked_items:
+                continue
+            shownItemQueryIds = idx.get_posting(indexFd, posting_dict,\
+                    str(shownItem))
             for i in range(len(query.previously_clicked_items)):
-                if sim.jaccard(prevQueryLists[i], shownItemQueryIds) > 0:
+                if query.previously_clicked_items[i] != shownItem\
+                        and sim.jaccard(prevQueryLists[i],\
+                                        shownItemQueryIds) > 0:
                     print line,
                     raise BreakoutException
     
