@@ -24,7 +24,7 @@ $(use_index):
 ifeq ($(INDEX), DEADBEEFINDEX)
 	$(error INDEX not specified!)
 endif
-	$(MAKE) RAWDATA=$(basename $(notdir $(use_index))) build_index
+	$(MAKE) RAWDATA=$(basename $(notdir $@)) build_index
 
 $(filtered_data): $(raw_data) programs/filterData.py
 	cat $(raw_data) | python programs/filterData.py $(raw_data) > $@
