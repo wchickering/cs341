@@ -11,6 +11,8 @@ build_posting_dict = $(raw_data).posting.dict
 test_data          = $(raw_data).test_data
 reordered_queries  = $(raw_data).reordered_queries
 filtered_test_data = $(test_data).filtered
+evaluation         = $(raw_data).eval
+histogram          = $(raw_data).histogram
 
 # target for checking that RAWDATA was specified and existed
 $(raw_data):
@@ -42,6 +44,12 @@ $(filtered_test_data): $(use_index) $(test_data) programs/filterTestData.py
 $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
 	python programs/reRank.py --index $(use_index) --dict $(use_posting_dict) $(filtered_test_data) > $@
 
+$(evaluation): $(reordered_queries) programs/evaluate.py
+	cat $< | python programs/evaluate.py > $@
+
+$(histogram): $(reordered_queries) programs/eval_mapper.py programs/eval_reducer.py
+	cat $< | python programs/eval_mapper.py | python programs/eval_reducer.py > $@
+
 # filter RAWDATA
 filter_data : $(filtered_data) 
 
@@ -52,11 +60,15 @@ filter_test_data : $(filtered_test_data)
 
 reorder_queries : $(reordered_queries)
 
+evaluate : $(evaluation)
+
+histogram : $(histogram)
+
 # Here we make empty targets for each program so that make can tell when a program
 # has been modified and needs to rebuild a target
 programs = index_mapper.py index_reducer.py filterData.py\
            testGenMapper.py testGenReducer.py reRank.py\
-		   filterTestData.py
+		   filterTestData.py eval_mapper.py eval_reducer.py
 
 $(addprefix programs/, $(programs)):
 
