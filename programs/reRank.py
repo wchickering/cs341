@@ -22,38 +22,15 @@ from Query import Query
 num_reranks = 0
 num_nonzero_scores = 0
 
+class NoRerankException(Exception):
+    def __init__(self):
+        pass
+    def __str__(self):
+        return ""
+
 def printStats():
     print >> sys.stderr, 'num reranks = ' + str(num_reranks)
     print >> sys.stderr, 'num_nonzero_scores = ' + str(num_nonzero_scores)
-
-class Query:
-    """Represents information about a query
-
-    Instance attributes
-    ===================
-
-    shown_items : list
-        items shown to the user in a query
-    previously_clicked_items : list
-        previously clicked items by the user
-    clicked_shown_items : list
-        items the user clicked in this query
-
-    Examples
-    ========
-    >>> import reRank as rr
-    """
-    def __init__(self, jsonStr):
-        record = json.loads(jsonStr)
-        self.shown_items = record['shown_items']
-        self.previously_clicked_items=record['previously_clicked_items']
-        self.clicked_shown_items=record['clicked_shown_items']
-
-    def __repr__(self):
-        return "Query(%s)" % repr(json.dumps({\
-                     "shown_items":self.shown_items,\
-                     "previously_clicked_items":self.previously_clicked_items,\
-                     "clicked_shown_items":self.clicked_shown_items}))
 
 def reorderShownItems(query, indexFd, posting_dict, options):
     global num_reranks
@@ -64,6 +41,7 @@ def reorderShownItems(query, indexFd, posting_dict, options):
     for previouslyClickedItem in query.previously_clicked_items:
         prevQueryLists.append(idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem)))
     if prevQueryLists == []:
+        raise NoRerankException
         return query.shown_items
 
     # Determine the top k scores 
@@ -77,8 +55,7 @@ def reorderShownItems(query, indexFd, posting_dict, options):
             if query.previously_clicked_items[i] == shownItem:
                 score = 0
                 break
-            if (options.JACCARD):
-                score += sim.jaccard(prevQueryLists[i], shownItemQueryIds)
+            score += sim.jaccard(prevQueryLists[i], shownItemQueryIds)
         if score > 0:
             num_nonzero_scores += 1
             for i in range(len(top_scores)):
@@ -90,6 +67,7 @@ def reorderShownItems(query, indexFd, posting_dict, options):
                 top_scores.append(score)
         item_scores.append(score)
     if (len(top_scores) == 0):
+        raise NoRerankException
         return query.shown_items
 
     # Re-rank query results based on top k scores
@@ -128,13 +106,6 @@ def main():
     verboseGroup.add_option("-m", "--markReordered", action="store_true",\
                             dest="markReordered")
     parser.add_option_group(verboseGroup)
-                            
-    metricsGroup = OptionGroup(parser, "Metrics")
-    metricsGroup.add_option("-j", "--jaccard", action="store_true",\
-                      dest="JACCARD",\
-                      help="Jaccard similarity")
-
-    parser.add_option_group(metricsGroup)
 
     fileGroup = OptionGroup(parser, "Index options")
     fileGroup.add_option("--index", dest="indexFn", help="index filename")
@@ -146,8 +117,6 @@ def main():
                         markReordered=False)
 
     (options, args) = parser.parse_args()
-
-    numMetrics = 1 if options.JACCARD else 0
 
     if (len(args) == 0):
         inputFile = sys.stdin
@@ -161,11 +130,6 @@ def main():
         parser.print_usage()
         sys.exit()
 
-    if (numMetrics != 1):
-        parser.print_usage()
-        sys.exit()
-
-
     posting_dict_f = open(options.dictionaryFn)
     posting_dict = idx.get_posting_dict(posting_dict_f)
     indexFd = open(options.indexFn)
@@ -175,8 +139,13 @@ def main():
             query = Query(line)
             output = {}
             output['shown_items'] = query.shown_items
-            output['reordered_shown_items'] =\
-                reorderShownItems(query, indexFd, posting_dict, options)
+            try:
+                output['reordered_shown_items'] =\
+                    reorderShownItems(query, indexFd, posting_dict, options)
+            except NoRerankException:
+                print >>sys.stderr, "NoRerankException caught"
+                print >>sys.stderr, line
+                raise
             output['clicked_shown_items'] = query.clicked_shown_items
             if (options.markReordered):
                 if (output['shown_items'] != output['reordered_shown_items']):
