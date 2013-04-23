@@ -16,6 +16,7 @@ import re, json
 # import local modules
 import Similarity as sim
 import index_query as idx
+from Query import Query
 
 # global stats
 num_reranks = 0
