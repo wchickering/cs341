@@ -36,9 +36,21 @@ class Query:
 
     def __repr__(self):
         return "Query(%s)" % repr(json.dumps({\
+                     "visitorid":self.visitorid,\
+                     "wmsessionid":self.wmsessionid,\
+                     "rawquery":self.rawquery,\
                      "shown_items":self.shown_items,\
                      "previously_clicked_items":self.previously_clicked_items,\
                      "clicked_shown_items":self.clicked_shown_items}))
+
+    def __str__(self):
+        return json.dumps({\
+                     "visitorid":self.visitorid,\
+                     "wmsessionif":self.wmsessionid,\
+                     "rawquery":self.rawquery,\
+                     "shown_items":self.shown_items,\
+                     "previously_clicked_items":self.previously_clicked_items,\
+                     "clicked_shown_items":self.clicked_shown_items})
 
 def main():
     return
