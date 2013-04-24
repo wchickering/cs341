@@ -36,6 +36,7 @@ def printStats():
 
 def reorderShownItems(query, indexFd, posting_dict, options):
     global num_reranks
+    global num_shown_items
     global num_nonzero_scores
 
     # Retrieve queryLists for previously clicked items
