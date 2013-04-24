@@ -1,8 +1,5 @@
-SHELL := /bin/bash
-
 RAWDATA ?= DEADBEEFRAW
 INDEX   ?= DEADBEEFINDEX
-CHUNKS := 8
 
 raw_data  := data/$(RAWDATA)
 use_index := data/$(INDEX)
@@ -45,11 +42,7 @@ $(filtered_test_data): $(use_index) $(test_data) programs/filterTestData.py
 	cat $(test_data) | python programs/filterTestData.py $(use_index) $(use_posting_dict) > $@
 
 $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
-	rm -f $@
-	split --number=l/$(CHUNKS) --suffix-length=1 --numeric-suffixes $< $<
-	for ((i=0;i<$(CHUNKS);i++)) ; do \
-		python programs/reRank.py --index $(use_index) --dict $(use_posting_dict) $<$$i >> $@ && rm -f $<$$i & \
-	done
+	python programs/reRank.py --index $(use_index) --dict $(use_posting_dict) $(filtered_test_data) > $@
 
 $(evaluation): $(reordered_queries) programs/evaluate.py
 	cat $< | python programs/evaluate.py > $@
