@@ -20,13 +20,13 @@ def string_to_intlist(string):
 
 def main():
     sep='\t'
+    queryDict = {}
     data = read_mapper_output(sys.stdin, separator=sep)
     # loop through keys (visitorID)
     for visitorid, group in groupby(data, itemgetter(0)):
         # for all values, keep track of previous value
         last_sessionid = None
         last_rawquery = None
-        last_shownitems = None
         # also keep track of this query (+ clicks) and total clicks for this visitor
         shown_items = []
         previously_clicked_items = []
@@ -46,7 +46,7 @@ def main():
         for visitorid, queryDataString in group:
             try:
                 lineNum = lineNum + 1
-                # unfold data in quesryData
+                # unfold data in queryData
                 queryData = queryDataString.split(sep)
                 sessionid = queryData[0]
                 rawquery = queryData[1]
@@ -75,10 +75,25 @@ def main():
                 # otherwise, print last line and restart query
                 else:
                     if lineNum != 1:
+                        ## verify that query is unique
+                        #queryKey = ':'.join([visitorid, sessionid, rawquery])
+                        #firstPage = None
+                        #try:
+                        #    if len(shown_items) >= 16:
+                        #        firstPage = shown_items[0:15]
+                        #    else:
+                        #        firstPage = shown_items
+                        #    assert(queryKey not in queryDict)
+                        #    queryDict[queryKey] = firstPage
+                        #except:
+                        #    print >> sys.stderr, 'Duplicate Query: ' + queryKey
+                        #    print >> sys.stderr, 'Original first page: ' + str(queryDict[queryKey])
+                        #    print >> sys.stderr, 'This first page: ' + str(firstPage)
+
                         record = {}
                         record['visitorid'] = visitorid
-                        record['wmsessionid'] = sessionid
-                        record['rawquery'] = rawquery
+                        record['wmsessionid'] = last_sessionid
+                        record['rawquery'] = last_rawquery
                         record['shown_items'] = shown_items
                         record['previously_clicked_items'] = previously_clicked_items
                         record['clicked_shown_items'] = clicked_shown_items
@@ -95,8 +110,8 @@ def main():
         # print last one    
         record = {}
         record['visitorid'] = visitorid
-        record['wmsessionid'] = sessionid
-        record['rawquery'] = rawquery
+        record['wmsessionid'] = last_sessionid
+        record['rawquery'] = last_rawquery
         record['shown_items'] = shown_items
         record['previously_clicked_items'] = previously_clicked_items
         record['clicked_shown_items'] = clicked_shown_items
