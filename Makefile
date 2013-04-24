@@ -1,5 +1,10 @@
+SHELL := /bin/bash
+
 RAWDATA ?= DEADBEEFRAW
 INDEX   ?= DEADBEEFINDEX
+CHUNK_PREFIX := CHUNK_
+CHUNK_SUFFIX := _CHUNK
+LINES_PER_CHUNK := 7000
 
 raw_data  := data/$(RAWDATA)
 use_index := data/$(INDEX)
@@ -42,7 +47,16 @@ $(filtered_test_data): $(use_index) $(test_data) programs/filterTestData.py
 	cat $(test_data) | python programs/filterTestData.py $(use_index) $(use_posting_dict) > $@
 
 $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
-	python programs/reRank.py --index $(use_index) --dict $(use_posting_dict) $(filtered_test_data) > $@
+	split -l $(LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
+	for i in $(CHUNK_PREFIX)*; do \
+	    python programs/reRank.py --index $(use_index) --dict $(use_posting_dict) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	done; \
+	wait
+	rm -f $@
+	for i in *$(CHUNK_SUFFIX); do \
+	    cat $$i >> $@ && rm -f $$i; \
+	done
+
 
 $(evaluation): $(reordered_queries) programs/evaluate.py
 	cat $< | python programs/evaluate.py > $@
