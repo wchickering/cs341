@@ -46,7 +46,7 @@ class Query:
     def __str__(self):
         return json.dumps({\
                      "visitorid":self.visitorid,\
-                     "wmsessionif":self.wmsessionid,\
+                     "wmsessionid":self.wmsessionid,\
                      "rawquery":self.rawquery,\
                      "shown_items":self.shown_items,\
                      "previously_clicked_items":self.previously_clicked_items,\
