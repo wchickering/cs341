@@ -139,6 +139,7 @@ def main():
             query = Query(line)
             output = {}
             output['shown_items'] = query.shown_items
+            output['visitorid'] = query.visitorid
             try:
                 output['reordered_shown_items'] =\
                     reorderShownItems(query, indexFd, posting_dict, options)

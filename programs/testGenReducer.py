@@ -79,6 +79,7 @@ def main():
                         record['shown_items'] = shown_items
                         record['previously_clicked_items'] = previously_clicked_items
                         record['clicked_shown_items'] = clicked_shown_items
+                        record['visitorid'] = visitorid
                         print json.dumps(record)
                     # now add clicks to total clicks and clear the chambers
                     previously_clicked_items = previously_clicked_items + clicked_shown_items
@@ -94,6 +95,7 @@ def main():
         record['shown_items'] = shown_items
         record['previously_clicked_items'] = previously_clicked_items
         record['clicked_shown_items'] = clicked_shown_items
+        record['visitorid'] = visitorid
         print json.dumps(record)
 
 if __name__ == '__main__':
