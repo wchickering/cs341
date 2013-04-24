@@ -2,9 +2,9 @@ SHELL := /bin/bash
 
 RAWDATA ?= DEADBEEFRAW
 INDEX   ?= DEADBEEFINDEX
-CHUNK_PREFIX := CHUNK_
+CHUNK_PREFIX := data/CHUNK_
 CHUNK_SUFFIX := _CHUNK
-LINES_PER_CHUNK := 7000
+LINES_PER_CHUNK ?= 7000
 
 raw_data  := data/$(RAWDATA)
 use_index := data/$(INDEX)
@@ -35,7 +35,15 @@ endif
 	$(MAKE) RAWDATA=$(basename $(notdir $@)) build_index
 
 $(filtered_data): $(raw_data) programs/filterData.py
-	cat $(raw_data) | python programs/filterData.py $(raw_data) > $@
+	split -l $(LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
+	for i in $(CHUNK_PREFIX)*; do \
+		cat $$i | python programs/filterData.py $(raw_data) > $${i}$(CHUNK_SUFFIX) 2>/dev/null && rm -f $$i & \
+	done; \
+	wait
+	rm -f $@
+	for i in data/*$(CHUNK_SUFFIX); do \
+	    cat $$i >> $@ && rm -f $$i; \
+	done
 
 $(build_index): $(filtered_data) programs/index_mapper.py programs/index_reducer.py
 	cat $(filtered_data) | python programs/index_mapper.py | sort -k1n -k2n | python programs/index_reducer.py > $@ && mv posting.dict $(build_posting_dict)
@@ -43,8 +51,8 @@ $(build_index): $(filtered_data) programs/index_mapper.py programs/index_reducer
 $(test_data): $(filtered_data) programs/testGenMapper.py programs/testGenReducer.py
 	cat $(filtered_data) | python programs/testGenMapper.py | sort -k1,1n -k2,2 -k3,3 -k4,4n | python programs/testGenReducer.py > $@
 
-$(filtered_test_data): $(use_index) $(test_data) programs/filterTestData.py
-	cat $(test_data) | python programs/filterTestData.py $(use_index) $(use_posting_dict) > $@
+$(filtered_test_data): $(test_data) $(use_index) programs/filterTestData.py
+	cat $< | python programs/filterTestData.py $(use_index) $(use_posting_dict) > $@
 
 $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
 	split -l $(LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
@@ -53,10 +61,9 @@ $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
 	done; \
 	wait
 	rm -f $@
-	for i in *$(CHUNK_SUFFIX); do \
+	for i in data/*$(CHUNK_SUFFIX); do \
 	    cat $$i >> $@ && rm -f $$i; \
 	done
-
 
 $(evaluation): $(reordered_queries) programs/evaluate.py
 	cat $< | python programs/evaluate.py > $@
@@ -87,6 +94,6 @@ programs = index_mapper.py index_reducer.py filterData.py\
 $(addprefix programs/, $(programs)):
 
 clean : $(raw_data)
-	rm -f $(raw_data).*
+	rm -f $(raw_data).* data/CHUNK*
 
-.PHONY : clean build_index filtered_data reorder_queries
+.PHONY : clean build_index filter_data reorder_queries evaluate histogram filter_test_data
