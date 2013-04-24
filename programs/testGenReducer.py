@@ -76,6 +76,9 @@ def main():
                 else:
                     if lineNum != 1:
                         record = {}
+                        record['visitorid'] = visitorid
+                        record['wmsessionid'] = sessionid
+                        record['rawquery'] = rawquery
                         record['shown_items'] = shown_items
                         record['previously_clicked_items'] = previously_clicked_items
                         record['clicked_shown_items'] = clicked_shown_items
@@ -91,6 +94,9 @@ def main():
                 raise
         # print last one    
         record = {}
+        record['visitorid'] = visitorid
+        record['wmsessionid'] = sessionid
+        record['rawquery'] = rawquery
         record['shown_items'] = shown_items
         record['previously_clicked_items'] = previously_clicked_items
         record['clicked_shown_items'] = clicked_shown_items

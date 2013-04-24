@@ -2,27 +2,28 @@
 
 import sys
 import json
+import math
 
-def printHistogram(histogram, scale):
+def printHistogram(histogram, offset, scale):
     bins = len(histogram)
     for i in range(bins):
-        if i < bins/2:
-            print '|' + '-'*int(histogram[i]*scale)
+        if i < bins/2 - 1 + offset:
+            print '|' + '-'*int(math.ceil(histogram[i]*scale))
+        elif i == bins/2 - 1 + offset:
+            print '|' + '0'*int(math.ceil(histogram[i]*scale))
         else:
-            print '|' + '+'*int(histogram[i]*scale)
+            print '|' + '+'*int(math.ceil(histogram[i]*scale))
 
-def main(bins=64, scale=0.1):
+def main(bins=64, offset=27, scale=0.1):
     net_delta = 0
     histogram = [0]*bins
     for line in sys.stdin:
-        key, value_str = line.split('\t')
-        value = int(value_str)
-        if value == 0:
-            continue
-        if value > -bins/2 and value <= bins/2: 
-            histogram[bins/2 + value - 1] += 1
-        net_delta += value
-    printHistogram(histogram, scale)
+        values = line.split('\t')
+        delta = int(values[1])
+        if delta > -(bins/2 + offset) and delta <= (bins/2 - offset): 
+            histogram[bins/2 - 1 + offset + delta] += 1
+        net_delta += delta
+    printHistogram(histogram, offset, scale)
     print 'net_delta = ' + str(net_delta)
 
 if __name__ == '__main__':

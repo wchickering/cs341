@@ -20,6 +20,7 @@ from Query import Query
 
 # global stats
 num_reranks = 0
+num_shown_items = 0
 num_nonzero_scores = 0
 
 class NoRerankException(Exception):
@@ -30,6 +31,7 @@ class NoRerankException(Exception):
 
 def printStats():
     print >> sys.stderr, 'num reranks = ' + str(num_reranks)
+    print >> sys.stderr, 'num_shown_items = ' + str(num_shown_items)
     print >> sys.stderr, 'num_nonzero_scores = ' + str(num_nonzero_scores)
 
 def reorderShownItems(query, indexFd, posting_dict, options):
@@ -48,6 +50,7 @@ def reorderShownItems(query, indexFd, posting_dict, options):
     top_scores = []
     item_scores = []
     for shownItem in query.shown_items:
+        num_shown_items += 1
         shownItemQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
         score = 0
         for i in range(len(query.previously_clicked_items)):
@@ -138,6 +141,9 @@ def main():
         for line in inputFile:
             query = Query(line)
             output = {}
+            output['visitorid'] = query.visitorid
+            output['wmsessionid'] = query.wmsessionid
+            output['rawquery'] = query.rawquery
             output['shown_items'] = query.shown_items
             try:
                 output['reordered_shown_items'] =\

@@ -27,6 +27,9 @@ class Query:
     """
     def __init__(self, jsonStr):
         record = json.loads(jsonStr)
+        self.visitorid = record['visitorid']
+        self.wmsessionid = record['wmsessionid']
+        self.rawquery = record['rawquery']
         self.shown_items = record['shown_items']
         self.previously_clicked_items=record['previously_clicked_items']
         self.clicked_shown_items=record['clicked_shown_items']

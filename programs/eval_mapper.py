@@ -8,13 +8,16 @@ def main():
     for line in sys.stdin:
         line_num += 1
         record = json.loads(line)
+        visitorid = int(record['visitorid'])
+        wmsessionid = record['wmsessionid']
+        rawquery = record['rawquery']
         shown_items = record['shown_items']
         reordered_shown_items = record['reordered_shown_items']
         clicked_shown_items = record['clicked_shown_items']
         for item in clicked_shown_items:
             if item in shown_items:
                 delta = reordered_shown_items.index(item) - shown_items.index(item)
-                print 'delta\t%d' % (delta) 
+                print 'delta\t%d\t%d\t%s\t%s' % (delta, visitorid, wmsessionid, rawquery) 
 
 if __name__ == '__main__':
     main()
