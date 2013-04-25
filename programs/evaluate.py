@@ -4,7 +4,7 @@ import sys
 import json
 
 # global stat variables
-num_lines = 0
+num_queries = 0
 net_delta = 0
 net_clicked_items = 0
 net_reordered_clicked_items = 0
@@ -12,13 +12,13 @@ net_promoted_clicked_items = 0
 net_demoted_clicked_items = 0
 
 def printStats():
-    global num_lines
+    global num_queries
     global net_delta
     global net_clicked_items
     global net_reordered_clicked_items
     global net_promoted_clicked_items
     global net_demoted_clicked_items
-    print 'num_lines = ' + str(num_lines)
+    print 'num_queries = ' + str(num_queries)
     print 'net_delta = ' + str(net_delta)
     print 'net_clicked_items = ' + str(net_clicked_items)
     print 'net_reordered_clicked_items = ' + str(net_reordered_clicked_items)
@@ -26,7 +26,7 @@ def printStats():
     print 'net_demoted_clicked_items = ' + str(net_demoted_clicked_items)
 
 def main():
-    global num_lines
+    global num_queries
     global net_delta
     global net_clicked_items
     global net_reordered_clicked_items
@@ -34,7 +34,7 @@ def main():
     global net_demoted_clicked_items
     for line in sys.stdin:
         try:
-            num_lines += 1
+            num_queries += 1
             record = json.loads(line)
             shown_items = record['shown_items']
             reordered_shown_items = record['reordered_shown_items']
@@ -52,7 +52,7 @@ def main():
                     net_delta += delta
         except:
             printStats()
-            print >> sys.stderr, 'Exception thrown on line ' + str(num_lines)
+            print >> sys.stderr, 'Exception thrown on line ' + str(num_queries)
             print >> sys.stderr, line
             raise
     printStats()

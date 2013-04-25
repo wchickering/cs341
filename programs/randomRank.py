@@ -12,6 +12,7 @@ __date__ = """16 April 2013"""
 
 import sys
 import re, json
+import random
 
 # import local modules
 import Similarity as sim
@@ -34,57 +35,17 @@ def printStats():
     print >> sys.stderr, 'num_shown_items = ' + str(num_shown_items)
     print >> sys.stderr, 'num_nonzero_scores = ' + str(num_nonzero_scores)
 
-def reorderShownItems(query, indexFd, posting_dict, options):
+def reorderShownItems(query):
     global num_reranks
     global num_shown_items
-    global num_nonzero_scores
 
-    # Retrieve queryLists for previously clicked items
-    prevQueryLists = []
-    for previouslyClickedItem in query.previously_clicked_items:
-        prevQueryLists.append(idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem)))
-    if prevQueryLists == []:
-        raise NoRerankException
-        return query.shown_items
+    num_shown_items += len(query.shown_items)
 
-    # Determine the top k scores 
-    top_scores = []
-    item_scores = []
-    for shownItem in query.shown_items:
-        num_shown_items += 1
-        shownItemQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
-        score = 0
-        for i in range(len(query.previously_clicked_items)):
-            # ignore previously clicked items themselves
-            if query.previously_clicked_items[i] == shownItem:
-                score = 0
-                break
-            score += sim.jaccard(prevQueryLists[i], shownItemQueryIds)
-        if score > 0:
-            num_nonzero_scores += 1
-            for i in range(len(top_scores)):
-                if score > top_scores[i]:
-                    top_scores.insert(i, score)
-                    if len(top_scores) >= 1: # only re-rank top 5 (NEED TO REMOVE MAGIC NUMBER!!)
-                        top_scores.pop()
-            if len(top_scores) < 1: # (EEK!! ANOTHER ONE!!)
-                top_scores.append(score)
-        item_scores.append(score)
-    if (len(top_scores) == 0):
-        raise NoRerankException
-        return query.shown_items
-
-    # Re-rank query results based on top k scores
+    # Choose an item at random and move to top.
     reranked_items = list(query.shown_items)
-    i = 0
-    for j in range(len(reranked_items)):
-        if i >= len(top_scores):
-            break
-        if item_scores[j] == top_scores[i]:
-            item = reranked_items.pop(j)
-            reranked_items.insert(i, item)
-            num_reranks += 1
-            i += 1
+    reranked_items.insert(0, reranked_items.pop(random.randint(0,len(reranked_items)-1)))
+    num_reranks += 1
+
     return reranked_items
 
 def main():
@@ -148,7 +109,7 @@ def main():
             output['shown_items'] = query.shown_items
             try:
                 output['reordered_shown_items'] =\
-                    reorderShownItems(query, indexFd, posting_dict, options)
+                    reorderShownItems(query)
             except NoRerankException:
                 print >>sys.stderr, "NoRerankException caught"
                 print >>sys.stderr, line
