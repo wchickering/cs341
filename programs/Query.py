@@ -30,6 +30,7 @@ class Query:
         self.visitorid = record['visitorid']
         self.wmsessionid = record['wmsessionid']
         self.rawquery = record['rawquery']
+        self.searchattributes = record['searchattributes']
         self.shown_items = record['shown_items']
         self.previously_clicked_items=record['previously_clicked_items']
         self.clicked_shown_items=record['clicked_shown_items']
@@ -39,6 +40,7 @@ class Query:
                      "visitorid":self.visitorid,\
                      "wmsessionid":self.wmsessionid,\
                      "rawquery":self.rawquery,\
+                     "searchattributes":self.searchattributes,\
                      "shown_items":self.shown_items,\
                      "previously_clicked_items":self.previously_clicked_items,\
                      "clicked_shown_items":self.clicked_shown_items}))
@@ -48,6 +50,7 @@ class Query:
                      "visitorid":self.visitorid,\
                      "wmsessionid":self.wmsessionid,\
                      "rawquery":self.rawquery,\
+                     "searchattributes":self.searchattributes,\
                      "shown_items":self.shown_items,\
                      "previously_clicked_items":self.previously_clicked_items,\
                      "clicked_shown_items":self.clicked_shown_items})

@@ -17,11 +17,14 @@ def main():
             visitorid = record['visitorid']
             sessionid = normalizeStr(record['wmsessionid'])
             rawquery = normalizeStr(record['rawquery'])
+            # create a string from searchattributes with all whitespace removed
+            searchattributes = ''.join(str(record['searchattributes']).split())
             timestamp = record['searchtimestamp']
             shownitems = str(record['shownitems'])
             clickeditems = str(record['clickeditems'])
             sep = '\t'
-            print sep.join([visitorid, sessionid, rawquery, timestamp, shownitems, clickeditems])
+            print sep.join([visitorid, sessionid, rawquery, searchattributes,\
+                            timestamp, shownitems, clickeditems])
         except:
             print >> sys.stderr, 'Error on line:\n' + line
             raise

@@ -27,6 +27,7 @@ def main():
         # for all values, keep track of previous value
         last_sessionid = None
         last_rawquery = None
+        last_searchattributes = None
         # also keep track of this query (+ clicks) and total clicks for this visitor
         shown_items = []
         previously_clicked_items = []
@@ -50,12 +51,15 @@ def main():
                 queryData = queryDataString.split(sep)
                 sessionid = queryData[0]
                 rawquery = queryData[1]
-                timestamp = int(queryData[2])
-                shownitems = string_to_intlist(queryData[3])
-                clickeditems = string_to_intlist(queryData[4])
+                searchattributes = queryData[2]
+                timestamp = int(queryData[3])
+                shownitems = string_to_intlist(queryData[4])
+                clickeditems = string_to_intlist(queryData[5])
   
                 # check if this is same query as last 
-                if sessionid == last_sessionid and rawquery == last_rawquery:
+                if sessionid == last_sessionid and \
+                   rawquery == last_rawquery and \
+                   searchattributes == searchattributes:
                     # if this has new query results, add them to shown_items so far
                     #if not (set(shownitems) <= set(shown_items)): 
                     #    shown_items = shown_items + shownitems
@@ -94,6 +98,7 @@ def main():
                         record['visitorid'] = visitorid
                         record['wmsessionid'] = last_sessionid
                         record['rawquery'] = last_rawquery
+                        record['searchattributes'] = last_searchattributes
                         record['shown_items'] = shown_items
                         record['previously_clicked_items'] = previously_clicked_items
                         record['clicked_shown_items'] = clicked_shown_items
@@ -104,6 +109,7 @@ def main():
                     clicked_shown_items = clickeditems
                     last_sessionid = sessionid
                     last_rawquery = rawquery
+                    last_searchattributes = searchattributes
             except:
                 print >> sys.stderr, 'Exception thrown for queryDataString:\n' + queryDataString
                 raise
@@ -112,6 +118,7 @@ def main():
         record['visitorid'] = visitorid
         record['wmsessionid'] = last_sessionid
         record['rawquery'] = last_rawquery
+        record['searchattributes'] = last_searchattributes
         record['shown_items'] = shown_items
         record['previously_clicked_items'] = previously_clicked_items
         record['clicked_shown_items'] = clicked_shown_items

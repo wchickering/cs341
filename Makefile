@@ -49,7 +49,7 @@ $(build_index): $(filtered_data) programs/index_mapper.py programs/index_reducer
 	cat $(filtered_data) | python programs/index_mapper.py | sort -k1n -k2n | python programs/index_reducer.py > $@ && mv posting.dict $(build_posting_dict)
 
 $(test_data): $(filtered_data) programs/testGenMapper.py programs/testGenReducer.py
-	cat $(filtered_data) | python programs/testGenMapper.py | sort -k1,1n -k2,2 -k3,3 -k4,4n | python programs/testGenReducer.py > $@
+	cat $(filtered_data) | python programs/testGenMapper.py | sort -k1,1n -k2,2 -k3,3 -k4,4 -k5,5n | python programs/testGenReducer.py > $@
 
 $(filtered_test_data): $(test_data) $(use_index) programs/filterTestData.py
 	cat $< | python programs/filterTestData.py $(use_index) $(use_posting_dict) > $@

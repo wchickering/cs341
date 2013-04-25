@@ -145,6 +145,7 @@ def main():
             output['visitorid'] = query.visitorid
             output['wmsessionid'] = query.wmsessionid
             output['rawquery'] = query.rawquery
+            output['searchattributes'] = query.searchattributes
             output['shown_items'] = query.shown_items
             try:
                 output['reordered_shown_items'] =\
