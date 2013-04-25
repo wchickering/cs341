@@ -59,7 +59,7 @@ def main():
                 # check if this is same query as last 
                 if sessionid == last_sessionid and \
                    rawquery == last_rawquery and \
-                   searchattributes == searchattributes:
+                   searchattributes == last_searchattributes:
                     # if this has new query results, add them to shown_items so far
                     #if not (set(shownitems) <= set(shown_items)): 
                     #    shown_items = shown_items + shownitems
