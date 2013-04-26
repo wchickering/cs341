@@ -38,7 +38,7 @@ def reorderShownItems(query, options):
 
     # Choose an item at random and move to top.
     reranked_items = list(query.shown_items)
-    for i in range(options.k):
+    for i in range(int(options.k)):
         reranked_items.insert(0, reranked_items.pop(random.randint(0,len(reranked_items)-1)))
         num_reranks += 1
 
@@ -65,6 +65,10 @@ def main():
     verboseGroup.add_option("-m", "--markReordered", action="store_true",\
                             dest="markReordered")
     parser.add_option_group(verboseGroup)
+
+    rankGroup = OptionGroup(parser, "Ranking options")
+    rankGroup.add_option("-k", dest="k", help="re-rank top k items")
+    parser.add_option_group(rankGroup)
 
     parser.set_defaults(verbose=False, k=1, markReordered=False)
 

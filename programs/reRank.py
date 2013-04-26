@@ -64,7 +64,7 @@ def reorderShownItems(query, indexFd, posting_dict, options):
         if score > 0:
             num_nonzero_scores += 1
             heapq.heappush(top_scores_heap, (score, i))
-            if len(top_scores_heap) > options.k:
+            if len(top_scores_heap) > int(options.k):
                 heapq.heappop(top_scores_heap)
     if (len(top_scores_heap) == 0):
         raise NoRerankException
