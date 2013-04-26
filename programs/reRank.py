@@ -49,42 +49,68 @@ def reorderShownItems(query, indexFd, posting_dict, options):
 
     # Determine the top k scores 
     top_scores = []
-    item_scores = []
-    for shownItem in query.shown_items:
+    for i in range(len(query.shown_items)):
+        shownItem = query.shown_items[i]
         num_shown_items += 1
         shownItemQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
         score = 0
-        for i in range(len(query.previously_clicked_items)):
+        for j in range(len(query.previously_clicked_items)):
             # ignore previously clicked items themselves
-            if query.previously_clicked_items[i] == shownItem:
+            if query.previously_clicked_items[j] == shownItem:
                 score = 0
                 break
-            score += sim.jaccard(prevQueryLists[i], shownItemQueryIds)
+            score += sim.jaccard(prevQueryLists[j], shownItemQueryIds)
         if score > 0:
             num_nonzero_scores += 1
-            for i in range(len(top_scores)):
-                if score > top_scores[i]:
-                    top_scores.insert(i, score)
-                    if len(top_scores) >= 1: # only re-rank top 5 (NEED TO REMOVE MAGIC NUMBER!!)
+            insertedTopScore = 0
+            for j in range(len(top_scores)):
+                if score > top_scores[j][0]:
+                    top_scores.insert(j, (score, i))
+                    insertedTopScore = 1
+                    if len(top_scores) >= 1: # only re-rank top k (NEED TO REMOVE MAGIC NUMBER!!)
                         top_scores.pop()
-            if len(top_scores) < 1: # (EEK!! ANOTHER ONE!!)
-                top_scores.append(score)
-        item_scores.append(score)
+                    break
+            if insertedTopScore != 1 and len(top_scores) < 1: # (EEK!! ANOTHER ONE!!)
+                top_scores.append((score, i))
     if (len(top_scores) == 0):
         raise NoRerankException
         return query.shown_items
 
-    # Re-rank query results based on top k scores
-    reranked_items = list(query.shown_items)
+    reranked_items = []
+    top_score_idxs = []
+    for i in range(len(top_scores)):
+        top_score_idxs.append(top_scores[i][1])
+    top_score_idxs = sorted(top_score_idxs)
+    num_reranks += len(top_scores)
+
     i = 0
-    for j in range(len(reranked_items)):
-        if i >= len(top_scores):
-            break
-        if item_scores[j] == top_scores[i]:
-            item = reranked_items.pop(j)
-            reranked_items.insert(i, item)
-            num_reranks += 1
+    j = 0
+    k = 0
+    while i < len(query.shown_items):
+        if i < len(top_scores):
+            index = top_scores[i][1]
+            try:
+                item = query.shown_items[index]
+            except IndexError:
+                print >> sys.stderr, 'index = ' + str(index)
+                print >> sys.stderr, 'len(query.shown_items) = ' + str(len(query.shown_items))
+                print >> sys.stderr, 'top_scores = ' + str(top_scores)
+                print >> sys.stderr, 'query.shown_items = ' + str(query.shown_items)
+                raise
+            reranked_items.append(item)
             i += 1
+        elif k < len(top_score_idxs):
+            if j < top_score_idxs[k]:
+                reranked_items.append(query.shown_items[j])
+                i += 1
+                j += 1
+            else:
+                j += 1
+                k += 1
+        else:
+            reranked_items.append(query.shown_items[j])
+            i += 1
+            j += 1
     return reranked_items
 
 def main():
