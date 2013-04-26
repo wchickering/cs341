@@ -59,6 +59,7 @@ def main():
                 # otherwise, print query record
                 else:
                     if lineNum != 1:
+                        assert(len(query_firstpageitems) <= 16)
                         query_record['shownitems'] = query_shownitems
                         query_record['clickeditems'] = query_clickeditems
                         query_record['firstpageitems'] = query_firstpageitems
@@ -66,7 +67,10 @@ def main():
 
                     # initialize new query
                     query_record = record
-                    query_firstpageitems = shownitems
+                    if len(shownitems) <= 16:
+                        query_firstpageitems = shownitems
+                    else:
+                        query_firstpageitems = shownitems[0:16]
                     query_shownitems = shownitems
                     query_clickeditems = clickeditems
                     query_sessionid = sessionid
@@ -76,6 +80,7 @@ def main():
                 print >> sys.stderr, 'Exception thrown for dataString:\n' + dataString
                 raise
         # print last one    
+        assert(len(query_firstpageitems) <= 16)
         query_record['shownitems'] = query_shownitems
         query_record['clickeditems'] = query_clickeditems
         query_record['firstpageitems'] = query_firstpageitems
