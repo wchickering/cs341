@@ -12,6 +12,7 @@ __date__ = """16 April 2013"""
 
 import sys
 import re, json
+import heapq
 
 # import local modules
 import Similarity as sim
@@ -48,7 +49,7 @@ def reorderShownItems(query, indexFd, posting_dict, options):
         return query.shown_items
 
     # Determine the top k scores 
-    top_scores = []
+    top_scores_heap = []
     for i in range(len(query.shown_items)):
         shownItem = query.shown_items[i]
         num_shown_items += 1
@@ -62,30 +63,24 @@ def reorderShownItems(query, indexFd, posting_dict, options):
             score += sim.jaccard(prevQueryLists[j], shownItemQueryIds)
         if score > 0:
             num_nonzero_scores += 1
-            insertedTopScore = 0
-            for j in range(len(top_scores)):
-                if score > top_scores[j][0]:
-                    top_scores.insert(j, (score, i))
-                    insertedTopScore = 1
-                    if len(top_scores) >= 1: # only re-rank top k (NEED TO REMOVE MAGIC NUMBER!!)
-                        top_scores.pop()
-                    break
-            if insertedTopScore != 1 and len(top_scores) < 1: # (EEK!! ANOTHER ONE!!)
-                top_scores.append((score, i))
-    if (len(top_scores) == 0):
+            heapq.heappush(top_scores_heap, (score, i))
+            if len(top_scores_heap) > options.k:
+                heapq.heappop(top_scores_heap)
+    if (len(top_scores_heap) == 0):
         raise NoRerankException
         return query.shown_items
 
-    reranked_items = []
-    top_score_idxs = []
-    for i in range(len(top_scores)):
-        top_score_idxs.append(top_scores[i][1])
-    top_score_idxs = sorted(top_score_idxs)
-    num_reranks += len(top_scores)
+    num_reranks += len(top_scores_heap)
 
+    # transfer top k to simple list
+    num_reranked = len(top_scores_heap)
+    top_scores = sorted(top_scores_heap, key=lambda tup: tup[0], reverse=True)
+    top_score_idxs = sorted(top_scores_heap, key=lambda tup: tup[1])
+    
     i = 0
     j = 0
     k = 0
+    reranked_items = []
     while i < len(query.shown_items):
         if i < len(top_scores):
             index = top_scores[i][1]
@@ -100,7 +95,7 @@ def reorderShownItems(query, indexFd, posting_dict, options):
             reranked_items.append(item)
             i += 1
         elif k < len(top_score_idxs):
-            if j < top_score_idxs[k]:
+            if j < top_score_idxs[k][1]:
                 reranked_items.append(query.shown_items[j])
                 i += 1
                 j += 1
@@ -118,7 +113,7 @@ def main():
     import sys
     
     usage = "usage: %prog [options] "\
-            + "<-j> "\
+            + "-k N "\
             + "--index <index filename> "\
             + "--dict <dictionary filename> " \
             + "<filename>"
@@ -137,13 +132,17 @@ def main():
                             dest="markReordered")
     parser.add_option_group(verboseGroup)
 
+    rankGroup = OptionGroup(parser, "Ranking options")
+    rankGroup.add_option("-k", dest="k", help="re-rank top k items")
+    parser.add_option_group(rankGroup)
+
     fileGroup = OptionGroup(parser, "Index options")
     fileGroup.add_option("--index", dest="indexFn", help="index filename")
     parser.add_option_group(fileGroup)
     fileGroup.add_option("--dict", dest="dictionaryFn", help="dictionary filename")
     parser.add_option_group(fileGroup)
 
-    parser.set_defaults(verbose=False, indexFn=None, dictionaryFn=None,\
+    parser.set_defaults(verbose=False, k=1, indexFn=None, dictionaryFn=None,\
                         markReordered=False)
 
     (options, args) = parser.parse_args()

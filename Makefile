@@ -62,7 +62,7 @@ $(filtered_test_data): $(test_data) $(use_index) programs/filterTestData.py
 $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
 	split -l $(TESTDATA_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
 	for i in $(CHUNK_PREFIX)*; do \
-	    python programs/reRank.py --index $(use_index) --dict $(use_posting_dict) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	    python programs/reRank.py -k 1000 --index $(use_index) --dict $(use_posting_dict) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
 	done; \
 	wait
 	rm -f $@

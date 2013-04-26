@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""reorders the shown itmes for a query based on a user's previously clicked
-items
+"""randomly reorders the shown itmes for a query 
 
 """
 
@@ -11,18 +10,15 @@ __author__ = """Charles Celerier <cceleri@cs.stanford.edu>,
 __date__ = """16 April 2013"""
 
 import sys
-import re, json
+import json
 import random
 
 # import local modules
-import Similarity as sim
-import index_query as idx
 from Query import Query
 
 # global stats
 num_reranks = 0
 num_shown_items = 0
-num_nonzero_scores = 0
 
 class NoRerankException(Exception):
     def __init__(self):
@@ -33,9 +29,8 @@ class NoRerankException(Exception):
 def printStats():
     print >> sys.stderr, 'num reranks = ' + str(num_reranks)
     print >> sys.stderr, 'num_shown_items = ' + str(num_shown_items)
-    print >> sys.stderr, 'num_nonzero_scores = ' + str(num_nonzero_scores)
 
-def reorderShownItems(query):
+def reorderShownItems(query, options):
     global num_reranks
     global num_shown_items
 
@@ -43,8 +38,9 @@ def reorderShownItems(query):
 
     # Choose an item at random and move to top.
     reranked_items = list(query.shown_items)
-    reranked_items.insert(0, reranked_items.pop(random.randint(0,len(reranked_items)-1)))
-    num_reranks += 1
+    for i in range(options.k):
+        reranked_items.insert(0, reranked_items.pop(random.randint(0,len(reranked_items)-1)))
+        num_reranks += 1
 
     return reranked_items
 
@@ -53,9 +49,7 @@ def main():
     import sys
     
     usage = "usage: %prog [options] "\
-            + "<-j> "\
-            + "--index <index filename> "\
-            + "--dict <dictionary filename> " \
+            + "-k N " \
             + "<filename>"
     parser = OptionParser(usage=usage)
     helpFormatter = HelpFormatter(indent_increment=2,\
@@ -72,14 +66,7 @@ def main():
                             dest="markReordered")
     parser.add_option_group(verboseGroup)
 
-    fileGroup = OptionGroup(parser, "Index options")
-    fileGroup.add_option("--index", dest="indexFn", help="index filename")
-    parser.add_option_group(fileGroup)
-    fileGroup.add_option("--dict", dest="dictionaryFn", help="dictionary filename")
-    parser.add_option_group(fileGroup)
-
-    parser.set_defaults(verbose=False, indexFn=None, dictionaryFn=None,\
-                        markReordered=False)
+    parser.set_defaults(verbose=False, k=1, markReordered=False)
 
     (options, args) = parser.parse_args()
 
@@ -91,14 +78,6 @@ def main():
         parser.print_usage()
         sys.exit()
 
-    if ((not options.indexFn) or (not options.dictionaryFn)):
-        parser.print_usage()
-        sys.exit()
-
-    posting_dict_f = open(options.dictionaryFn)
-    posting_dict = idx.get_posting_dict(posting_dict_f)
-    indexFd = open(options.indexFn)
-
     try:
         for line in inputFile:
             query = Query(line)
@@ -108,8 +87,7 @@ def main():
             output['rawquery'] = query.rawquery
             output['shown_items'] = query.shown_items
             try:
-                output['reordered_shown_items'] =\
-                    reorderShownItems(query)
+                output['reordered_shown_items'] = reorderShownItems(query, options)
             except NoRerankException:
                 print >>sys.stderr, "NoRerankException caught"
                 print >>sys.stderr, line
