@@ -38,7 +38,7 @@ def reorderShownItems(query, options):
 
     # Choose an item at random and move to top.
     reranked_items = list(query.shown_items)
-    for i in range(int(options.k)):
+    for i in range(min(int(options.k), len(query.shown_items))):
         reranked_items.insert(0, reranked_items.pop(random.randint(0,len(reranked_items)-1)))
         num_reranks += 1
 
