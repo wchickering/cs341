@@ -7,8 +7,8 @@ import json
 import unicodedata
 
 def normalizeStr(s):
-    return unicodedata.normalize('NFKD', s)\
-           .encode('ascii','ignore').replace('"','\"').strip()
+    return ' '.join(unicodedata.normalize('NFKD', s)\
+                    .encode('ascii','ignore').replace('"','\"').strip().split())
 
 def main():
     for line in sys.stdin:

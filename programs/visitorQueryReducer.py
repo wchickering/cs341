@@ -28,9 +28,9 @@ def main():
   
         lineNum = 0
         for visitorid, dataString in group:
-            try:
-                lineNum = lineNum + 1
+            lineNum = lineNum + 1
 
+            try:
                 # get M/R secondary keys
                 dataColumns = dataString.split(sep)
                 sessionid = dataColumns[0]
@@ -44,47 +44,47 @@ def main():
 
                 shownitems = record['shownitems']
                 clickeditems = record['clickeditems']
-  
-                # check if still processing query
-                if sessionid == query_sessionid and \
-                   rawquery == query_rawquery and \
-                   searchattributes == query_searchattributes:
-                    for item in shownitems:
-                        if item not in query_shownitems:
-                            query_shownitems.append(item)
-                    for item in clickeditems:
-                        if item not in query_clickeditems:
-                            query_clickeditems.append(item)
-  
-                # otherwise, print query record
-                else:
-                    if lineNum != 1:
-                        assert(len(query_firstpageitems) <= 16)
-                        query_record['shownitems'] = query_shownitems
-                        query_record['clickeditems'] = query_clickeditems
-                        query_record['firstpageitems'] = query_firstpageitems
-                        print json.dumps(query_record)
-
-                    # initialize new query
-                    query_record = record
-                    if len(shownitems) <= 16:
-                        query_firstpageitems = shownitems
-                    else:
-                        query_firstpageitems = shownitems[0:16]
-                    query_shownitems = shownitems
-                    query_clickeditems = clickeditems
-                    query_sessionid = sessionid
-                    query_rawquery = rawquery
-                    query_searchattributes = searchattributes
             except:
                 print >> sys.stderr, 'Exception thrown for dataString:\n' + dataString
-                raise
+                print >> sys.stderr, 'Skipping this one. . . '
+                continue
+
+            # check if still processing query
+            if sessionid == query_sessionid and \
+               rawquery == query_rawquery and \
+               searchattributes == query_searchattributes:
+                for item in shownitems:
+                    if item not in query_shownitems:
+                        query_shownitems.append(item)
+                for item in clickeditems:
+                    if item not in query_clickeditems:
+                        query_clickeditems.append(item)
+  
+            # otherwise, print query record
+            else:
+                if lineNum != 1 and query_shownitems:
+                    query_record['shownitems'] = query_shownitems
+                    query_record['clickeditems'] = query_clickeditems
+                    query_record['firstpageitems'] = query_firstpageitems
+                    print json.dumps(query_record)
+
+                # initialize new query
+                query_record = record
+                if len(shownitems) <= 16:
+                    query_firstpageitems = list(shownitems)
+                else:
+                    query_firstpageitems = shownitems[0:16]
+                query_shownitems = shownitems
+                query_clickeditems = clickeditems
+                query_sessionid = sessionid
+                query_rawquery = rawquery
+                query_searchattributes = searchattributes
         # print last one    
-        assert(len(query_firstpageitems) <= 16)
-        query_record['shownitems'] = query_shownitems
-        query_record['clickeditems'] = query_clickeditems
-        query_record['firstpageitems'] = query_firstpageitems
-        print json.dumps(query_record)
+        if query_shownitems:
+            query_record['shownitems'] = query_shownitems
+            query_record['clickeditems'] = query_clickeditems
+            query_record['firstpageitems'] = query_firstpageitems
+            print json.dumps(query_record)
 
 if __name__ == '__main__':
 	main()
