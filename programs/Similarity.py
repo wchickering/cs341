@@ -11,163 +11,135 @@ __author__ = """Charles Celerier <cceleri@cs.stanford.edu>,
 
 __date__ = """13 April 2013"""
 
-def unionSize(l1, l2, delim=',', verbose=False):
-    """Returns the size of the union of tokens in the comma delimited strings
+import sys
+import json
 
-    Parameters
-    ==========
+# local modules
+import index_query as idx
 
-    l1, l2: str
-            comma delimited string of tokens
+class SimilarityCalculator:
 
-    Examples
-    ========
-    >>> import Similarity as sim
-    >>> sim.unionSize("a,b".split(','),"c,d".split(','))
-    4
-    >>> sim.unionSize("a,b".split(','),"b,d".split(','))
-    3
-    """
-    if verbose:
-        print "union: " + str(list(set(l1).union(set(l2))))
-    return len(set(l1).union(set(l2)))
+    # params
+    max_posting_cache_size = 100000
+    max_score_cache_size = 1000000
 
-def intersectSize(l1, l2, delim=',', verbose=False):
-    """Returns the number of tokens in both comma delimited strings
+    # stats
+    num_posting_hits = 0
+    num_posting_misses = 0
+    num_score_hits = 0
+    num_score_misses = 0
 
-    Parameters
-    ==========
+    def __init__(self, index_fname, posting_dict_fname, \
+                 posting_cache_fname, posting_cache_queue_fname):
+        self.index_fd = open(index_fname)
+        dict_fd = open(posting_dict_fname)
+        self.posting_dict = idx.get_posting_dict(dict_fd)
+        self.posting_cache_queue = []
+        self.posting_cache = {}
+        self.score_cache_queue = []
+        self.score_cache = {}
+        if posting_cache_fname and posting_cache_queue_fname:
+            try:
+                posting_cache_f = open(posting_cache_fname)
+                self.posting_cache = json.loads(posting_cache_f.readline())
+                posting_cache_queue_f = open(posting_cache_queue_fname)
+                self.posting_cache_queue = json.loads(posting_cache_queue_f.readline())
+                print >> sys.stderr, 'len(posting_cache) = ' + str(len(self.posting_cache))
+                print >> sys.stderr, 'len(posting_cache_queue) = ' + str(len(self.posting_cache_queue))
+                while self.posting_cache_queue[-1] not in self.posting_cache:
+                    print >> sys.stderr, 'Removing invalid key from queue.'
+                    self.posting_cache_queue.pop()
+            except:
+                print >> sys.stderr, 'Failed to read posting cache from disk.'
+                self.posting_cache = {}
+                self.posting_cache_queue = []
 
-    l1, l2: str
-            comma delimited string of tokens
+    def __del__(self):
+        print >> sys.stderr, 'SimilarityCalculator cache:' + \
+                             '\nnum_posting_hits = ' + str(self.num_posting_hits) + \
+                             ', num_posting_misses = ' + str(self.num_posting_misses) + \
+                             '\nnum_score_hits = ' + str(self.num_score_hits) + \
+                             ', num_score_misses = ' + str(self.num_score_misses)
+        posting_cache_queue_f = open('simcalc.posting_cache_queue.json', 'w')
+        print >> posting_cache_queue_f, json.dumps(self.posting_cache_queue)
+        posting_cache_f = open('simcalc.posting_cache.json', 'w')
+        print >> posting_cache_f, json.dumps(self.posting_cache)
+        #score_cache_queue_f = open('simcalc.score_cache_queue.json', 'w')
+        #print >> score_cache_queue_f, json.dumps(self.score_cache_queue)
+        #score_cache_f = open('simcalc.score_cache.json', 'w')
+        #print >> score_cache_f, json.dumps(self.score_cache)
 
-    Examples
-    ========
-    >>> import Similarity as sim
-    >>> sim.intersectSize("a,b".split(','), "b,c".split(','))
-    1
-    """
-    if verbose:
-        print "intersection: " + str(list(set(l1).intersection(set(l2))))
-    return len(set(l1).intersection(set(l2)))
+    def get_posting(self, itemid):
+        if itemid in self.posting_cache:
+            self.num_posting_hits += 1
+            self.posting_cache_queue.remove(itemid)
+            self.posting_cache_queue.insert(0, itemid)
+        else:
+            self.num_posting_misses += 1
+            self.posting_cache[itemid] = \
+                    idx.get_posting(self.index_fd, self.posting_dict, itemid)
+            self.posting_cache_queue.insert(0, itemid)
+            if len(self.posting_cache_queue) > self.max_posting_cache_size:
+                del self.posting_cache[self.posting_cache_queue.pop()]
+        return self.posting_cache[itemid]
 
-def jaccard(l1, l2, delim=',', verbose=False):
-    """Returns the jaccard similarity of the two comma delimited token sets
+    def similarity(self, itemid1, itemid2):
+        key = frozenset([itemid1, itemid2])
+        if key in self.score_cache:
+            self.num_score_hits += 1
+            self.score_cache_queue.remove(key)
+            self.score_cache_queue.insert(0, key)
+        else:
+            self.num_score_misses += 1
+            self.score_cache[key] = \
+                    self.jaccard(self.get_posting(itemid1), self.get_posting(itemid2))
+            self.score_cache_queue.insert(0, key)
+            if len(self.score_cache_queue) > self.max_score_cache_size:
+                del self.score_cache[self.score_cache_queue.pop()]
+        return self.score_cache[key]
 
-    Parameters
-    ==========
-
-    l1, l2: str
-                  comma delimited string of tokens
-    delim: str
-           token delimiter
-
-    Examples
-    ========
-    >>> import Similarity as sim
-    >>> sim.jaccard("a,b,c,d".split(','), "b,c,e,f,g,h".split(','))
-    0.25
-    """
-#    if verbose:
-#        print "intersection: " + str(list(set(l1).intersection(set(l2))))
-#        print "union: " + str(list(set(l1).union(set(l2))))
-#    return (float)(intersectSize(l1, l2, delim=delim)) / unionSize(l1, l2, delim=delim)
-    return jaccard2(l1, l2)
-
-def jaccard2(l1, l2):
-    interSize = 0
-    unionSize = 0
-    i = 0
-    j = 0
-    while i < len(l1) and j < len(l2):
-        if l1[i] == l2[j]:
-            interSize += 1
+    def jaccard(self, l1, l2):
+        """Returns the jaccard similarity of the two lists of elements
+    
+        Parameters
+        ==========
+    
+        l1, l2: lists
+                      lists of elements
+    
+        Examples
+        ========
+        >>> import Similarity as sim
+        >>> sim.jaccard([1, 2, 3], [1, 2, 4])
+        0.5
+        """
+        interSize = 0
+        unionSize = 0
+        i = 0
+        j = 0
+        while i < len(l1) and j < len(l2):
+            if l1[i] == l2[j]:
+                interSize += 1
+                unionSize += 1
+                i += 1
+                j += 1
+                continue
+            if l1[i] > l2[j]:
+                unionSize += 1
+                j += 1
+                continue
+            else:
+                unionSize += 1
+                i += 1
+                continue
+        while i < len(l1):
             unionSize += 1
             i += 1
-            j += 1
-            continue
-        if l1[i] > l2[j]:
+        while j < len(l2):
             unionSize += 1
             j += 1
-            continue
+        if unionSize == 0:
+            return 0.0
         else:
-            unionSize += 1
-            i += 1
-            continue
-    while i < len(l1):
-        unionSize += 1
-        i += 1
-    while j < len(l2):
-        unionSize += 1
-        j += 1
-    if unionSize == 0:
-        return 0.0
-    else:
-        return float(interSize)/unionSize
-          
-
-def main():
-    from optparse import OptionParser, OptionGroup, HelpFormatter
-    import sys
-    
-    usage = "usage: %prog [options] <string> <string>"
-    parser = OptionParser(usage=usage)
-    helpFormatter = HelpFormatter(indent_increment=2,\
-                                  max_help_position=10,\
-                                  width=80,\
-                                  short_first=1)
-
-    verboseGroup = OptionGroup(parser, "Verbose")
-    verboseGroup.add_option("-v", "--verbose", action="store_true",\
-                            dest="verbose")
-    verboseGroup.add_option("-q", "--quiet", action="store_false",\
-                            dest="verbose")
-    parser.add_option_group(verboseGroup)
-                            
-    metricsGroup = OptionGroup(parser, "Metrics")
-    metricsGroup.add_option("-u", "--union", action="store_true",\
-                      dest="UNION",\
-                      help="size of union")
-    metricsGroup.add_option("-i", "--intersect", action="store_true",\
-                      dest="INTERSECT",\
-                      help="size of intersection")
-    metricsGroup.add_option("-j", "--jaccard", action="store_true",\
-                      dest="JACCARD",\
-                      help="Jaccard similarity")
-
-    parser.add_option_group(metricsGroup)
-    parser.set_defaults(verbose=False)
-    
-    (options, args) = parser.parse_args()
-
-    if (len(args) != 2):
-        parser.print_usage()
-        sys.exit()
-
-    label = False
-    if ((1 if options.INTERSECT else 0) + (1 if options.UNION else 0)\
-            + (1 if options.JACCARD else 0) > 1):
-        label = True
-
-    if (options.INTERSECT):
-        if label:
-            print "intersection size: "\
-                  + str(intersectSize(args[0], args[1], verbose=options.verbose))
-        else:
-            print str(intersectSize(args[0], args[1], verbose=options.verbose))
-    if (options.UNION):
-        if label:
-            print "union size: "\
-                  + str(unionSize(args[0], args[1], verbose=options.verbose))
-        else:
-            print str(unionSize(args[0], args[1], verbose=options.verbose))
-    if (options.JACCARD):
-        if label:
-            print "jaccard similarity: "\
-                  + str(jaccard(args[0], args[1], verbose=options.verbose))
-        else:
-                  print str(jaccard(args[0], args[1], verbose=options.verbose))
-    sys.exit(0)
-
-if __name__ == '__main__':
-    main()
+            return float(interSize)/unionSize
+              

@@ -16,7 +16,6 @@ import heapq
 
 # import local modules
 import Similarity as sim
-import index_query as idx
 from Query import Query
 
 # global stats
@@ -35,32 +34,34 @@ def printStats():
     print >> sys.stderr, 'num_shown_items = ' + str(num_shown_items)
     print >> sys.stderr, 'num_nonzero_scores = ' + str(num_nonzero_scores)
 
-def reorderShownItems(query, indexFd, posting_dict, options):
+def reorderShownItems(simCalc, query, options):
     global num_reranks
     global num_shown_items
     global num_nonzero_scores
 
     # Retrieve queryLists for previously clicked items
-    prevQueryLists = []
-    for previouslyClickedItem in query.previously_clicked_items:
-        prevQueryLists.append(idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem)))
-    if prevQueryLists == []:
-        raise NoRerankException
-        return query.shown_items
+    #prevQueryLists = []
+    #for previouslyClickedItem in query.previously_clicked_items:
+    #    prevQueryLists.append(idx.get_posting(indexFd, posting_dict, str(previouslyClickedItem)))
+    #if prevQueryLists == []:
+    #    raise NoRerankException
+    #    return query.shown_items
 
     # Determine the top k scores 
     top_scores_heap = []
     for i in range(len(query.shown_items)):
         shownItem = query.shown_items[i]
         num_shown_items += 1
-        shownItemQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
+        #shownItemQueryIds = idx.get_posting(indexFd, posting_dict, str(shownItem))
         score = 0
         for j in range(len(query.previously_clicked_items)):
             # ignore previously clicked items themselves
             if query.previously_clicked_items[j] == shownItem:
                 score = 0
                 break
-            score += sim.jaccard(prevQueryLists[j], shownItemQueryIds)
+            #score += sim.jaccard(prevQueryLists[j], shownItemQueryIds)
+            score += simCalc.similarity(str(query.previously_clicked_items[j]), \
+                                        str(query.shown_items[i]))
         if score > 0:
             num_nonzero_scores += 1
             heapq.heappush(top_scores_heap, (score, i))
@@ -158,9 +159,9 @@ def main():
         parser.print_usage()
         sys.exit()
 
-    posting_dict_f = open(options.dictionaryFn)
-    posting_dict = idx.get_posting_dict(posting_dict_f)
-    indexFd = open(options.indexFn)
+    simCalc = sim.SimilarityCalculator(options.indexFn, options.dictionaryFn, \
+                                       'simcalc.posting_cache.json', \
+                                       'simcalc.posting_cache_queue.json')
 
     try:
         for line in inputFile:
@@ -173,7 +174,7 @@ def main():
             output['shown_items'] = query.shown_items
             try:
                 output['reordered_shown_items'] =\
-                    reorderShownItems(query, indexFd, posting_dict, options)
+                    reorderShownItems(simCalc, query, options)
             except NoRerankException:
                 print >>sys.stderr, "NoRerankException caught"
                 print >>sys.stderr, line
