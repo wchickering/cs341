@@ -94,6 +94,8 @@ def jaccard2(l1, l2):
             unionSize += 1
             i += 1
             continue
+    if interSize == 0:
+        return 0.0
     while i < len(l1):
         unionSize += 1
         i += 1
@@ -104,7 +106,6 @@ def jaccard2(l1, l2):
         return 0.0
     else:
         return float(interSize)/unionSize
-          
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
