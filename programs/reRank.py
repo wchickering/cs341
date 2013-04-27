@@ -110,7 +110,6 @@ def reorderShownItems(query, indexFd, posting_dict, options):
 
 def main():
     from optparse import OptionParser, OptionGroup, HelpFormatter
-    import sys
     
     usage = "usage: %prog [options] "\
             + "-k N "\

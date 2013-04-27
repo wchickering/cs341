@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""randomly reorders the shown itmes for a query 
+""" Conspires to reorder the shown itmes for a query such that, if possible, clicked items do
+ not appear in the top k, and if they must, they are as low as possible.
 
 """
 
@@ -36,11 +37,15 @@ def reorderShownItems(query, options):
 
     num_shown_items += len(query.shown_items)
 
-    # Choose an item at random and move to top.
     reranked_items = list(query.shown_items)
-    for i in range(min(int(options.k), len(query.shown_items))):
-        reranked_items.insert(0, reranked_items.pop(random.randint(0,len(reranked_items)-1)))
-        num_reranks += 1
+    reranks = 0
+    for i in range(len(reranked_items)-1, -1, -1):
+        if reranked_items[i] not in query.clicked_shown_items:
+            reranked_items.insert(0, reranked_items.pop(i))
+            reranks += 1
+            num_reranks += 1
+            if reranks >= int(options.k):
+                break
 
     return reranked_items
 
