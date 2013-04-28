@@ -11,6 +11,7 @@ def main():
     duplicates = 0
     parseErrors = 0
     dataErrors = 0
+    clickErrors = 0
     #constrainedQueries = 0
     for line in sys.stdin:
         lineNum = lineNum + 1
@@ -31,7 +32,6 @@ def main():
             visitorid = int(record['visitorid'])
             assert(visitorid > 0)
             clickeditems = record['clickeditems']
-            clicks = record['clicks']
             searchtimestamp = int(record['searchtimestamp'])
             assert(searchtimestamp > 0)
             searchattributes = record['searchattributes']
@@ -46,6 +46,13 @@ def main():
             # skip missing data/format errors
             dataErrors += 1
             continue
+        try:
+            clicks = record['clicks']
+            for click in clicks:
+                assert(click['Position'] >= 0)
+        except:
+            clickErrors += 1
+            continue
         #if len(search_attributes) != 1 or\
         #   'search_constraint' not in search_attributes or\
         #   search_attributes['search_constraint'] != '0':
@@ -57,6 +64,7 @@ def main():
     # display statistics
     print >> sys.stderr, 'duplicates = ' + str(duplicates) +\
                        ', parseErrors = ' + str(parseErrors) +\
+                       ', clickErrors = ' + str(clickErrors) +\
                        ', dataErrors = ' + str(dataErrors) #+\
                        #', constrainedQueries = ' + str(constrainedQueries)
 
