@@ -17,6 +17,7 @@ query_data         = $(raw_data).queries
 test_data          = $(raw_data).test_data
 filtered_test_data = $(test_data).filtered
 reordered_queries  = $(raw_data).reordered_queries
+score_dict         = $(raw_data).score.dict
 evaluation         = $(raw_data).eval
 histogram          = $(raw_data).histogram
 unique_query_data  = $(raw_data).unique_queries
@@ -79,6 +80,9 @@ $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
 	for i in data/*$(CHUNK_SUFFIX); do \
 	    cat $$i >> $@ && rm -f $$i; \
 	done
+
+$(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
+	python programs/reRank.py --verbose --score_dump $(score_dict) -k 3 --index $(use_index) --dict $(use_posting_dict) $< > $@
 
 $(evaluation): $(reordered_queries) programs/evaluate.py
 	cat $< | python programs/evaluate.py > $@
