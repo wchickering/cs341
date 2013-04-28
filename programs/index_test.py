@@ -4,7 +4,7 @@ import sys
 import os
 
 # import local modules
-import index_query
+import index_query as idx
 
 def main():
     if len(sys.argv) != 4:
@@ -12,12 +12,12 @@ def main():
         os._exit(-1)
     index_f = open(sys.argv[1])
     posting_dict_f = open(sys.argv[2])
-    posting_dict = index_query.get_posting_dict(posting_dict_f)
-    uniqueQueryIds = index_query.get_posting(index_f, posting_dict, sys.argv[3])
-    if uniqueQueryIds is None:
+    posting_dict = idx.get_posting_dict(posting_dict_f)
+    posting = idx.get_posting(index_f, posting_dict, sys.argv[3])
+    if posting is None:
         print 'no postings found'
     else:
-        print str(uniqueQueryIds)
+        print str(posting)
 
 if __name__ == '__main__':
     main()

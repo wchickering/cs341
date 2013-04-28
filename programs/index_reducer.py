@@ -5,7 +5,6 @@
 from itertools import groupby
 from operator import itemgetter
 import sys
-import os
 import json
 
 # import local modules
@@ -18,7 +17,7 @@ def read_mapper_output(file, separator='\t'):
 def main():
     if len(sys.argv) != 2:
         print 'usage: %s <posting.dict> < <input_file>' % sys.argv[0]
-        os.exit(-1)
+        sys.exit()
     sep = '\t'
     posting_dict_fname = sys.argv[1]
     posting_dict = {}

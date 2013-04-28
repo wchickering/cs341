@@ -168,7 +168,7 @@ def main():
             top_scores_heap = getTopScoresHeap(simCalc, query, options)
             if options.verbose and len(top_scores_heap) == 0:
                 print >> sys.stderr, \
-                    'Warning: No items re-ranked for:\n' + str(query)
+                    'WARNING: No items re-ranked for:\n' + str(query)
             num_reranks += len(top_scores_heap)
 
             # re-rank shown items
