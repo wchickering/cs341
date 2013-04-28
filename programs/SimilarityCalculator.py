@@ -33,6 +33,9 @@ class SimilarityCalculator:
         self.index_fd = open(index_fname)
         dict_fd = open(posting_dict_fname)
         self.posting_dict = idx.get_posting_dict(dict_fd)
+        if self.verbose:
+            print >> sys.stderr, 'Posting dictionary contains ' + \
+                       str(len(self.posting_dict)) + ' items.'
         self.posting_cache = {}
         self.posting_cache_queue = []
 
@@ -79,8 +82,11 @@ class SimilarityCalculator:
             self.posting_cache_queue.remove(itemid)
         else:
             self._posting_cache_misses += 1
-            self.posting_cache[itemid] = \
-                 idx.get_posting(self.index_fd, self.posting_dict, itemid)
+            posting = idx.get_posting(self.index_fd, self.posting_dict, itemid)
+            # MISSING ITEMS ARE A FACT OF LIFE
+            #if self.verbose and len(posting) == 0:
+            #    print >> sys.stderr, 'WARNING: No postings found for itemid = ' + str(itemid)
+            self.posting_cache[itemid] = posting
             if len(self.posting_cache) > self._posting_cache_size:
                 del self.posting_cache[self.posting_cache_queue.pop()]
         self.posting_cache_queue.insert(0, itemid)

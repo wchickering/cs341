@@ -5,7 +5,8 @@ INDEX   ?= DEADBEEFINDEX
 CHUNK_PREFIX := data/CHUNK_
 CHUNK_SUFFIX := _CHUNK
 RAWDATA_LINES_PER_CHUNK ?= 300000
-TESTDATA_LINES_PER_CHUNK ?= 7000
+TESTDATA_LINES_PER_CHUNK ?= 150000
+TESTDATA_FILTERED_LINES_PER_CHUNK ?= 7000
 
 raw_data  := data/$(RAWDATA)
 use_index := data/$(INDEX)
@@ -56,13 +57,22 @@ $(test_data): $(query_data) programs/testGen.py
 	cat $(query_data) | python programs/testGen.py > $@
 
 $(filtered_test_data): $(test_data) $(use_index) programs/filterTestData.py
-	cat $< | python programs/filterTestData.py $(use_index) $(use_posting_dict) > $@
-
-$(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
 	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
 	split -l $(TESTDATA_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
 	for i in $(CHUNK_PREFIX)*; do \
-	    python programs/reRank.py -k 3 --index $(use_index) --dict $(use_posting_dict) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	    cat $$i | python programs/filterTestData.py $(use_index) $(use_posting_dict) > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	done; \
+	wait
+	rm -f $@
+	for i in data/*$(CHUNK_SUFFIX); do \
+	    cat $$i >> $@ && rm -f $$i; \
+	done
+
+$(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
+	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
+	split -l $(TESTDATA_FILTERED_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
+	for i in $(CHUNK_PREFIX)*; do \
+	    python programs/reRank.py --verbose -k 3 --index $(use_index) --dict $(use_posting_dict) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
 	done; \
 	wait
 	rm -f $@
