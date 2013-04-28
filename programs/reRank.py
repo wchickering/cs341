@@ -22,6 +22,7 @@ from Query import Query
 num_reranks = 0
 num_shown_items = 0
 num_nonzero_scores = 0
+num_unmodified_queries = 0
 
 def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -81,9 +82,10 @@ def parseArgs():
     return (options, args)
 
 def printStats():
-    print >> sys.stderr, 'num reranks = ' + str(num_reranks)
+    print >> sys.stderr, 'num_reranks = ' + str(num_reranks)
     print >> sys.stderr, 'num_shown_items = ' + str(num_shown_items)
     print >> sys.stderr, 'num_nonzero_scores = ' + str(num_nonzero_scores)
+    print >> sys.stderr, 'num_unmodified_queries = ' + str(num_unmodified_queries)
 
 def getTopScoresHeap(simCalc, query, options):
     global num_reranks
@@ -146,6 +148,7 @@ def reRankItems(query, top_scores_heap):
 
 def main():
     global num_reranks
+    global num_unmodified_queries
 
     (options, args) = parseArgs()
     if len(args) == 1:
@@ -166,9 +169,8 @@ def main():
 
             # Compute top scores
             top_scores_heap = getTopScoresHeap(simCalc, query, options)
-            if options.verbose and len(top_scores_heap) == 0:
-                print >> sys.stderr, \
-                    'WARNING: No items re-ranked for:\n' + str(query)
+            if len(top_scores_heap) == 0:
+                num_unmodified_queries += 1
             num_reranks += len(top_scores_heap)
 
             # re-rank shown items

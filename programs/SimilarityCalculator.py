@@ -73,7 +73,7 @@ class SimilarityCalculator:
             score_dict_f = open(self.score_dump_fname, 'w')
             for (itemid1, itemid2) in self.score_dict:
                 print >> score_dict_f, self._score_dump_separator.join(\
-                         [itemid1, itemid2, str(self.score_dict[(itemid1, itemid2)])])
+                         [str(itemid1), str(itemid2), str(self.score_dict[(itemid1, itemid2)])])
 
     # handles caching
     def get_posting(self, itemid):
