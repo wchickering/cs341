@@ -81,9 +81,6 @@ $(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
 	    cat $$i >> $@ && rm -f $$i; \
 	done
 
-$(reordered_queries): $(filtered_test_data) $(use_index) programs/reRank.py
-	python programs/reRank.py --verbose --score_dump $(score_dict) -k 3 --index $(use_index) --dict $(use_posting_dict) $< > $@
-
 $(evaluation): $(reordered_queries) programs/evaluate.py
 	cat $< | python programs/evaluate.py > $@
 
