@@ -11,6 +11,8 @@ def main():
     duplicates = 0
     parseErrors = 0
     dataErrors = 0
+    clickErrors = 0
+    duplicateClickedItems = 0
     #constrainedQueries = 0
     for line in sys.stdin:
         lineNum = lineNum + 1
@@ -31,7 +33,6 @@ def main():
             visitorid = int(record['visitorid'])
             assert(visitorid > 0)
             clickeditems = record['clickeditems']
-            clicks = record['clicks']
             searchtimestamp = int(record['searchtimestamp'])
             assert(searchtimestamp > 0)
             searchattributes = record['searchattributes']
@@ -46,6 +47,23 @@ def main():
             # skip missing data/format errors
             dataErrors += 1
             continue
+        try:
+            clicks = record['clicks']
+            for click in clicks:
+                assert(click['Position'] != "-1")
+        except:
+            clickErrors += 1
+            continue
+
+        # removing duplicate clicked items
+        record['clickeditems'] = list(set(clickeditems))
+        newclicks = []
+        for clickeditem in record['clickeditems']:
+            newclickentry = filter(lambda x: x['ItemId'] == str(clickeditem), clicks)
+            duplicateClickedItems += len(newclickentry) - 1
+            newclicks.append(newclickentry[0])
+        record['clicks'] = newclicks
+
         #if len(search_attributes) != 1 or\
         #   'search_constraint' not in search_attributes or\
         #   search_attributes['search_constraint'] != '0':
@@ -53,10 +71,13 @@ def main():
         #    constrainedQueries += 1
         #    sys.stderr.write(line)
         #    continue
-        sys.stdout.write(line)
+        #sys.stdout.write(line)
+        print json.dumps(record)
     # display statistics
     print >> sys.stderr, 'duplicates = ' + str(duplicates) +\
                        ', parseErrors = ' + str(parseErrors) +\
+                       ', clickErrors = ' + str(clickErrors) +\
+                       ', duplicateClickedItems = ' + str(duplicateClickedItems) +\
                        ', dataErrors = ' + str(dataErrors) #+\
                        #', constrainedQueries = ' + str(constrainedQueries)
 
