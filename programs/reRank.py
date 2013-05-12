@@ -27,12 +27,18 @@ num_unmodified_queries = 0
 def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
     
-    usage = "usage: %prog [options] "\
-            + "--index <index filename> "\
-            + "--dict <dictionary filename> " \
+    usage = "usage: %prog "\
             + "[-k N] "\
-            + "[--score_dict <score dictionary upload filename> " \
-            + "[--score_dump <score dictionary dump filename> " \
+            + "[-coeff_queries X.X] "\
+            + "[-coeff_clicks X.X] "\
+            + "[--index_queries <queries index filename>] "\
+            + "[--dict_queries <queries dictionary filename>] " \
+            + "[--index_clicks <clicks index filename>] "\
+            + "[--dict_clicks <clicks dictionary filename>] " \
+            + "[--score_dict_queries <queries score dictionary upload filename>] " \
+            + "[--score_dump_queries <queries score dictionary dump filename>] " \
+            + "[--score_dict_clicks <clicks score dictionary upload filename>] " \
+            + "[--score_dump_clicks <clicks score dictionary dump filename>] " \
             + "[--verbose] " \
             + "<filename>"
 
@@ -42,6 +48,36 @@ def parseArgs():
                                   width=80,\
                                   short_first=1)
 
+    rankGroup = OptionGroup(parser, "Ranking options")
+    rankGroup.add_option("-k", dest="k", help="re-rank top k items")
+    rankGroup.add_option("--coeff_queries", dest="coeff_queries",\
+                         help="queries coefficient")
+    rankGroup.add_option("--coeff_clicks", dest="coeff_clicks",\
+                         help="clicks coefficient")
+    parser.add_option_group(rankGroup)
+
+    fileGroup = OptionGroup(parser, "Index options")
+    fileGroup.add_option("--index_queries", dest="indexQueriesFn",\
+                         help="queries index filename")
+    fileGroup.add_option("--dict_queries", dest="dictionaryQueriesFn",\
+                         help="queries dictionary filename")
+    fileGroup.add_option("--index_clicks", dest="indexClicksFn",\
+                         help="clicks index filename")
+    fileGroup.add_option("--dict_clicks", dest="dictionaryClicksFn",\
+                         help="clicks dictionary filename")
+    parser.add_option_group(fileGroup)
+
+    scoreGroup = OptionGroup(parser, "Score options")
+    scoreGroup.add_option("--score_dict_queries", dest="queries_score_dict_fname", \
+                          help="queries score dictionary upload filename")
+    scoreGroup.add_option("--score_dump_queries", dest="queries_score_dump_fname", \
+                          help="queries score dictionary dump filename")
+    scoreGroup.add_option("--score_dict_clicks", dest="clicks_score_dict_fname", \
+                          help="clicks score dictionary upload filename")
+    scoreGroup.add_option("--score_dump_clicks", dest="clicks_score_dump_fname", \
+                          help="clicks score dictionary dump filename")
+    parser.add_option_group(scoreGroup)
+
     verboseGroup = OptionGroup(parser, "Verbose")
     verboseGroup.add_option("-v", "--verbose", action="store_true",\
                             dest="verbose")
@@ -49,33 +85,16 @@ def parseArgs():
                             dest="verbose")
     parser.add_option_group(verboseGroup)
 
-    fileGroup = OptionGroup(parser, "Index options")
-    fileGroup.add_option("--index", dest="indexFn", help="index filename")
-    parser.add_option_group(fileGroup)
-    fileGroup.add_option("--dict", dest="dictionaryFn", help="dictionary filename")
-    parser.add_option_group(fileGroup)
-
-    rankGroup = OptionGroup(parser, "Ranking options")
-    rankGroup.add_option("-k", dest="k", help="re-rank top k items")
-    parser.add_option_group(rankGroup)
-
-    scoreGroup = OptionGroup(parser, "Score options")
-    scoreGroup.add_option("--score_dict", dest="score_dict_fname", \
-                          help="score dictionary upload filename")
-    scoreGroup.add_option("--score_dump", dest="score_dump_fname", \
-                          help="score dictionary dump filename")
-    parser.add_option_group(scoreGroup)
-
-    parser.set_defaults(verbose=False, k=1, indexFn=None, dictionaryFn=None,\
-                        score_dict_fname=None, score_dump_fname=None)
+    parser.set_defaults(k=1, coeff_queries=1.0, coeff_clicks=1.0,\
+                        indexQueriesFn=None, dictionaryQueriesFn=None,\
+                        indexClicksFn=None, dictionaryClicksFn=None,\
+                        queries_score_dict_fname=None, queries_score_dump_fname=None,\
+                        clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
+                        verbose=False)
 
     (options, args) = parser.parse_args()
 
     if (len(args) > 1):
-        parser.print_usage()
-        sys.exit()
-
-    if ((not options.indexFn) or (not options.dictionaryFn)):
         parser.print_usage()
         sys.exit()
 
@@ -157,9 +176,16 @@ def main():
         inputFile = sys.stdin
 
     # Instantiate Similarity Calculator
-    simCalc = SimilarityCalculator(options.indexFn, options.dictionaryFn, \
-                                   score_dict_fname=options.score_dict_fname, \
-                                   score_dump_fname=options.score_dump_fname, \
+    simCalc = SimilarityCalculator(coeff_queries=float(options.coeff_queries),\
+                                   coeff_clicks=float(options.coeff_clicks),\
+                                   index_queries_fname=options.indexQueriesFn,\
+                                   posting_dict_queries_fname=options.dictionaryQueriesFn,\
+                                   index_clicks_fname=options.indexClicksFn,\
+                                   posting_dict_clicks_fname=options.dictionaryClicksFn,\
+                                   queries_score_dict_fname=options.queries_score_dict_fname,\
+                                   queries_score_dump_fname=options.queries_score_dump_fname,\
+                                   clicks_score_dict_fname=options.clicks_score_dict_fname,\
+                                   clicks_score_dump_fname=options.clicks_score_dump_fname,\
                                    verbose=options.verbose)
 
     try:

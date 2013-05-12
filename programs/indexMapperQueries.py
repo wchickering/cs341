@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # To execute, do something like:
-# prompt$ python index_mapper.py < 000000_0.unique_queries | sort -k1,1n -k2,2n | python index_reducer.py 000000_0.posting.dict > 000000_0.index
+# prompt$ python indexMapperQueries.py < 000000_0.unique_queries | sort -k1,1n -k2,2n | python indexReducer.py 000000_0.queries.posting.dict > 000000_0.queries.index
 
 import sys
 import json

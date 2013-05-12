@@ -56,12 +56,16 @@ def main():
             continue
 
         # removing duplicate clicked items
-        record['clickeditems'] = list(set(clickeditems))
+        clickeditems = list(set(clickeditems))
+        newclickeditems = []
         newclicks = []
-        for clickeditem in record['clickeditems']:
+        for clickeditem in clickeditems:
             newclickentry = filter(lambda x: x['ItemId'] == str(clickeditem), clicks)
-            duplicateClickedItems += len(newclickentry) - 1
-            newclicks.append(newclickentry[0])
+            if newclickentry:
+                duplicateClickedItems += len(newclickentry) - 1
+                newclicks.append(newclickentry[0])
+                newclickeditems.append(clickeditem)
+        record['clickeditems'] = newclickeditems
         record['clicks'] = newclicks
 
         #if len(search_attributes) != 1 or\

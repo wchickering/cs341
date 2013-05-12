@@ -33,14 +33,14 @@ def main():
                 uniqueQueryIds.append(uniqueQueryId)
                 last_uniqueQueryId = uniqueQueryId
         # THE FOLLOWING IS FOR WRITING A COMPRESSED INDEX
-        uniqueQueryIds_dgap = compression.dgap_encode(uniqueQueryIds)
-        uniqueQueryIds_vb = compression.vb_encode(uniqueQueryIds_dgap)
-        posting_dict[current_itemid] = (sys.stdout.tell(), len(uniqueQueryIds_vb))
-        sys.stdout.write(b''.join(uniqueQueryIds_vb))
+        #uniqueQueryIds_dgap = compression.dgap_encode(uniqueQueryIds)
+        #uniqueQueryIds_vb = compression.vb_encode(uniqueQueryIds_dgap)
+        #posting_dict[current_itemid] = (sys.stdout.tell(), len(uniqueQueryIds_vb))
+        #sys.stdout.write(b''.join(uniqueQueryIds_vb))
         ################################################
         # THE FOLLOWING IS FOR WRITING AN UNCOMPRESSED INDEX
-        #posting_dict[current_itemid] = sys.stdout.tell()
-        #print ','.join([str(i) for i in uniqueQueryIds])
+        posting_dict[current_itemid] = sys.stdout.tell()
+        print ','.join([str(i) for i in uniqueQueryIds])
         ################################################
     posting_dict_f = open(posting_dict_fname, 'w')
     print >> posting_dict_f, json.dumps(posting_dict)

@@ -4,4 +4,4 @@
 *.csv
 *.corpus
 data
-
+.DS_Store

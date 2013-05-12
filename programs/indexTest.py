@@ -4,7 +4,7 @@ import sys
 import os
 
 # import local modules
-import index_query as idx
+import indexRead as idx
 
 def main():
     if len(sys.argv) != 4:
