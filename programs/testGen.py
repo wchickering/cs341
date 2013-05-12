@@ -21,7 +21,10 @@ def main():
         output['searchattributes'] = record['searchattributes']
         output['shown_items'] = record['shownitems']
         output['previously_clicked_items'] = previously_clicked_items
-        output['clicked_shown_items'] = record['clickeditems']
+        output['clicked_shown_items'] = []
+        for click in record['clicks']:
+            if click['Position'] != '-1':
+                output['clicked_shown_items'].append(click['ItemId'])
         print json.dumps(output)
         
         for item in record['clickeditems']:

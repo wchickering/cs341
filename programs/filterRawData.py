@@ -11,9 +11,7 @@ def main():
     duplicates = 0
     parseErrors = 0
     dataErrors = 0
-    clickErrors = 0
     duplicateClickedItems = 0
-    #constrainedQueries = 0
     for line in sys.stdin:
         lineNum = lineNum + 1
         if last_line == line:
@@ -47,20 +45,14 @@ def main():
             # skip missing data/format errors
             dataErrors += 1
             continue
-        try:
-            clicks = record['clicks']
-            for click in clicks:
-                assert(click['Position'] != "-1")
-        except:
-            clickErrors += 1
-            continue
 
-        # removing duplicate clicked items
+        # remove duplicate clicked items
         clickeditems = list(set(clickeditems))
         newclickeditems = []
         newclicks = []
         for clickeditem in clickeditems:
-            newclickentry = filter(lambda x: x['ItemId'] == str(clickeditem), clicks)
+            newclickentry = \
+                filter(lambda x: x['ItemId'] == str(clickeditem), record['clicks'])
             if newclickentry:
                 duplicateClickedItems += len(newclickentry) - 1
                 newclicks.append(newclickentry[0])
@@ -68,22 +60,12 @@ def main():
         record['clickeditems'] = newclickeditems
         record['clicks'] = newclicks
 
-        #if len(search_attributes) != 1 or\
-        #   'search_constraint' not in search_attributes or\
-        #   search_attributes['search_constraint'] != '0':
-        #    # skip if search constraints used
-        #    constrainedQueries += 1
-        #    sys.stderr.write(line)
-        #    continue
-        #sys.stdout.write(line)
         print json.dumps(record)
     # display statistics
     print >> sys.stderr, 'duplicates = ' + str(duplicates) +\
                        ', parseErrors = ' + str(parseErrors) +\
-                       ', clickErrors = ' + str(clickErrors) +\
                        ', duplicateClickedItems = ' + str(duplicateClickedItems) +\
-                       ', dataErrors = ' + str(dataErrors) #+\
-                       #', constrainedQueries = ' + str(constrainedQueries)
+                       ', dataErrors = ' + str(dataErrors) 
 
 if __name__ == '__main__':
     main()
