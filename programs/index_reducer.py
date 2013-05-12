@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # To execute, do something like:
-# prompt$ python index_mapper.py < 000000_0.unique_queries | sort -k1,1n -k2,2n | python index_reducer.py > 000000_0.index
+# prompt$ python index_mapper.py < 000000_0.unique_queries | sort -k1,1n -k2,2n | python index_reducer.py 000000_0.posting.dict > 000000_0.index
 
 from itertools import groupby
 from operator import itemgetter
@@ -16,7 +16,8 @@ def read_mapper_output(file, separator='\t'):
 
 def main():
     if len(sys.argv) != 2:
-        print 'usage: %s <posting.dict> < <input_file>' % sys.argv[0]
+        print >> sys.stderr,\
+            'usage: %s <posting.dict> < <input_file>' % sys.argv[0]
         sys.exit()
     sep = '\t'
     posting_dict_fname = sys.argv[1]

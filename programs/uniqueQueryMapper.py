@@ -4,17 +4,22 @@
 
 import sys
 import json
+from stemming.porter2 import stem
 
 def main():
     for line in sys.stdin:
         output = {}
         record = json.loads(line)
-        firstpageitems = record['firstpageitems']
+        key = ' '.join([stem(t) for t in record['rawquery'].lower().split()])
+        key += str(record['searchattributes'])
         output['shownitems'] = record['shownitems']
         output['rawquery'] = record['rawquery']
-        output['searchattributes'] = record['searchattributes']
+        searchattributes = record['searchattributes']
+        if 'search_constraint' not in searchattributes:
+            searchattributes['search_constraint'] = "0"
+        output['searchattributes'] = searchattributes
         sep = '\t'
-        print sep.join([json.dumps(firstpageitems), json.dumps(output)])
+        print sep.join([json.dumps(key), json.dumps(output)])
 
 if __name__ == '__main__':
   main()

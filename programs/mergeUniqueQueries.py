@@ -8,7 +8,8 @@ import json
 def main():
 
     if len(sys.argv) != 3:
-        print >> sys.stderr, 'usage: %s <file1.unique_queries> <file2.unique_queries>'
+        print >> sys.stderr,\
+             'usage: %s <file1.unique_queries> <file2.unique_queries>' % (sys.argv[0])
         sys.exit()
     fd1 = open(sys.argv[1])
     line1 = fd1.readline()
@@ -21,7 +22,7 @@ def main():
     cnt_from1 = 0
     cnt_from2 = 0
     while True:
-        if record1['firstpageitems'] == record2['firstpageitems']:
+        if record1['key'] == record2['key']:
             cnt_merged += 1
             rawqueries = record1['rawqueries'] + record2['rawqueries']
             searchattributes = record1['searchattributes'] + record2['searchattributes']
@@ -30,7 +31,7 @@ def main():
                 if item not in shownitems:
                     shownitems.append(item)
             merged_record = {}
-            merged_record['firstpageitems'] = record1['firstpageitems']
+            merged_record['key'] = record1['key']
             merged_record['shownitems'] = shownitems
             merged_record['rawqueries'] = rawqueries
             merged_record['searchattributes'] = searchattributes
@@ -43,7 +44,7 @@ def main():
             if not line2:
                 break
             record2 = json.loads(line2)
-        elif record1['firstpageitems'] < record2['firstpageitems']:
+        elif record1['key'] < record2['key']:
             cnt_from1 += 1
             print line1.rstrip()
             line1 = fd1.readline()
@@ -51,17 +52,23 @@ def main():
                 break
             record1 = json.loads(line1)
         else:
-            cnt_from2 += 2
+            cnt_from2 += 1
             print line2.rstrip()
             line2 = fd2.readline()
             if not line2:
                 break
             record2 = json.loads(line2)
+    if line1:
+        cnt_from1 += 1
+        print line1.rstrip()
     for line1 in fd1:
         cnt_from1 += 1
         print line1.rstrip()
+    if line2:
+        cnt_from2 += 1
+        print line2.rstrip()
     for line2 in fd2:
-        cnt_from2 == 1
+        cnt_from2 += 1
         print line2.rstrip()
     print >> sys.stderr, 'Merged = ' + str(cnt_merged) + ', 1 only = ' + \
                          str(cnt_from1) + ', 2 only = ' + str(cnt_from2)

@@ -92,7 +92,7 @@ $(unique_query_data): $(query_data) programs/uniqueQueryMapper.py programs/uniqu
 	cat $(query_data) | python programs/uniqueQueryMapper.py | sort | python programs/uniqueQueryReducer.py > $@
 
 $(build_index): $(unique_query_data) programs/index_mapper.py programs/index_reducer.py
-	cat $(unique_query_data) | python programs/index_mapper.py | sort -k1n -k2n | python programs/index_reducer.py $(build_posting_dict) > $@ 
+	cat $(unique_query_data) | python programs/index_mapper.py | sort -k1,1n -k2,2n | python programs/index_reducer.py $(build_posting_dict) > $@ 
 
 # filter out "bad" data (malformed JSON, missing columns, etc.)
 filter_raw_data : $(filtered_raw_data) 
