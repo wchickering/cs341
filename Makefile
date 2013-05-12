@@ -20,11 +20,10 @@ use_posting_dict_clicks := data/$(INDEX).clicks.posting.dict
 filtered_raw_data            = $(raw_data).filtered
 query_data                   = $(raw_data).queries
 test_data                    = $(raw_data).test_data
-filtered_test_data           = $(test_data).filtered
-reordered_queries            = $(raw_data).reordered_queries
-score_dict                   = $(raw_data).score.dict
-evaluation                   = $(raw_data).eval
-histogram                    = $(raw_data).histogram
+filtered_test_data           = $(test_data).$(INDEX).filtered
+reordered_queries            = $(raw_data).$(INDEX).reordered_queries
+evaluation                   = $(raw_data).$(INDEX).eval
+histogram                    = $(raw_data).$(INDEX).histogram
 unique_query_data            = $(raw_data).unique_queries
 build_index_queries          = $(raw_data).queries.index
 build_posting_dict_queries   = $(raw_data).queries.posting.dict
@@ -110,34 +109,34 @@ $(build_index_clicks): $(query_data) programs/indexMapperClicks.py programs/inde
 	cat $(query_data) | python programs/indexMapperClicks.py | sort -k1,1n -k2,2n | python programs/indexReducer.py $(build_posting_dict_clicks) > $@ 
 
 # filter out "bad" data (malformed JSON, missing columns, etc.)
-filter_raw_data : $(filtered_raw_data) 
+filtered : $(filtered_raw_data) 
 
 # group pageviews into whole queries
-query_data : $(query_data)
+queries : $(query_data)
 
 # generate test data
 test_data : $(test_data)
 
 # filter out queries our algorithm won't impact
-filter_test_data : $(filtered_test_data)
+test_data.filtered : $(filtered_test_data)
 
 # re-rank query results
-reorder_queries : $(reordered_queries)
+reordered_queries : $(reordered_queries)
 
 # compute evaluation metric(s)
-evaluate : $(evaluation)
+eval : $(evaluation)
 
 # generate additional stats
 histogram : $(histogram)
 
 # group queries into unique queries
-unique_query_data : $(unique_query_data)
+unique_queries : $(unique_query_data)
 
 # build the queries index and posting.dict for RAWDATA
-build_index_queries : $(build_index_queries)
+queries.index : $(build_index_queries)
 
 # build the clicks index and posting.dict for RAWDATA
-build_index_clicks : $(build_index_clicks)
+clicks.index : $(build_index_clicks)
 
 # Here we make empty targets for each program so that make can tell when a program
 # has been modified and needs to rebuild a target
@@ -155,4 +154,4 @@ clean : $(raw_data)
 indexclean : 
 	rm -f $(use_index_queries) $(use_posting_dict_queries) $(use_index_clicks) $(use_posting_dict_clicks)
 
-.PHONY : clean filter_raw_data query_data test_data filter_test_data reorder_queries evaluate histogram unique_query_data build_index_queries build_index_clicks
+.PHONY : clean filtered queries test_data test_data.filtered reorder_queries eval histogram unique_queries queries.index clicks.index
