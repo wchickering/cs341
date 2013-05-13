@@ -24,7 +24,7 @@ def main():
         output['clicked_shown_items'] = []
         for click in record['clicks']:
             if click['Position'] != '-1':
-                output['clicked_shown_items'].append(click['ItemId'])
+                output['clicked_shown_items'].append(int(click['ItemId']))
         print json.dumps(output)
         
         for item in record['clickeditems']:

@@ -64,7 +64,16 @@ $(filtered_raw_data): $(raw_data) programs/filterRawData.py
 	done
 
 $(query_data): $(filtered_raw_data) programs/visitorQueryMapper.py programs/visitorQueryReducer.py
-	cat $(filtered_raw_data) | python programs/visitorQueryMapper.py | sort -k1,1n -k2,2 -k3,3 -k4,4 -k5,5n | python programs/visitorQueryReducer.py > $@
+	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
+	split -l $(RAWDATA_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
+	for i in $(CHUNK_PREFIX)*; do \
+		cat $$i | python programs/visitorQueryMapper.py | sort -k1,1n -k2,2 -k3,3 -k4,4 -k5,5n | python programs/visitorQueryReducer.py > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	done; \
+	wait
+	rm -f $@
+	for i in data/*$(CHUNK_SUFFIX); do \
+		cat $$i >> $@ && rm -f $$i; \
+	done
 
 $(test_data): $(query_data) programs/testGen.py
 	cat $(query_data) | python programs/testGen.py > $@
