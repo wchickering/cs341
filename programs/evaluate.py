@@ -8,6 +8,8 @@ CONST_MAX_FRONT_PAGE_ITEM = 16
 # global stat variables
 num_queries = 0
 net_delta = 0
+net_delta_promoted = 0
+net_delta_demoted = 0
 net_clicked_items = 0
 net_reordered_clicked_items = 0
 net_promoted_clicked_items = 0
@@ -24,6 +26,8 @@ total_stayed_on_front_page = 0
 def printStats():
     print 'num_queries = ' + str(num_queries)
     print 'net_delta = ' + str(net_delta)
+    print 'net_delta_promoted = ' + str(net_delta_promoted)
+    print 'net_delta_demoted = ' + str(net_delta_demoted)
     print 'net_clicked_items = ' + str(net_clicked_items)
     print 'net_reordered_clicked_items = ' + str(net_reordered_clicked_items)
     print 'net_promoted_clicked_items = ' + str(net_promoted_clicked_items)
@@ -46,6 +50,8 @@ def isFrontPage(x):
 def main():
     global num_queries
     global net_delta
+    global net_delta_promoted
+    global net_delta_demoted
     global net_clicked_items
     global net_reordered_clicked_items
     global net_promoted_clicked_items
@@ -75,8 +81,10 @@ def main():
                     net_reordered_clicked_items += 1
                 if delta < 0:
                     net_promoted_clicked_items += 1
+                    net_delta_promoted += delta
                 elif delta > 0:
                     net_demoted_clicked_items += 1
+                    net_delta_demoted += delta
                 net_delta += delta
 
                 reordered_front_page = isFrontPage(reordered_index)

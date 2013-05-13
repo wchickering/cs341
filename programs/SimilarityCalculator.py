@@ -7,6 +7,7 @@ __author__ = """Charles Celerier <cceleri@cs.stanford.edu>,
 __date__ = """13 April 2013"""
 
 import sys
+import math
 
 # local modules
 import indexRead as idx
@@ -183,13 +184,13 @@ class SimilarityCalculator:
                     self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
             else:
                 self._queries_score_cache_misses += 1
-                queries_score = self.jaccard(self.get_queries_posting(itemid1),\
+                queries_score = self.simfunc(self.get_queries_posting(itemid1),\
                                              self.get_queries_posting(itemid2))
                 if queries_score > 0.0:
                     self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
                         queries_score
         elif self.index_queries_fd:
-            queries_score = self.jaccard(self.get_queries_posting(itemid1),\
+            queries_score = self.simfunc(self.get_queries_posting(itemid1),\
                                          self.get_queries_posting(itemid2))
         # determine clicks score
         clicks_score = 0.0
@@ -204,45 +205,35 @@ class SimilarityCalculator:
                     self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
             else:
                 self._clicks_score_cache_misses += 1
-                clicks_score = self.jaccard(self.get_clicks_posting(itemid1),\
-                                             self.get_clicks_posting(itemid2))
+                clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
+                                            self.get_clicks_posting(itemid2))
                 if clicks_score > 0.0:
                     self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
                         clicks_score
         elif self.index_clicks_fd:
-            clicks_score = self.jaccard(self.get_clicks_posting(itemid1),\
+            clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
                                         self.get_clicks_posting(itemid2))
 
         return self.coeff_queries*queries_score + self.coeff_clicks*clicks_score
 
+    def simfunc(self, l1, l2):
+        return self.jaccard(l1, l2)
+
     def jaccard(self, l1, l2):
-        interSize = 0
-        unionSize = 0
-        i = 0
-        j = 0
-        while i < len(l1) and j < len(l2):
-            if l1[i] == l2[j]:
-                interSize += 1
-                unionSize += 1
-                i += 1
-                j += 1
-                continue
-            if l1[i] > l2[j]:
-                unionSize += 1
-                j += 1
-                continue
-            else:
-                unionSize += 1
-                i += 1
-                continue
-        while i < len(l1):
-            unionSize += 1
-            i += 1
-        while j < len(l2):
-            unionSize += 1
-            j += 1
-        if unionSize == 0:
+        sl1 = set(l1)
+        sl2 = set(l2)
+        interSize = len(sl1.intersection(sl2))
+        if interSize == 0:
             return 0.0
         else:
-            return float(interSize)/unionSize
+            return float(interSize)/(len(sl1) + len(sl2) - interSize)
+              
+    def cosineSim(self, l1, l2):
+        sl1 = set(l1)
+        sl2 = set(l2)
+        dotProd = len(sl1.intersection(sl2))
+        if dotProd == 0:
+            return 0.0
+        else:
+            return dotProd/(math.sqrt(len(sl1))*math.sqrt(len(sl2)))
               
