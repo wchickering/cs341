@@ -2,6 +2,11 @@
 
 import sys
 import json
+import unicodedata
+
+def normalizeStr(s):
+    return ' '.join(unicodedata.normalize('NFKD', s)\
+                    .encode('ascii','ignore').replace('"','\"').strip().split())
 
 def main():
     line_num = 0
@@ -9,8 +14,8 @@ def main():
         line_num += 1
         record = json.loads(line)
         visitorid = int(record['visitorid'])
-        wmsessionid = record['wmsessionid']
-        rawquery = record['rawquery']
+        wmsessionid = normalizeStr(record['wmsessionid'])
+        rawquery = normalizeStr(record['rawquery'])
         shown_items = record['shown_items']
         reordered_shown_items = record['reordered_shown_items']
         clicked_shown_items = record['clicked_shown_items']

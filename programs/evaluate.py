@@ -22,20 +22,6 @@ total_moved_off_front_page = 0
 total_stayed_on_front_page = 0
 
 def printStats():
-    global num_queries
-    global net_delta
-    global net_clicked_items
-    global net_reordered_clicked_items
-    global net_promoted_clicked_items
-    global net_demoted_clicked_items
-    global top_page_advantage
-    global total_shown_clicks_front_page
-    global total_shown_clicks_off_front_page
-    global total_reordered_clicks_front_page
-    global total_reordered_clicks_off_front_page
-    global total_moved_to_front_page
-    global total_moved_off_front_page
-    global total_stayed_on_front_page
     print 'num_queries = ' + str(num_queries)
     print 'net_delta = ' + str(net_delta)
     print 'net_clicked_items = ' + str(net_clicked_items)
