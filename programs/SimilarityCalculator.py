@@ -31,6 +31,7 @@ class SimilarityCalculator:
     
     def __init__(self,\
                  coeff_queries=1.0, coeff_clicks=1.0,\
+                 exp_queries=1.0, exp_clicks=1.0,\
                  index_queries_fname=None, posting_dict_queries_fname=None,\
                  index_clicks_fname=None, posting_dict_clicks_fname=None,\
                  queries_score_dict_fname=None, queries_score_dump_fname=None,\
@@ -40,9 +41,11 @@ class SimilarityCalculator:
         # misc options
         self.verbose = verbose
 
-        # coefficients
+        # coefficients and exponents
         self.coeff_queries = coeff_queries
         self.coeff_clicks = coeff_clicks
+        self.exp_queries = exp_queries
+        self.exp_clicks = exp_clicks
 
         # posting indexes
         if index_queries_fname:
@@ -214,7 +217,8 @@ class SimilarityCalculator:
             clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
                                         self.get_clicks_posting(itemid2))
 
-        return self.coeff_queries*queries_score + self.coeff_clicks*clicks_score
+        return self.coeff_queries*queries_score**self.exp_queries +\
+               self.coeff_clicks*clicks_score**self.exp_clicks
 
     def simfunc(self, l1, l2):
         return self.jaccard(l1, l2)

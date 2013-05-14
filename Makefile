@@ -10,6 +10,8 @@ TESTDATA_FILTERED_LINES_PER_CHUNK ?= 7000
 NUM_RERANK ?= 32
 COEFF_QUERIES ?= 0.26
 COEFF_CLICKS ?= 1.00
+EXP_QUERIES ?= 0.4
+EXP_CLICKS ?= 0.8
 
 raw_data  := data/$(RAWDATA)
 use_index_queries := data/$(INDEX).queries.index
@@ -94,7 +96,7 @@ $(reordered_queries): $(filtered_test_data) $(use_index_queries) $(use_posting_d
 	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
 	split -l $(TESTDATA_FILTERED_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
 	for i in $(CHUNK_PREFIX)*; do \
-	    python programs/reRank.py --verbose -k $(NUM_RERANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --index_queries $(use_index_queries) --dict_queries $(use_posting_dict_queries) --index_clicks  $(use_index_clicks) --dict_clicks $(use_posting_dict_clicks) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	    python programs/reRank.py --verbose -k $(NUM_RERANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --index_queries $(use_index_queries) --dict_queries $(use_posting_dict_queries) --index_clicks  $(use_index_clicks) --dict_clicks $(use_posting_dict_clicks) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
 	done; \
 	wait
 	rm -f $@

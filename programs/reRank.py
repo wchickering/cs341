@@ -29,8 +29,10 @@ def parseArgs():
     
     usage = "usage: %prog "\
             + "[-k N] "\
-            + "[-coeff_queries X.X] "\
-            + "[-coeff_clicks X.X] "\
+            + "[--coeff_queries X.X] "\
+            + "[--coeff_clicks X.X] "\
+            + "[--exp_queries X.X] "\
+            + "[--exp_clicks X.X] "\
             + "[--index_queries <queries index filename>] "\
             + "[--dict_queries <queries dictionary filename>] " \
             + "[--index_clicks <clicks index filename>] "\
@@ -54,6 +56,10 @@ def parseArgs():
                          help="queries coefficient")
     rankGroup.add_option("--coeff_clicks", dest="coeff_clicks",\
                          help="clicks coefficient")
+    rankGroup.add_option("--exp_queries", dest="exp_queries",\
+                         help="queries exponent")
+    rankGroup.add_option("--exp_clicks", dest="exp_clicks",\
+                         help="clicks exponent")
     parser.add_option_group(rankGroup)
 
     fileGroup = OptionGroup(parser, "Index options")
@@ -86,6 +92,7 @@ def parseArgs():
     parser.add_option_group(verboseGroup)
 
     parser.set_defaults(k=1, coeff_queries=1.0, coeff_clicks=1.0,\
+                        exp_queries=1.0, exp_clicks=1.0,\
                         indexQueriesFn=None, dictionaryQueriesFn=None,\
                         indexClicksFn=None, dictionaryClicksFn=None,\
                         queries_score_dict_fname=None, queries_score_dump_fname=None,\
@@ -178,6 +185,8 @@ def main():
     # Instantiate Similarity Calculator
     simCalc = SimilarityCalculator(coeff_queries=float(options.coeff_queries),\
                                    coeff_clicks=float(options.coeff_clicks),\
+                                   exp_queries=float(options.exp_queries),\
+                                   exp_clicks=float(options.exp_clicks),\
                                    index_queries_fname=options.indexQueriesFn,\
                                    posting_dict_queries_fname=options.dictionaryQueriesFn,\
                                    index_clicks_fname=options.indexClicksFn,\
