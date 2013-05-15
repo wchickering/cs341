@@ -2,6 +2,7 @@ SHELL := /bin/bash
 
 RAWDATA ?= DEADBEEFRAW
 INDEX   ?= DEADBEEFINDEX
+K       ?= 1
 CHUNK_PREFIX := data/CHUNK_
 CHUNK_SUFFIX := _CHUNK
 RAWDATA_LINES_PER_CHUNK ?= 300000
@@ -41,17 +42,21 @@ ifeq ($(wildcard $@),)
 	$(error $@ does not exist!)
 endif
 
+$(use_posting_dict_queries) : $(use_index_queries)
+
 $(use_index_queries):
 ifeq ($(INDEX), DEADBEEFINDEX)
 	$(error INDEX not specified!)
 endif
-	$(MAKE) RAWDATA=$(INDEX) build_index_queries
+	$(MAKE) RAWDATA=$(INDEX) $(use_index_queries)
+
+$(use_posting_dict_clicks) : $(use_index_clicks)
 
 $(use_index_clicks):
 ifeq ($(INDEX), DEADBEEFINDEX)
 	$(error INDEX not specified!)
 endif
-	$(MAKE) RAWDATA=$(INDEX) build_index_clicks
+	$(MAKE) RAWDATA=$(INDEX) $(use_index_clicks)
 
 $(filtered_raw_data): $(raw_data) programs/filterRawData.py
 	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
@@ -105,7 +110,7 @@ $(reordered_queries): $(filtered_test_data) $(use_index_queries) $(use_posting_d
 	done
 
 $(evaluation): $(reordered_queries) programs/evaluate.py
-	cat $< | python programs/evaluate.py > $@
+	cat $< | python programs/evaluate.py -k $(K) > $@
 
 $(histogram): $(reordered_queries) programs/eval_mapper.py programs/eval_reducer.py
 	cat $< | python programs/eval_mapper.py | python programs/eval_reducer.py > $@

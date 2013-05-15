@@ -71,7 +71,7 @@ def parseArgs():
     optionGroup.add_option("-k", dest="k", help="re-ranked top k items")
     parser.add_option_group(optionGroup)
 
-    parser.set_defaults(k=1)
+    parser.set_defaults(k='1')
 
     (options, args) = parser.parse_args()
 
