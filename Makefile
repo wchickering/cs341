@@ -48,7 +48,7 @@ $(use_index_queries):
 ifeq ($(INDEX), DEADBEEFINDEX)
 	$(error INDEX not specified!)
 endif
-	$(MAKE) RAWDATA=$(INDEX) $(use_index_queries)
+	$(MAKE) RAWDATA=$(INDEX) $(build_index_queries)
 
 $(use_posting_dict_clicks) : $(use_index_clicks)
 
@@ -56,7 +56,7 @@ $(use_index_clicks):
 ifeq ($(INDEX), DEADBEEFINDEX)
 	$(error INDEX not specified!)
 endif
-	$(MAKE) RAWDATA=$(INDEX) $(use_index_clicks)
+	$(MAKE) RAWDATA=$(INDEX) $(build_index_clicks)
 
 $(filtered_raw_data): $(raw_data) programs/filterRawData.py
 	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
