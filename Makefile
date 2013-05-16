@@ -7,7 +7,7 @@ CHUNK_SUFFIX := _CHUNK
 RAWDATA_LINES_PER_CHUNK ?= 300000
 TESTDATA_LINES_PER_CHUNK ?= 150000
 TESTDATA_FILTERED_LINES_PER_CHUNK ?= 7000
-NUM_RERANK ?= 32
+NUM_RERANK ?= 3
 COEFF_QUERIES ?= 0.26
 COEFF_CLICKS ?= 1.00
 EXP_QUERIES ?= 0.4
@@ -105,7 +105,7 @@ $(reordered_queries): $(filtered_test_data) $(use_index_queries) $(use_posting_d
 	done
 
 $(evaluation): $(reordered_queries) programs/evaluate.py
-	cat $< | python programs/evaluate.py > $@
+	cat $< | python programs/evaluate.py -k $(NUM_RERANK) > $@
 
 $(histogram): $(reordered_queries) programs/eval_mapper.py programs/eval_reducer.py
 	cat $< | python programs/eval_mapper.py | python programs/eval_reducer.py > $@
