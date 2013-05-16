@@ -220,6 +220,7 @@ def main():
             output['shown_items'] = query.shown_items
             output['clicked_shown_items'] = query.clicked_shown_items
             output['reordered_shown_items'] = reordered_shown_items
+            output['num_promoted_items'] = len(top_scores_heap)
             print json.dumps(output)
     except:
         printStats()
