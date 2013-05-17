@@ -156,7 +156,7 @@ def main():
                 reordered_shown_items = reRanker.reRankItems(query, top_scores_heap)
 
                 # construct reordered_query record
-                record = reRanker.makeRecord(query, reordered_shown_items)
+                record = reRanker.makeRecord(query, top_scores_heap, reordered_shown_items)
 
                 # evaluate reordered_query record
                 evaluator.processRecord(record)

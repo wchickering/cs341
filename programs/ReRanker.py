@@ -39,7 +39,7 @@ class ReRanker:
         for key, value in self.stats.items():
             print >> outFile, key + ' = ' + str(value)
 
-    def makeRecord(self, query, reordered_shown_items):
+    def makeRecord(self, query, top_scores_heap, reordered_shown_items):
         record = {}
         record['visitorid'] = query.visitorid
         record['wmsessionid'] = query.wmsessionid
@@ -48,6 +48,7 @@ class ReRanker:
         record['shown_items'] = query.shown_items
         record['clicked_shown_items'] = query.clicked_shown_items
         record['reordered_shown_items'] = reordered_shown_items
+        record['num_promoted_items'] = len(top_scores_heap)
         return record
 
     # Determine the top k scores 
@@ -232,7 +233,7 @@ def main():
             reordered_shown_items = reRanker.reRankItems(query, top_scores_heap)
 
             # construct and print reordered_query record
-            output = reRanker.makeRecord(query, reordered_shown_items)
+            output = reRanker.makeRecord(query, top_scores_heap, reordered_shown_items)
             print json.dumps(output)
     except:
         reRanker.printStats(sys.stderr)
