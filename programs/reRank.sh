@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # set to 'dump' or 'load'
-MODE=dump
+MODE=load
 
 RAWDATA=000050_0
 INDEX_Q=8chunk

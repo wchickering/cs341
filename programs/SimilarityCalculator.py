@@ -98,7 +98,7 @@ class SimilarityCalculator:
 
         # stats
         self.stats = OrderedDict()
-        self.resetStats()
+        self.initStats()
 
     def setParams(self, coeff_queries=None, coeff_clicks=None, exp_queries=None, exp_clicks=None):
         if coeff_queries:
@@ -110,7 +110,7 @@ class SimilarityCalculator:
         if exp_clicks:
             self.exp_clicks = exp_clicks
 
-    def resetStats(self):
+    def initStats(self):
         self.stats['queries_posting_cache_hits'] = 0
         self.stats['queries_posting_cache_misses'] = 0
         self.stats['queries_score_cache_hits'] = 0

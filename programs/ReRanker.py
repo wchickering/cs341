@@ -26,9 +26,9 @@ class ReRanker:
         self.k = k
         self.verbose = verbose
         self.stats = OrderedDict()
-        self.resetStats()
+        self.initStats()
 
-    def resetStats(self):
+    def initStats(self):
         self.stats['num_queries'] = 0
         self.stats['num_reranks'] = 0
         self.stats['num_shown_items'] = 0

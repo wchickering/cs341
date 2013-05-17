@@ -23,7 +23,8 @@ def main():
         output['previously_clicked_items'] = previously_clicked_items
         output['clicked_shown_items'] = []
         for click in record['clicks']:
-            if click['Position'] != '-1':
+            if click['Position'] != '-1' and \
+                    int(click['ItemId']) not in output['clicked_shown_items']:
                 output['clicked_shown_items'].append(int(click['ItemId']))
         print json.dumps(output)
         
