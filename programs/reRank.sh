@@ -1,36 +1,39 @@
 #!/bin/bash
 
 # set to 'dump' or 'load'
-MODE=load
+MODE=dump
 
 RAWDATA=000050_0
-#INDEX=8chunk
-#K=3
-#COEFF_QUERIES=0.14
-#COEFF_CLICKS=1.00
-#EXP_QUERIES=0.4
-#EXP_CLICKS=0.8
-INDEX=16chunk
+INDEX_Q=8chunk
+INDEX_C=8chunk
 K=3
-COEFF_QUERIES=0.04
+COEFF_QUERIES=0.14
 COEFF_CLICKS=1.00
 EXP_QUERIES=0.4
 EXP_CLICKS=0.8
 
+#INDEX_Q=16chunk
+#INDEX_C=16chunk
+#K=3
+#COEFF_QUERIES=0.04
+#COEFF_CLICKS=1.00
+#EXP_QUERIES=0.4
+#EXP_CLICKS=0.8
+
 # Assumes WCODE already defined and exported
 PROGRAMS=${WCODE}/programs
-RERANK=${PROGRAMS}/reRank.py
-EVALUATE=${PROGRAMS}/evaluate.py
+RERANK=${PROGRAMS}/ReRanker.py
+EVALUATE=${PROGRAMS}/Evaluator.py
 DATA=${WCODE}/data
-INPUT=${DATA}/${RAWDATA}.test_data.${INDEX}.filtered
-RERANK_OUTPUT=${DATA}/${RAWDATA}.${INDEX}.k${K}.reordered
-EVAL_OUTPUT=${DATA}/${RAWDATA}.${INDEX}.k${K}.eval
-INDEX_QUERIES=${DATA}/${INDEX}.queries.index
-DICT_QUERIES=${DATA}/${INDEX}.queries.posting.dict
-INDEX_CLICKS=${DATA}/${INDEX}.clicks.index
-DICT_CLICKS=${DATA}/${INDEX}.clicks.posting.dict
-SCORES_QUERIES=${DATA}/${RAWDATA}.${INDEX}.queries.scores
-SCORES_CLICKS=${DATA}/${RAWDATA}.${INDEX}.clicks.scores
+INPUT=${DATA}/${RAWDATA}.test_data.${INDEX_C}.filtered
+RERANK_OUTPUT=${DATA}/${RAWDATA}.${INDEX_C}.k${K}.reordered_queries
+EVAL_OUTPUT=${DATA}/${RAWDATA}.${INDEX_C}.k${K}.eval
+INDEX_QUERIES=${DATA}/${INDEX_Q}.queries.index
+DICT_QUERIES=${DATA}/${INDEX_Q}.queries.posting.dict
+INDEX_CLICKS=${DATA}/${INDEX_C}.clicks.index
+DICT_CLICKS=${DATA}/${INDEX_C}.clicks.posting.dict
+SCORES_QUERIES=${DATA}/${RAWDATA}.${INDEX_Q}.queries.scores
+SCORES_CLICKS=${DATA}/${RAWDATA}.${INDEX_C}.clicks.scores
 
 if [ "$MODE" == "dump" ]
 then

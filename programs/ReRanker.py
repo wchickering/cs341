@@ -13,16 +13,104 @@ __date__ = """16 April 2013"""
 import sys
 import json
 import heapq
+from collections import OrderedDict
 
 # import local modules
 from SimilarityCalculator import SimilarityCalculator
 from Query import Query
 
-# global stats
-num_reranks = 0
-num_shown_items = 0
-num_nonzero_scores = 0
-num_unmodified_queries = 0
+class ReRanker:
+
+    def __init__(self, simCalc, k=1, verbose=False):
+        self.simCalc = simCalc
+        self.k = k
+        self.verbose = verbose
+        self.stats = OrderedDict()
+        self.resetStats()
+
+    def resetStats(self):
+        self.stats['num_queries'] = 0
+        self.stats['num_reranks'] = 0
+        self.stats['num_shown_items'] = 0
+        self.stats['num_nonzero_scores'] = 0
+        self.stats['num_unmodified_queries'] = 0
+
+    def printStats(self, outFile=sys.stdout):
+        for key, value in self.stats.items():
+            print >> outFile, key + ' = ' + str(value)
+
+    def makeRecord(self, query, reordered_shown_items):
+        record = {}
+        record['visitorid'] = query.visitorid
+        record['wmsessionid'] = query.wmsessionid
+        record['rawquery'] = query.rawquery
+        record['searchattributes'] = query.searchattributes
+        record['shown_items'] = query.shown_items
+        record['clicked_shown_items'] = query.clicked_shown_items
+        record['reordered_shown_items'] = reordered_shown_items
+        return record
+
+    # Determine the top k scores 
+    def getTopScoresHeap(self, query):
+        self.stats['num_queries'] += 1
+        top_scores_heap = []
+        for i in range(len(query.shown_items)):
+            shownItem = query.shown_items[i]
+            self.stats['num_shown_items'] += 1
+            score = 0
+            for j in range(len(query.previously_clicked_items)):
+                # ignore previously clicked items themselves
+                if query.previously_clicked_items[j] == shownItem:
+                    score = 0
+                    break
+                score += self.simCalc.similarity(query.previously_clicked_items[j], \
+                                                 query.shown_items[i])
+            if score > 0:
+                self.stats['num_nonzero_scores'] += 1
+                heapq.heappush(top_scores_heap, (score, i))
+                if len(top_scores_heap) > self.k:
+                    heapq.heappop(top_scores_heap)
+
+        if len(top_scores_heap) == 0:
+            self.stats['num_unmodified_queries'] += 1
+        self.stats['num_reranks'] += len(top_scores_heap)
+        return top_scores_heap
+
+    def reRankItems(self, query, top_scores_heap):
+        if len(top_scores_heap) == 0:
+            return query.shown_items
+        top_scores = sorted(top_scores_heap, key=lambda tup: tup[0], reverse=True)
+        top_score_idxs = sorted(top_scores_heap, key=lambda tup: tup[1])
+        i = j = k = 0
+        reranked_items = []
+        while i < len(query.shown_items):
+            if i < len(top_scores):
+                index = top_scores[i][1]
+                try:
+                    item = query.shown_items[index]
+                except IndexError:
+                    print >> sys.stderr, 'index = ' + str(index)
+                    print >> sys.stderr, 'len(query.shown_items) = ' + str(len(query.shown_items))
+                    print >> sys.stderr, 'top_scores = ' + str(top_scores)
+                    print >> sys.stderr, 'query.shown_items = ' + str(query.shown_items)
+                    raise
+                reranked_items.append(item)
+                i += 1
+            elif k < len(top_score_idxs):
+                if j < top_score_idxs[k][1]:
+                    reranked_items.append(query.shown_items[j])
+                    i += 1
+                    j += 1
+                else:
+                    j += 1
+                    k += 1
+            else:
+                reranked_items.append(query.shown_items[j])
+                i += 1
+                j += 1
+        return reranked_items
+
+## stand-alone program ##
 
 def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -107,82 +195,14 @@ def parseArgs():
 
     return (options, args)
 
-def printStats():
-    print >> sys.stderr, 'num_reranks = ' + str(num_reranks)
-    print >> sys.stderr, 'num_shown_items = ' + str(num_shown_items)
-    print >> sys.stderr, 'num_nonzero_scores = ' + str(num_nonzero_scores)
-    print >> sys.stderr, 'num_unmodified_queries = ' + str(num_unmodified_queries)
-
-def getTopScoresHeap(simCalc, query, options):
-    global num_reranks
-    global num_shown_items
-    global num_nonzero_scores
-
-    # Determine the top k scores 
-    top_scores_heap = []
-    for i in range(len(query.shown_items)):
-        shownItem = query.shown_items[i]
-        num_shown_items += 1
-        score = 0
-        for j in range(len(query.previously_clicked_items)):
-            # ignore previously clicked items themselves
-            if query.previously_clicked_items[j] == shownItem:
-                score = 0
-                break
-            score += simCalc.similarity(query.previously_clicked_items[j], \
-                                        query.shown_items[i])
-        if score > 0:
-            num_nonzero_scores += 1
-            heapq.heappush(top_scores_heap, (score, i))
-            if len(top_scores_heap) > int(options.k):
-                heapq.heappop(top_scores_heap)
-    return top_scores_heap
-
-def reRankItems(query, top_scores_heap):
-    if len(top_scores_heap) == 0:
-        return query.shown_items
-    top_scores = sorted(top_scores_heap, key=lambda tup: tup[0], reverse=True)
-    top_score_idxs = sorted(top_scores_heap, key=lambda tup: tup[1])
-    i = j = k = 0
-    reranked_items = []
-    while i < len(query.shown_items):
-        if i < len(top_scores):
-            index = top_scores[i][1]
-            try:
-                item = query.shown_items[index]
-            except IndexError:
-                print >> sys.stderr, 'index = ' + str(index)
-                print >> sys.stderr, 'len(query.shown_items) = ' + str(len(query.shown_items))
-                print >> sys.stderr, 'top_scores = ' + str(top_scores)
-                print >> sys.stderr, 'query.shown_items = ' + str(query.shown_items)
-                raise
-            reranked_items.append(item)
-            i += 1
-        elif k < len(top_score_idxs):
-            if j < top_score_idxs[k][1]:
-                reranked_items.append(query.shown_items[j])
-                i += 1
-                j += 1
-            else:
-                j += 1
-                k += 1
-        else:
-            reranked_items.append(query.shown_items[j])
-            i += 1
-            j += 1
-    return reranked_items
-
 def main():
-    global num_reranks
-    global num_unmodified_queries
-
     (options, args) = parseArgs()
     if len(args) == 1:
         inputFile = open(args[0])
     else:
         inputFile = sys.stdin
 
-    # Instantiate Similarity Calculator
+    # Instantiate Similarity Calculator (expensive)
     simCalc = SimilarityCalculator(coeff_queries=float(options.coeff_queries),\
                                    coeff_clicks=float(options.coeff_clicks),\
                                    exp_queries=float(options.exp_queries),\
@@ -197,36 +217,29 @@ def main():
                                    clicks_score_dump_fname=options.clicks_score_dump_fname,\
                                    verbose=options.verbose)
 
+    # Instantiate ReRanker (cheap)
+    reRanker = ReRanker(simCalc, k=int(options.k), verbose=options.verbose)
+
     try:
         for line in inputFile:
             # Instantiate query object
             query = Query(line)
 
             # Compute top scores
-            top_scores_heap = getTopScoresHeap(simCalc, query, options)
-            if len(top_scores_heap) == 0:
-                num_unmodified_queries += 1
-            num_reranks += len(top_scores_heap)
+            top_scores_heap = reRanker.getTopScoresHeap(query)
 
             # re-rank shown items
-            reordered_shown_items = reRankItems(query, top_scores_heap)
+            reordered_shown_items = reRanker.reRankItems(query, top_scores_heap)
 
-            # write output
-            output = {}
-            output['visitorid'] = query.visitorid
-            output['wmsessionid'] = query.wmsessionid
-            output['rawquery'] = query.rawquery
-            output['searchattributes'] = query.searchattributes
-            output['shown_items'] = query.shown_items
-            output['clicked_shown_items'] = query.clicked_shown_items
-            output['reordered_shown_items'] = reordered_shown_items
+            # construct and print reordered_query record
+            output = reRanker.makeRecord(query, reordered_shown_items)
             print json.dumps(output)
     except:
-        printStats()
+        reRanker.printStats(sys.stderr)
         raise
 
     if options.verbose:
-        printStats()
+        reRanker.printStats(sys.stderr)
 
 if __name__ == '__main__':
     main()

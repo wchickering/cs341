@@ -8,6 +8,7 @@ __date__ = """13 April 2013"""
 
 import sys
 import math
+from collections import OrderedDict
 
 # local modules
 import indexRead as idx
@@ -19,16 +20,6 @@ class SimilarityCalculator:
     _queries_posting_cache_size = 100
     _clicks_posting_cache_size = 100
 
-    # stats
-    _queries_posting_cache_hits = 0
-    _queries_posting_cache_misses = 0
-    _queries_score_cache_hits = 0
-    _queries_score_cache_misses = 0
-    _clicks_posting_cache_hits = 0
-    _clicks_posting_cache_misses = 0
-    _clicks_score_cache_hits = 0
-    _clicks_score_cache_misses = 0
-    
     def __init__(self,\
                  coeff_queries=1.0, coeff_clicks=1.0,\
                  exp_queries=1.0, exp_clicks=1.0,\
@@ -105,6 +96,34 @@ class SimilarityCalculator:
                 print >> sys.stderr, 'Uploaded ' + str(len(self.clicks_score_dict)) + \
                                      ' clicks scores.'
 
+        # stats
+        self.stats = OrderedDict()
+        self.resetStats()
+
+    def setParams(self, coeff_queries=None, coeff_clicks=None, exp_queries=None, exp_clicks=None):
+        if coeff_queries:
+            self.coeff_queries = coeff_queries
+        if coeff_clicks:
+            self.coeff_clicks = coeff_clicks
+        if exp_queries:
+            self.exp_queries = exp_queries
+        if exp_clicks:
+            self.exp_clicks = exp_clicks
+
+    def resetStats(self):
+        self.stats['queries_posting_cache_hits'] = 0
+        self.stats['queries_posting_cache_misses'] = 0
+        self.stats['queries_score_cache_hits'] = 0
+        self.stats['queries_score_cache_misses'] = 0
+        self.stats['clicks_posting_cache_hits'] = 0
+        self.stats['clicks_posting_cache_misses'] = 0
+        self.stats['clicks_score_cache_hits'] = 0
+        self.stats['clicks_score_cache_misses'] = 0
+
+    def printStats(self, outFile):
+        for key, value in self.stats.items():
+            print >> outFile, key + ' = ' + str(value)
+    
     def __del__(self):
         if self.verbose:
             if (self.index_queries_fd and not self.queries_score_dict_from_file) or\
@@ -112,20 +131,28 @@ class SimilarityCalculator:
                 print >> sys.stderr, 'SimilarityCalculator cache stats:'
             if self.index_queries_fd and not self.queries_score_dict_from_file:
                 print >> sys.stderr,\
-                    '\tqueries posting cache hits: ' + str(self._queries_posting_cache_hits) + \
-                    '\tqueries posting cache misses: ' + str(self._queries_posting_cache_misses)
+                    '\tqueries posting cache hits: ' +\
+                     str(self.stats['queries_posting_cache_hits']) +\
+                    '\tqueries posting cache misses: ' +\
+                     str(self.stats['queries_posting_cache_misses'])
                 if self.queries_score_dump_fname:
                     print >> sys.stderr, \
-                        '\tqueries score cache hits: ' + str(self._queries_score_cache_hits) + \
-                        '\tqueries score cache misses: ' + str(self._queries_score_cache_misses)
+                        '\tqueries score cache hits: ' +\
+                        str(self.stats['queries_score_cache_hits']) +\
+                        '\tqueries score cache misses: ' +\
+                        str(self.stats['queries_score_cache_misses'])
             if self.index_clicks_fd and not self.clicks_score_dict_from_file:
                 print >> sys.stderr, \
-                    '\tclicks posting cache hits: ' + str(self._clicks_posting_cache_hits) + \
-                    '\tclicks posting cache misses: ' + str(self._clicks_posting_cache_misses)
+                    '\tclicks posting cache hits: ' +\
+                    str(self.stats['clicks_posting_cache_hits']) +\
+                    '\tclicks posting cache misses: ' +\
+                    str(self.statsp['clicks_posting_cache_misses'])
                 if self.clicks_score_dump_fname:
                     print >> sys.stderr, \
-                        '\tclicks score cache hits: ' + str(self._clicks_score_cache_hits) + \
-                        '\tclicks score cache misses: ' + str(self._clicks_score_cache_misses)
+                        '\tclicks score cache hits: ' +\
+                        str(self.stats['clicks_score_cache_hits']) +\
+                        '\tclicks score cache misses: ' +\
+                        str(self.stats['clicks_score_cache_misses'])
             
         if self.index_queries_fd and self.queries_score_dump_fname:
             print >> sys.stderr, 'Dumping queries similarity scores to \'%s\'. . .' % \
@@ -146,10 +173,10 @@ class SimilarityCalculator:
 
     def get_queries_posting(self, itemid):
         if itemid in self.queries_posting_cache:
-            self._queries_posting_cache_hits += 1
+            self.stats['queries_posting_cache_hits'] += 1
             self.queries_posting_cache_queue.remove(itemid)
         else:
-            self._queries_posting_cache_misses += 1
+            self.stats['queries_posting_cache_misses'] += 1
             posting = idx.get_posting(self.index_queries_fd,\
                                       self.posting_dict_queries, itemid)
             self.queries_posting_cache[itemid] = posting
@@ -160,10 +187,10 @@ class SimilarityCalculator:
 
     def get_clicks_posting(self, itemid):
         if itemid in self.clicks_posting_cache:
-            self._clicks_posting_cache_hits += 1
+            self.stats['clicks_posting_cache_hits'] += 1
             self.clicks_posting_cache_queue.remove(itemid)
         else:
-            self._clicks_posting_cache_misses += 1
+            self.stats['clicks_posting_cache_misses'] += 1
             posting = idx.get_posting(self.index_clicks_fd,\
                                       self.posting_dict_clicks, itemid)
             self.clicks_posting_cache[itemid] = posting
@@ -182,11 +209,11 @@ class SimilarityCalculator:
                     self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
         elif self.queries_score_dump_fname:
             if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.queries_score_dict:
-                self._queries_score_cache_hits += 1
+                self.stats['queries_score_cache_hits'] += 1
                 queries_score =\
                     self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
             else:
-                self._queries_score_cache_misses += 1
+                self.stats['queries_score_cache_misses'] += 1
                 queries_score = self.simfunc(self.get_queries_posting(itemid1),\
                                              self.get_queries_posting(itemid2))
                 if queries_score > 0.0:
@@ -203,11 +230,11 @@ class SimilarityCalculator:
                     self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
         elif self.clicks_score_dump_fname:
             if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.clicks_score_dict:
-                self._clicks_score_cache_hits += 1
+                self.stats['clicks_score_cache_hits'] += 1
                 clicks_score =\
                     self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
             else:
-                self._clicks_score_cache_misses += 1
+                self.stats['clicks_score_cache_misses'] += 1
                 clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
                                             self.get_clicks_posting(itemid2))
                 if clicks_score > 0.0:
