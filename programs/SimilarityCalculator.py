@@ -155,16 +155,18 @@ class SimilarityCalculator:
                         str(self.stats['clicks_score_cache_misses'])
             
         if self.index_queries_fd and self.queries_score_dump_fname:
-            print >> sys.stderr, 'Dumping queries similarity scores to \'%s\'. . .' % \
-                                 self.queries_score_dump_fname
+            if self.verbose:
+                print >> sys.stderr, 'Dumping queries similarity scores to \'%s\'. . .' % \
+                                     self.queries_score_dump_fname
             queries_score_dict_f = open(self.queries_score_dump_fname, 'w')
             for (itemid1, itemid2) in self.queries_score_dict:
                 print >> queries_score_dict_f, self._score_dump_separator.join(\
                          [str(itemid1), str(itemid2),\
                           str(self.queries_score_dict[(itemid1, itemid2)])])
         if self.index_clicks_fd and self.clicks_score_dump_fname:
-            print >> sys.stderr, 'Dumping clicks similarity scores to \'%s\'. . .' % \
-                                 self.clicks_score_dump_fname
+            if self.verbose:
+                print >> sys.stderr, 'Dumping clicks similarity scores to \'%s\'. . .' % \
+                                     self.clicks_score_dump_fname
             clicks_score_dict_f = open(self.clicks_score_dump_fname, 'w')
             for (itemid1, itemid2) in self.clicks_score_dict:
                 print >> clicks_score_dict_f, self._score_dump_separator.join(\
