@@ -146,7 +146,7 @@ class SimilarityCalculator:
                     '\tclicks posting cache hits: ' +\
                     str(self.stats['clicks_posting_cache_hits']) +\
                     '\tclicks posting cache misses: ' +\
-                    str(self.statsp['clicks_posting_cache_misses'])
+                    str(self.stats['clicks_posting_cache_misses'])
                 if self.clicks_score_dump_fname:
                     print >> sys.stderr, \
                         '\tclicks score cache hits: ' +\
