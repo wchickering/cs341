@@ -140,14 +140,14 @@ def parseArgs():
                                   short_first=1)
 
     rankGroup = OptionGroup(parser, "Ranking options")
-    rankGroup.add_option("-k", dest="k", help="re-rank top k items")
-    rankGroup.add_option("--coeff_queries", dest="coeff_queries",\
+    rankGroup.add_option("-k", dest="k", type="int", help="re-rank top k items")
+    rankGroup.add_option("--coeff_queries", type="float", dest="coeff_queries",\
                          help="queries coefficient")
-    rankGroup.add_option("--coeff_clicks", dest="coeff_clicks",\
+    rankGroup.add_option("--coeff_clicks", type="float", dest="coeff_clicks",\
                          help="clicks coefficient")
-    rankGroup.add_option("--exp_queries", dest="exp_queries",\
+    rankGroup.add_option("--exp_queries", type="float", dest="exp_queries",\
                          help="queries exponent")
-    rankGroup.add_option("--exp_clicks", dest="exp_clicks",\
+    rankGroup.add_option("--exp_clicks", type="float", dest="exp_clicks",\
                          help="clicks exponent")
     parser.add_option_group(rankGroup)
 
@@ -204,10 +204,10 @@ def main():
         inputFile = sys.stdin
 
     # Instantiate Similarity Calculator (expensive)
-    simCalc = SimilarityCalculator(coeff_queries=float(options.coeff_queries),\
-                                   coeff_clicks=float(options.coeff_clicks),\
-                                   exp_queries=float(options.exp_queries),\
-                                   exp_clicks=float(options.exp_clicks),\
+    simCalc = SimilarityCalculator(coeff_queries=options.coeff_queries,\
+                                   coeff_clicks=options.coeff_clicks,\
+                                   exp_queries=options.exp_queries,\
+                                   exp_clicks=options.exp_clicks,\
                                    index_queries_fname=options.indexQueriesFn,\
                                    posting_dict_queries_fname=options.dictionaryQueriesFn,\
                                    index_clicks_fname=options.indexClicksFn,\
@@ -219,7 +219,7 @@ def main():
                                    verbose=options.verbose)
 
     # Instantiate ReRanker (cheap)
-    reRanker = ReRanker(simCalc, k=int(options.k), verbose=options.verbose)
+    reRanker = ReRanker(simCalc, k=options.k, verbose=options.verbose)
 
     try:
         for line in inputFile:

@@ -336,7 +336,7 @@ def parseArgs():
                                   short_first=1)
 
     optionGroup = OptionGroup(parser, "options")
-    optionGroup.add_option("-k", dest="k", help="re-ranked top k items")
+    optionGroup.add_option("-k", type="int", dest="k", help="re-ranked top k items")
     parser.add_option_group(optionGroup)
 
     parser.set_defaults(k=1)
@@ -356,7 +356,7 @@ def main():
     else:
         inputFile = sys.stdin
 
-    evaluator = Evaluator(int(options.k))
+    evaluator = Evaluator(k=options.k)
 
     lineNum = 0
     for line in inputFile:

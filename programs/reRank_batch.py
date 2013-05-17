@@ -134,7 +134,7 @@ def main():
         reRanker = ReRanker(simCalc, k=params['k'], verbose=options.verbose)
 
         # Instantiate Evaluator (cheap)
-        evaluator = Evaluator(params['k'])
+        evaluator = Evaluator(k=params['k'])
 
         # If not processing test_data entirely in memory, fseek to beginning of file.
         if not options.in_memory:
