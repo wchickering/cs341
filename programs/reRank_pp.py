@@ -186,25 +186,21 @@ def main():
             data_this_job = len(test_data) - data_submitted
 
         # construct workerNum-dependent scores filenames
+        queries_score_dict_fname = None
         if options.queries_score_dict_fname:
             queries_score_dict_fname = options.queries_score_dict_fname + '.' + str(workerNum)
-        else:
-            queries_score_dict_fname = None
+        queries_score_dump_fname = None
         if options.queries_score_dump_fname:
             queries_score_dump_fname = options.queries_score_dump_fname + '.' + str(workerNum)
-        else:
-            queries_score_dump_fname = None
+        clicks_score_dict_fname = None
         if options.clicks_score_dict_fname:
             clicks_score_dict_fname = options.clicks_score_dict_fname + '.' + str(workerNum)
-        else:
-            clicks_score_dict_fname = None
+        clicks_score_dump_fname = None
         if options.clicks_score_dump_fname:
             clicks_score_dump_fname = options.clicks_score_dump_fname + '.' + str(workerNum)
-        else:
-            clicks_score_dump_fname = None
         
         jobs.append(job_server.submit(reRank, \
-                           (test_data[data_submitted:data_submitted + data_this_job + 1],\
+                           (test_data[data_submitted:data_submitted + data_this_job],\
                             options.k,\
                             options.coeff_queries,\
                             options.coeff_clicks,\
