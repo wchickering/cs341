@@ -3,17 +3,16 @@ SHELL := /bin/bash
 
 RAWDATA ?= DEADBEEFRAW
 INDEX   ?= DEADBEEFINDEX
-K       ?= 1
 CHUNK_PREFIX := data/CHUNK_
 CHUNK_SUFFIX := _CHUNK
 RAWDATA_LINES_PER_CHUNK ?= 300000
 TESTDATA_LINES_PER_CHUNK ?= 150000
 TESTDATA_FILTERED_LINES_PER_CHUNK ?= 7000
-NUM_RERANK ?= 32
-COEFF_QUERIES ?= 0.26
-COEFF_CLICKS ?= 1.00
-EXP_QUERIES ?= 0.4
-EXP_CLICKS ?= 0.8
+NUM_RERANK     ?= 32
+COEFF_QUERIES  ?= 0.26
+COEFF_CLICKS   ?= 1.00
+EXP_QUERIES    ?= 0.4
+EXP_CLICKS     ?= 0.8
 
 # raw data variables
 raw_data                   := data/$(RAWDATA)
@@ -70,6 +69,8 @@ $(filtered_raw_data) $(filtered_index_data): %.filtered : % programs/filterRawDa
 	    cat $$i >> $@ && rm -f $$i; \
 	done
 
+# note that it is likely that some queries will be broken up, but this is out of
+# millions, so...who cares...
 $(query_raw_data) $(query_index_data): %.queries : %.filtered programs/visitorQueryMapper.py programs/visitorQueryReducer.py
 	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
 	split -l $(RAWDATA_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
@@ -110,7 +111,7 @@ $(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_quer
 	done
 
 $(evaluation): $(reordered_queries) programs/evaluate.py
-	cat $< | python programs/evaluate.py -k $(K) > $@
+	cat $< | python programs/evaluate.py -k $(NUM_RERANK) > $@
 
 $(histogram): $(reordered_queries) programs/eval_mapper.py programs/eval_reducer.py
 	cat $< | python programs/eval_mapper.py | python programs/eval_reducer.py > $@
@@ -167,6 +168,9 @@ queries.index : $(index_queries)
 # build the clicks index and posting.dict for RAWDATA
 .PHONY : clicks.index
 clicks.index : $(index_clicks)
+
+.PHONY : allindex
+allindex : queries.index clicks.index
 
 # Here we make empty targets for each program so that make can tell when a program
 # has been modified and needs to rebuild a target
