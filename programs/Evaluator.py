@@ -3,25 +3,32 @@
 import sys
 import json
 import math
+from numbers import Number
 from collections import OrderedDict
+from collections import Iterable
 
 MAX_FRONT_PAGE_ITEMS = 16
 NUM_NDCG_SCORES = 32
 
 class Evaluator:
 
-    def __init__(self, k=1):
+    def __init__(self, k=1, stats=None):
         self.k = k
-        self.stats = OrderedDict()
-        self.initStats()
+        if stats:
+            self.stats = stats
+        else:
+            # dictionary that preserves order at cost in performance
+            # do we want this?
+            self.stats = OrderedDict() 
+            self.initStats()
 
     def initStats(self):
-        self.total_orig_NDCG_32 = 0.0
-        self.total_reordered_NDCG_32 = 0.0
-        self.total_orig_NDCG_scores = [0.0 for x in range(NUM_NDCG_SCORES)]
-        self.total_reordered_NDCG_scores = [0.0 for x in range(NUM_NDCG_SCORES)]
-        self.avg_orig_NDCG_scores = [0.0 for x in range(NUM_NDCG_SCORES)]
-        self.avg_reordered_NDCG_scores = [0.0 for x in range(NUM_NDCG_SCORES)]
+        self.stats['total_orig_NDCG_32'] = 0.0
+        self.stats['total_reordered_NDCG_32'] = 0.0
+        self.stats['total_orig_NDCG_scores'] = [0.0 for x in range(NUM_NDCG_SCORES)]
+        self.stats['total_reordered_NDCG_scores'] = [0.0 for x in range(NUM_NDCG_SCORES)]
+        self.stats['avg_orig_NDCG_scores'] = [0.0 for x in range(NUM_NDCG_SCORES)]
+        self.stats['avg_reordered_NDCG_scores'] = [0.0 for x in range(NUM_NDCG_SCORES)]
         self.stats['num_queries'] = 0
         self.stats['net_delta'] = 0
         self.stats['delta_promoted'] = 0
@@ -57,6 +64,35 @@ class Evaluator:
         self.stats['total_clicks_in_topK_orig'] = 0
         self.stats['total_clicks_in_topK_reordered'] = 0
 
+    def mergeStats(self, stats):
+        for key, value in stats.items():
+            if isinstance(value, Number):
+                self.stats[key] += value
+            elif isinstance(value, Iterable):
+                for i in range(len(self.stats[key])):
+                    self.stats[key][i] += value[i]
+            else:
+                raise 'Unrecognized type in stats.'
+
+    def computeAverages(self):
+        for i in range(NUM_NDCG_SCORES):
+            self.stats['avg_orig_NDCG_scores'][i] = \
+                self.stats['total_orig_NDCG_scores'][i]/self.stats['num_queries']
+            self.stats['avg_reordered_NDCG_scores'][i] = \
+                self.stats['total_reordered_NDCG_scores'][i]/self.stats['num_queries']
+        self.stats['precision_orig_avg'] =\
+             self.stats['precision_orig_subtotal']/self.stats['num_queries']
+        self.stats['recall_orig_avg'] =\
+             self.stats['recall_orig_subtotal']/self.stats['num_queries']
+        self.stats['f1_orig_avg'] =\
+             self.stats['f1_orig_subtotal']/self.stats['num_queries']
+        self.stats['precision_reordered_avg'] =\
+             self.stats['precision_reordered_subtotal']/self.stats['num_queries']
+        self.stats['recall_reordered_avg'] =\
+             self.stats['recall_reordered_subtotal']/self.stats['num_queries']
+        self.stats['f1_reordered_avg'] =\
+             self.stats['f1_reordered_subtotal']/self.stats['num_queries']
+
     def printStats(self, outFile=sys.stdout):
         for key, value in self.stats.items():
             print >> outFile, key + ' = ' + str(value)
@@ -77,12 +113,12 @@ class Evaluator:
         print '=== NDCG SCORES ==='
         for i in range(NUM_NDCG_SCORES):
             print 'NDCG_k = ' + str(i+1)
-            print 'orig: \t\t' + str(self.avg_orig_NDCG_scores[i])
-            print 'reordered: \t' + str(self.avg_reordered_NDCG_scores[i])
+            print 'orig: \t\t' + str(self.stats['avg_orig_NDCG_scores'][i])
+            print 'reordered: \t' + str(self.stats['avg_reordered_NDCG_scores'][i])
         print 'avg_NDCG_orig_32 = \t\t' + \
-            str(self.total_orig_NDCG_32/self.stats['num_queries'])
+            str(self.stats['total_orig_NDCG_32']/self.stats['num_queries'])
         print 'avg_NDCG_reordered_32 = \t' + \
-            str(self.total_reordered_NDCG_32/self.stats['num_queries'])
+            str(self.stats['total_reordered_NDCG_32']/self.stats['num_queries'])
         print
 
         print '=== PRECISION/RECALL STATS ==='
@@ -163,25 +199,6 @@ class Evaluator:
         else:
             return 1.0/math.log((i+1), 2)
 
-    def computeAverages(self):
-        for i in range(NUM_NDCG_SCORES):
-            self.avg_orig_NDCG_scores[i] = \
-                self.total_orig_NDCG_scores[i]/self.stats['num_queries']
-            self.avg_reordered_NDCG_scores[i] = \
-                self.total_reordered_NDCG_scores[i]/self.stats['num_queries']
-        self.stats['precision_orig_avg'] =\
-             self.stats['precision_orig_subtotal']/self.stats['num_queries']
-        self.stats['recall_orig_avg'] =\
-             self.stats['recall_orig_subtotal']/self.stats['num_queries']
-        self.stats['f1_orig_avg'] =\
-             self.stats['f1_orig_subtotal']/self.stats['num_queries']
-        self.stats['precision_reordered_avg'] =\
-             self.stats['precision_reordered_subtotal']/self.stats['num_queries']
-        self.stats['recall_reordered_avg'] =\
-             self.stats['recall_reordered_subtotal']/self.stats['num_queries']
-        self.stats['f1_reordered_avg'] =\
-             self.stats['f1_reordered_subtotal']/self.stats['num_queries']
-
     def processRecord(self, record):
         try:
             self.stats['num_queries'] += 1
@@ -232,8 +249,8 @@ class Evaluator:
             reordered_DCG = 0.0
             for i in range(NUM_NDCG_SCORES):
                 if i >= len(shown_items):
-                    self.total_orig_NDCG_scores[i] += (orig_DCG/best_DCG)
-                    self.total_reordered_NDCG_scores[i] += (reordered_DCG/best_DCG)
+                    self.stats['total_orig_NDCG_scores'][i] += (orig_DCG/best_DCG)
+                    self.stats['total_reordered_NDCG_scores'][i] += (reordered_DCG/best_DCG)
                     continue
                 # get best_DCG
                 if i < len(clicked_shown_items):
@@ -242,12 +259,12 @@ class Evaluator:
                     orig_DCG += self.DCGScore(i)
                 if reordered_shown_items[i] in clicked_shown_items:
                     reordered_DCG += self.DCGScore(i)
-                self.total_orig_NDCG_scores[i] += (orig_DCG/best_DCG)
-                self.total_reordered_NDCG_scores[i] += (reordered_DCG/best_DCG)
+                self.stats['total_orig_NDCG_scores'][i] += (orig_DCG/best_DCG)
+                self.stats['total_reordered_NDCG_scores'][i] += (reordered_DCG/best_DCG)
             orig_NDCG = orig_DCG/best_DCG
             reordered_NDCG = reordered_DCG/best_DCG
-            self.total_orig_NDCG_32 += orig_NDCG
-            self.total_reordered_NDCG_32 += reordered_NDCG
+            self.stats['total_orig_NDCG_32'] += orig_NDCG
+            self.stats['total_reordered_NDCG_32'] += reordered_NDCG
 
             for item in clicked_shown_items:
                 assert(item in shown_items)
