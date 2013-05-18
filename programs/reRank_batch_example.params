@@ -1,0 +1,3 @@
+{"k": 3, "coeff_clicks": 1.0, "coeff_queries": 0.14, "exp_clicks": 0.8, "exp_queries": 0.4}
+{"k": 8, "coeff_clicks": 1.0, "coeff_queries": 0.04, "exp_clicks": 1.0, "exp_queries": 1.0}
+{"k": 16, "coeff_clicks": 1.0, "coeff_queries": 0.0, "exp_clicks": 0.8, "exp_queries": 0.0}

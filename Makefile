@@ -98,11 +98,11 @@ $(filtered_test_data): $(test_data) $(index_queries) $(posting_dict_queries) $(i
 	    cat $$i >> $@ && rm -f $$i; \
 	done
 
-$(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) programs/reRank.py programs/indexRead.py programs/SimilarityCalculator.py
+$(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) programs/ReRanker.py programs/indexRead.py programs/SimilarityCalculator.py
 	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
 	split -l $(TESTDATA_FILTERED_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
 	for i in $(CHUNK_PREFIX)*; do \
-	    python programs/reRank.py --verbose -k $(NUM_RERANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks  $(index_clicks) --dict_clicks $(posting_dict_clicks) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	    python programs/ReRanker.py --verbose -k $(NUM_RERANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks  $(index_clicks) --dict_clicks $(posting_dict_clicks) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
 	done; \
 	wait
 	rm -f $@
@@ -110,8 +110,8 @@ $(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_quer
 	    cat $$i >> $@ && rm -f $$i; \
 	done
 
-$(evaluation): $(reordered_queries) programs/evaluate.py
-	cat $< | python programs/evaluate.py -k $(NUM_RERANK) > $@
+$(evaluation): $(reordered_queries) programs/Evaluator.py
+	cat $< | python programs/Evaluator.py -k $(NUM_RERANK) > $@
 
 $(histogram): $(reordered_queries) programs/eval_mapper.py programs/eval_reducer.py
 	cat $< | python programs/eval_mapper.py | python programs/eval_reducer.py > $@
@@ -175,7 +175,7 @@ allindex : queries.index clicks.index
 # Here we make empty targets for each program so that make can tell when a program
 # has been modified and needs to rebuild a target
 programs = filterRawData.py visitorQueryMapper.py visitorQueryReducer.py\
-           testGen.py filterTestData.py reRank.py evaluate.py\
+           testGen.py filterTestData.py ReRanker.py Evaluator.py\
            eval_mapper.py eval_reducer.py\
            uniqueQueryMapper.py uniqueQueryReducer.py\
            indexMapperQueries.py indexMapperClicks.py indexReducer.py\
