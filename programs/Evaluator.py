@@ -104,10 +104,12 @@ class Evaluator:
         print 'percent_net_delta = ' + \
             str(float(self.stats['net_delta'])/self.stats['total_clicked_positions'])
         print 'net_delta = ' + str(self.stats['net_delta'])
-        print 'avg_promotion = ' + \
-            str(float(self.stats['delta_promoted'])/self.stats['promoted_clicked_items'])
-        print 'avg_demotion = ' + \
-            str(float(self.stats['delta_demoted'])/self.stats['demoted_clicked_items'])
+        if self.stats['promoted_clicked_items'] > 0:
+            print 'avg_promotion = ' + \
+                str(float(self.stats['delta_promoted'])/self.stats['promoted_clicked_items'])
+        if self.stats['demoted_clicked_items'] > 0:
+            print 'avg_demotion = ' + \
+                str(float(self.stats['delta_demoted'])/self.stats['demoted_clicked_items'])
         print
 
         print '=== NDCG SCORES ==='
@@ -125,11 +127,13 @@ class Evaluator:
         print 'total_precision_orig = ' + \
             str(float(self.stats['total_clicks_in_topK_orig'])/(self.k*self.stats['num_queries']))
         print 'precision_orig_avg = ' + str(self.stats['precision_orig_avg'])
-        print 'total_precision_reordered_our_picks = ' + \
-            str(float(self.stats['promoted_clicked_items'])/self.stats['total_promoted_items'])
-        print 'total_precision_reordered_top_k = ' + \
-            str(float(self.stats['total_clicks_in_topK_reordered'])/\
-                self.stats['total_promoted_items'])
+        if self.stats['total_promoted_items'] > 0:
+            print 'total_precision_reordered_our_picks = ' + \
+                str(float(self.stats['promoted_clicked_items'])/self.stats['total_promoted_items'])
+        if self.stats['total_promoted_items'] > 0:
+            print 'total_precision_reordered_top_k = ' + \
+                str(float(self.stats['total_clicks_in_topK_reordered'])/\
+                    self.stats['total_promoted_items'])
         print 'precision_reordered_avg = ' + str(self.stats['precision_reordered_avg'])
         print 'total_recall_orig = ' + \
             str(float(self.stats['total_clicks_in_topK_orig'])/self.stats['clicked_items'])

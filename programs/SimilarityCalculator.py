@@ -19,14 +19,17 @@ class SimilarityCalculator:
     _score_dump_separator = '\t'
     _queries_posting_cache_size = 100
     _clicks_posting_cache_size = 100
+    _carts_posting_cache_size = 100
 
     def __init__(self,\
-                 coeff_queries=1.0, coeff_clicks=1.0,\
-                 exp_queries=1.0, exp_clicks=1.0,\
+                 coeff_queries=1.0, coeff_clicks=1.0, coeff_carts=1.0,\
+                 exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
                  index_queries_fname=None, posting_dict_queries_fname=None,\
                  index_clicks_fname=None, posting_dict_clicks_fname=None,\
+                 index_carts_fname=None, posting_dict_carts_fname=None,\
                  queries_score_dict_fname=None, queries_score_dump_fname=None,\
                  clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
+                 carts_score_dict_fname=None, carts_score_dump_fname=None,\
                  verbose=False):
 
         # misc options
@@ -35,8 +38,10 @@ class SimilarityCalculator:
         # coefficients and exponents
         self.coeff_queries = coeff_queries
         self.coeff_clicks = coeff_clicks
+        self.coeff_carts = coeff_carts
         self.exp_queries = exp_queries
         self.exp_clicks = exp_clicks
+        self.exp_carts = exp_carts
 
         # posting indexes
         if index_queries_fname:
@@ -61,6 +66,17 @@ class SimilarityCalculator:
             self.index_clicks_fd = None
         self.clicks_posting_cache = {}
         self.clicks_posting_cache_queue = []
+        if index_carts_fname:
+            self.index_carts_fd = open(index_carts_fname)
+            dict_carts_fd = open(posting_dict_carts_fname)
+            self.posting_dict_carts = idx.get_posting_dict(dict_carts_fd)
+            if self.verbose:
+                print >> sys.stderr, 'Carts posting dictionary contains ' + \
+                           str(len(self.posting_dict_carts)) + ' items.'
+        else:
+            self.index_carts_fd = None
+        self.carts_posting_cache = {}
+        self.carts_posting_cache_queue = []
 
         # queries score dictionary
         self.queries_score_dump_fname = queries_score_dump_fname
@@ -104,19 +120,45 @@ class SimilarityCalculator:
                 print >> sys.stderr, 'ERROR: Failed to upload clicks scores.'
                 raise
 
+        # carts score dictionary
+        self.carts_score_dump_fname = carts_score_dump_fname
+        self.carts_score_dict = {}
+        self.carts_score_dict_from_file = False
+        if carts_score_dict_fname:
+            if self.verbose:
+                print >> sys.stderr, 'Uploading carts scores from ' + \
+                                      carts_score_dict_fname + ' . . .'
+            self.carts_score_dict_from_file = True
+            try:
+                carts_score_dict_f = open(carts_score_dict_fname)
+                for line in carts_score_dict_f:
+                    fields = line.rstrip().split(self._score_dump_separator)
+                    self.carts_score_dict[(int(fields[0]), int(fields[1]))] = float(fields[2])
+                if self.verbose:
+                    print >> sys.stderr, 'Uploaded ' + str(len(self.carts_score_dict)) + \
+                                         ' carts scores.'
+            except:
+                print >> sys.stderr, 'ERROR: Failed to upload carts scores.'
+                raise
+
         # stats
         self.stats = OrderedDict()
         self.initStats()
 
-    def setParams(self, coeff_queries=None, coeff_clicks=None, exp_queries=None, exp_clicks=None):
+    def setParams(self, coeff_queries=None, coeff_clicks=None, coeff_carts=None,\
+                        exp_queries=None, exp_clicks=None, exp_carts=None):
         if coeff_queries:
             self.coeff_queries = coeff_queries
         if coeff_clicks:
             self.coeff_clicks = coeff_clicks
+        if coeff_carts:
+            self.coeff_carts = coeff_carts
         if exp_queries:
             self.exp_queries = exp_queries
         if exp_clicks:
             self.exp_clicks = exp_clicks
+        if exp_carts:
+            self.exp_carts = exp_carts
 
     def initStats(self):
         self.stats['queries_posting_cache_hits'] = 0
@@ -127,6 +169,10 @@ class SimilarityCalculator:
         self.stats['clicks_posting_cache_misses'] = 0
         self.stats['clicks_score_cache_hits'] = 0
         self.stats['clicks_score_cache_misses'] = 0
+        self.stats['carts_posting_cache_hits'] = 0
+        self.stats['carts_posting_cache_misses'] = 0
+        self.stats['carts_score_cache_hits'] = 0
+        self.stats['carts_score_cache_misses'] = 0
 
     def printStats(self, outFile):
         for key, value in self.stats.items():
@@ -135,7 +181,8 @@ class SimilarityCalculator:
     def __del__(self):
         if self.verbose:
             if (self.index_queries_fd and not self.queries_score_dict_from_file) or\
-               (self.index_clicks_fd and not self.clicks_score_dict_from_file):
+               (self.index_clicks_fd and not self.clicks_score_dict_from_file) or\
+               (self.index_carts_fd and not self.carts_score_dict_from_file):
                 print >> sys.stderr, 'SimilarityCalculator cache stats:'
             if self.index_queries_fd and not self.queries_score_dict_from_file:
                 print >> sys.stderr,\
@@ -161,6 +208,18 @@ class SimilarityCalculator:
                         str(self.stats['clicks_score_cache_hits']) +\
                         '\tclicks score cache misses: ' +\
                         str(self.stats['clicks_score_cache_misses'])
+            if self.index_carts_fd and not self.carts_score_dict_from_file:
+                print >> sys.stderr, \
+                    '\tcarts posting cache hits: ' +\
+                    str(self.stats['carts_posting_cache_hits']) +\
+                    '\tcarts posting cache misses: ' +\
+                    str(self.stats['carts_posting_cache_misses'])
+                if self.carts_score_dump_fname:
+                    print >> sys.stderr, \
+                        '\tcarts score cache hits: ' +\
+                        str(self.stats['carts_score_cache_hits']) +\
+                        '\tcarts score cache misses: ' +\
+                        str(self.stats['carts_score_cache_misses'])
             
         if self.index_queries_fd and self.queries_score_dump_fname:
             if self.verbose:
@@ -180,6 +239,15 @@ class SimilarityCalculator:
                 print >> clicks_score_dict_f, self._score_dump_separator.join(\
                          [str(itemid1), str(itemid2),\
                           str(self.clicks_score_dict[(itemid1, itemid2)])])
+        if self.index_carts_fd and self.carts_score_dump_fname:
+            if self.verbose:
+                print >> sys.stderr, 'Dumping carts similarity scores to \'%s\'. . .' % \
+                                     self.carts_score_dump_fname
+            carts_score_dict_f = open(self.carts_score_dump_fname, 'w')
+            for (itemid1, itemid2) in self.carts_score_dict:
+                print >> carts_score_dict_f, self._score_dump_separator.join(\
+                         [str(itemid1), str(itemid2),\
+                          str(self.carts_score_dict[(itemid1, itemid2)])])
 
     def get_queries_posting(self, itemid):
         if itemid in self.queries_posting_cache:
@@ -208,6 +276,20 @@ class SimilarityCalculator:
                 del self.clicks_posting_cache[self.clicks_posting_cache_queue.pop()]
         self.clicks_posting_cache_queue.insert(0, itemid)
         return self.clicks_posting_cache[itemid]
+
+    def get_carts_posting(self, itemid):
+        if itemid in self.carts_posting_cache:
+            self.stats['carts_posting_cache_hits'] += 1
+            self.carts_posting_cache_queue.remove(itemid)
+        else:
+            self.stats['carts_posting_cache_misses'] += 1
+            posting = idx.get_posting(self.index_carts_fd,\
+                                      self.posting_dict_carts, itemid)
+            self.carts_posting_cache[itemid] = posting
+            if len(self.carts_posting_cache) > self._carts_posting_cache_size:
+                del self.carts_posting_cache[self.carts_posting_cache_queue.pop()]
+        self.carts_posting_cache_queue.insert(0, itemid)
+        return self.carts_posting_cache[itemid]
 
     def similarity(self, itemid1, itemid2):
 
@@ -254,8 +336,31 @@ class SimilarityCalculator:
             clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
                                         self.get_clicks_posting(itemid2))
 
+        # determine carts score
+        carts_score = 0.0
+        if self.carts_score_dict_from_file:
+            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.carts_score_dict:
+                carts_score =\
+                    self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+        elif self.carts_score_dump_fname:
+            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.carts_score_dict:
+                self.stats['carts_score_cache_hits'] += 1
+                carts_score =\
+                    self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+            else:
+                self.stats['carts_score_cache_misses'] += 1
+                carts_score = self.simfunc(self.get_carts_posting(itemid1),\
+                                            self.get_carts_posting(itemid2))
+                if carts_score > 0.0:
+                    self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
+                        carts_score
+        elif self.index_carts_fd:
+            carts_score = self.simfunc(self.get_carts_posting(itemid1),\
+                                        self.get_carts_posting(itemid2))
+
         return self.coeff_queries*queries_score**self.exp_queries +\
-               self.coeff_clicks*clicks_score**self.exp_clicks
+               self.coeff_clicks*clicks_score**self.exp_clicks +\
+               self.coeff_carts*carts_score**self.exp_carts
 
     def simfunc(self, l1, l2):
         return self.jaccard(l1, l2)

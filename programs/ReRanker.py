@@ -20,9 +20,8 @@ from Query import Query
 
 class ReRanker:
 
-    def __init__(self, simCalc, k=1, verbose=False):
+    def __init__(self, simCalc, verbose=False):
         self.simCalc = simCalc
-        self.k = k
         self.verbose = verbose
         self.stats = OrderedDict()
         self.initStats()
@@ -38,7 +37,7 @@ class ReRanker:
         for key, value in self.stats.items():
             print >> outFile, key + ' = ' + str(value)
 
-    def makeRecord(self, query, top_scores_heap, reordered_shown_items):
+    def makeRecord(self, query, num_reranks, reordered_shown_items):
         record = {}
         record['visitorid'] = query.visitorid
         record['wmsessionid'] = query.wmsessionid
@@ -47,16 +46,14 @@ class ReRanker:
         record['shown_items'] = query.shown_items
         record['clicked_shown_items'] = query.clicked_shown_items
         record['reordered_shown_items'] = reordered_shown_items
-        record['num_promoted_items'] = len(top_scores_heap)
+        record['num_promoted_items'] = num_reranks
         return record
 
     # Determine the top k scores 
-    def getTopScoresHeap(self, query):
-        self.stats['num_queries'] += 1
+    def getTopScoresHeap(self, query, k):
         top_scores_heap = []
         for i in range(len(query.shown_items)):
             shownItem = query.shown_items[i]
-            self.stats['num_shown_items'] += 1
             score = 0
             for j in range(len(query.previously_clicked_items)):
                 # ignore previously clicked items themselves
@@ -68,44 +65,49 @@ class ReRanker:
             if score > 0:
                 self.stats['num_nonzero_scores'] += 1
                 heapq.heappush(top_scores_heap, (score, i))
-                if len(top_scores_heap) > self.k:
+                if len(top_scores_heap) > k:
                     heapq.heappop(top_scores_heap)
 
-        if len(top_scores_heap) == 0:
-            self.stats['num_unmodified_queries'] += 1
-        self.stats['num_reranks'] += len(top_scores_heap)
         return top_scores_heap
 
-    def reRankItems(self, query, top_scores_heap):
+    def reRankItems(self, query, top_scores_heap, insert_position=0):
+        num_reranks = 0
+        self.stats['num_queries'] += 1
+        self.stats['num_shown_items'] += len(query.shown_items)
         if len(top_scores_heap) == 0:
-            return query.shown_items
+            self.stats['num_unmodified_queries'] += 1
+            return (num_reranks, query.shown_items)
         top_scores = sorted(top_scores_heap, key=lambda tup: tup[0], reverse=True)
         top_score_idxs = sorted(top_scores_heap, key=lambda tup: tup[1])
-        i = j = k = 0
+        n = 0 # number of top_score items appended to reranked_items
+        i = 0 # number of items appended to reranked_items
+        j = 0 # index of next item within query.shown_items
+        k = 0 # number of top_score_idx's encountered within query.shown_items
         reranked_items = []
         while i < len(query.shown_items):
-            if i < len(top_scores):
-                index = top_scores[i][1]
-                try:
-                    item = query.shown_items[index]
-                except IndexError:
-                    print >> sys.stderr, 'index = ' + str(index)
-                    print >> sys.stderr, 'len(query.shown_items) = ' + str(len(query.shown_items))
-                    print >> sys.stderr, 'top_scores = ' + str(top_scores)
-                    print >> sys.stderr, 'query.shown_items = ' + str(query.shown_items)
-                    raise
-                reranked_items.append(item)
+            if i < insert_position:
+                reranked_items.append(query.shown_items[j])
                 i += 1
+                j += 1
+            elif n < len(top_scores):
+                index = top_scores[n][1]
+                if j <= index: 
+                    reranked_items.append(query.shown_items[index])
+                    num_reranks += 1
+                    self.stats['num_reranks'] += 1
+                    i += 1
+                n += 1
             elif k < len(top_score_idxs):
                 if j < top_score_idxs[k][1]:
                     reranked_items.append(query.shown_items[j])
                     i += 1
                     j += 1
                 else:
-                    j += 1
+                    if j == top_score_idxs[k][1]:
+                        j += 1
                     k += 1
             else:
                 reranked_items.append(query.shown_items[j])
                 i += 1
                 j += 1
-        return reranked_items
+        return (num_reranks, reranked_items)

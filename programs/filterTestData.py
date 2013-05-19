@@ -20,6 +20,8 @@ def parseArgs():
             + "[--dict_queries <queries dictionary filename>] " \
             + "[--index_clicks <clicks index filename>] "\
             + "[--dict_clicks <clicks dictionary filename>] "\
+            + "[--index_carts <carts index filename>] "\
+            + "[--dict_carts <carts dictionary filename>] "\
             + "[--verbose] "\
             + "<filename>"
 
@@ -30,14 +32,18 @@ def parseArgs():
                                   short_first=1)
 
     fileGroup = OptionGroup(parser, "Index options")
-    fileGroup.add_option("--index_queries", dest="indexQueriesFn",\
+    fileGroup.add_option("--index_queries", dest="index_queries_fname",\
                          help="queries index filename")
-    fileGroup.add_option("--dict_queries", dest="dictionaryQueriesFn",\
+    fileGroup.add_option("--dict_queries", dest="posting_dict_queries_fname",\
                          help="queries dictionary filename")
-    fileGroup.add_option("--index_clicks", dest="indexClicksFn",\
+    fileGroup.add_option("--index_clicks", dest="index_clicks_fname",\
                          help="clicks index filename")
-    fileGroup.add_option("--dict_clicks", dest="dictionaryClicksFn",\
+    fileGroup.add_option("--dict_clicks", dest="posting_dict_clicks_fname",\
                          help="clicks dictionary filename")
+    fileGroup.add_option("--index_carts", dest="index_carts_fname",\
+                         help="carts index filename")
+    fileGroup.add_option("--dict_carts", dest="posting_dict_carts_fname",\
+                         help="carts dictionary filename")
     parser.add_option_group(fileGroup)
 
     verboseGroup = OptionGroup(parser, "Verbose")
@@ -47,8 +53,9 @@ def parseArgs():
                             dest="verbose")
     parser.add_option_group(verboseGroup)
 
-    parser.set_defaults(indexQueriesFn=None, dictionaryQueriesFn=None,\
-                        indexClicksFn=None, dictionaryClicksFn=None,\
+    parser.set_defaults(index_queries_fname=None, posting_dict_queries_fname=None,\
+                        index_clicks_fname=None, posting_dict_clicks_fname=None,\
+                        index_carts_fname=None, posting_dict_carts_fname=None,\
                         verbose=False)
 
     (options, args) = parser.parse_args()
@@ -67,10 +74,12 @@ def main():
         inputFile = sys.stdin
    
     # Instantiate Similarity Calculator
-    simCalc = SimilarityCalculator(index_queries_fname=options.indexQueriesFn,\
-                                   posting_dict_queries_fname=options.dictionaryQueriesFn,\
-                                   index_clicks_fname=options.indexClicksFn,\
-                                   posting_dict_clicks_fname=options.dictionaryClicksFn, \
+    simCalc = SimilarityCalculator(index_queries_fname=options.index_queries_fname,\
+                                   posting_dict_queries_fname=options.posting_dict_queries_fname,\
+                                   index_clicks_fname=options.index_clicks_fname,\
+                                   posting_dict_clicks_fname=options.posting_dict_clicks_fname, \
+                                   index_carts_fname=options.index_carts_fname,\
+                                   posting_dict_carts_fname=options.posting_dict_carts_fname, \
                                    verbose=options.verbose) 
     
     for line in inputFile:
