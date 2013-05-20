@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # To execute, do something like:
-# prompt$ python indexMapperClicks.py < 000000_0.queries | sort -k1,1n -k2,2n | python indexReducer.py 000000_0.clicks.posting.dict > 000000_0.clicks.index
+# prompt$ python indexMapperItems.py < 000000_0.queries | sort -k1,1n -k2,2n | python indexReducerItems.py | sort -k1,1n -k2,2n | python indexReducer.py 000000_0.items.posting.dict > 000000_0.items.index
 
 import sys
 import json
@@ -17,9 +17,9 @@ def main():
         for itemid in set(record['clickeditems']):
             if key in visitorSessions:
                 if visitorSessions[key][1]:
-                    print '%d%s%d'%(visitorSessions[key][1], sep, visitorSessions[key][0])
+                    print '%d%s%d'%(visitorSessions[key][0], sep, visitorSessions[key][1])
                     visitorSessions[key][1] = None
-                print '%d%s%d'%(itemid, sep, visitorSessions[key][0])
+                print '%d%s%d'%(visitorSessions[key][0], sep, itemid)
             else:
                 visitorSessionId += 1
                 visitorSessions[key] = []

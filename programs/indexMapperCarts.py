@@ -8,7 +8,7 @@ import json
 def main():
     sep = '\t'
     cartId = 0
-    cartDict = {}
+    carts = {}
     for line in sys.stdin:
         record = json.loads(line)
         for click in record['clicks']:
@@ -17,16 +17,16 @@ def main():
                 # in which at least two items are clicked
                 key = record['visitorid'] + record['wmsessionid']
                 itemid = int(click['ItemId'])
-                if key in cartDict:
-                    if cartDict[key][1]:
-                        print '%d%s%d'%(cartDict[key][1], sep, cartDict[key][0])
-                        cartDict[key][1] = None
-                    print '%d%s%d'%(itemid, sep, cartDict[key][0])
+                if key in carts:
+                    if carts[key][1]:
+                        print '%d%s%d'%(carts[key][1], sep, carts[key][0])
+                        carts[key][1] = None
+                    print '%d%s%d'%(itemid, sep, carts[key][0])
                 else:
                     cartId += 1
-                    cartDict[key] = []
-                    cartDict[key].append(cartId)
-                    cartDict[key].append(itemid)
+                    carts[key] = []
+                    carts[key].append(cartId)
+                    carts[key].append(itemid)
 
 if __name__ == '__main__':
   main()
