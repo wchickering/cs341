@@ -16,6 +16,8 @@ def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
 
     usage = "usage: %prog "\
+            + "[--index_items <items index filename>] "\
+            + "[--dict_items <items dictionary filename>] " \
             + "[--index_queries <queries index filename>] "\
             + "[--dict_queries <queries dictionary filename>] " \
             + "[--index_clicks <clicks index filename>] "\
@@ -32,6 +34,10 @@ def parseArgs():
                                   short_first=1)
 
     fileGroup = OptionGroup(parser, "Index options")
+    fileGroup.add_option("--index_items", dest="index_items_fname",\
+                         help="items index filename")
+    fileGroup.add_option("--dict_items", dest="posting_dict_items_fname",\
+                         help="items dictionary filename")
     fileGroup.add_option("--index_queries", dest="index_queries_fname",\
                          help="queries index filename")
     fileGroup.add_option("--dict_queries", dest="posting_dict_queries_fname",\
@@ -53,7 +59,8 @@ def parseArgs():
                             dest="verbose")
     parser.add_option_group(verboseGroup)
 
-    parser.set_defaults(index_queries_fname=None, posting_dict_queries_fname=None,\
+    parser.set_defaults(index_items_fname=None, posting_dict_items_fname=None,\
+                        index_queries_fname=None, posting_dict_queries_fname=None,\
                         index_clicks_fname=None, posting_dict_clicks_fname=None,\
                         index_carts_fname=None, posting_dict_carts_fname=None,\
                         verbose=False)
@@ -74,12 +81,16 @@ def main():
         inputFile = sys.stdin
    
     # Instantiate Similarity Calculator
-    simCalc = SimilarityCalculator(index_queries_fname=options.index_queries_fname,\
+    simCalc = SimilarityCalculator(coeff_items=1.0, coeff_queries=1.0,\
+                                   coeff_clicks=1.0, coeff_carts=1.0,\
+                                   index_items_fname=options.index_items_fname,\
+                                   posting_dict_items_fname=options.posting_dict_items_fname,\
+                                   index_queries_fname=options.index_queries_fname,\
                                    posting_dict_queries_fname=options.posting_dict_queries_fname,\
                                    index_clicks_fname=options.index_clicks_fname,\
-                                   posting_dict_clicks_fname=options.posting_dict_clicks_fname, \
+                                   posting_dict_clicks_fname=options.posting_dict_clicks_fname,\
                                    index_carts_fname=options.index_carts_fname,\
-                                   posting_dict_carts_fname=options.posting_dict_carts_fname, \
+                                   posting_dict_carts_fname=options.posting_dict_carts_fname,\
                                    verbose=options.verbose) 
     
     for line in inputFile:

@@ -28,8 +28,7 @@ def main():
                 last_itemId = itemId
         for itemId_A in itemIds:
             for itemId_B in itemIds:
-                if itemId_A != itemId_B:
-                    print '%d%s%d'%(itemId_A, sep, itemId_B)
+                print '%d%s%d'%(itemId_A, sep, itemId_B)
 
 if __name__ == '__main__':
     main()

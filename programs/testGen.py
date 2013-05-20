@@ -6,13 +6,13 @@ import sys
 import json
 
 def main():
-    last_visitorid = None
+    last_wmsessionid = None
     previously_clicked_items = None
     for line in sys.stdin:
         record = json.loads(line)
-        if record['visitorid'] != last_visitorid:
+        if record['wmsessionid'] != last_wmsessionid:
             previously_clicked_items = []
-            last_visitorid = record['visitorid']
+            last_wmsessionid = record['wmsessionid']
  
         output = {}
         output['visitorid'] = record['visitorid']
