@@ -29,9 +29,11 @@ def parseArgs():
             + "[--workers N] "\
             + "[-k N] "\
             + "[--insert_position N] "\
+            + "[--coeff_rank X.X] "\
             + "[--coeff_queries X.X] "\
             + "[--coeff_clicks X.X] "\
             + "[--coeff_carts X.X] "\
+            + "[--exp_rank X.X] "\
             + "[--exp_queries X.X] "\
             + "[--exp_clicks X.X] "\
             + "[--exp_carts X.X] "\
@@ -60,12 +62,16 @@ def parseArgs():
     rankGroup.add_option("-k", type="int", dest="k", help="re-rank top k items")
     rankGroup.add_option("--insert_position", type="int", dest="insert_position",\
                          help="insert re-ranked items before this position")
+    rankGroup.add_option("--coeff_rank", type="float", dest="coeff_rank",\
+                         help="rank coefficient")
     rankGroup.add_option("--coeff_queries", type="float", dest="coeff_queries",\
                          help="queries coefficient")
     rankGroup.add_option("--coeff_clicks", type="float", dest="coeff_clicks",\
                          help="clicks coefficient")
     rankGroup.add_option("--coeff_carts", type="float", dest="coeff_carts",\
                          help="carts coefficient")
+    rankGroup.add_option("--exp_rank", type="float", dest="exp_rank",\
+                         help="rank exponent")
     rankGroup.add_option("--exp_queries", type="float", dest="exp_queries",\
                          help="queries exponent")
     rankGroup.add_option("--exp_clicks", type="float", dest="exp_clicks",\
@@ -117,8 +123,8 @@ def parseArgs():
     parser.add_option_group(verboseGroup)
 
     parser.set_defaults(k=1, insert_position=0,\
-                        coeff_queries=1.0, coeff_clicks=1.0, coeff_carts=1.0,\
-                        exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
+                        coeff_rank=0.0, coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0,\
+                        exp_rank=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
                         index_queries_fname=None, posting_dict_queries_fname=None,\
                         index_clicks_fname=None, posting_dict_clicks_fname=None,\
                         index_carts_fname=None, posting_dict_carts_fname=None,\
@@ -135,18 +141,18 @@ def parseArgs():
 
     return (options, args)
 
-def reRank(reRanker, test_data, k=1, insert_position=0):
+def reRank(reRanker, test_data):
     records = []
     for line in test_data:
         # Instantiate query object
         query = Query.Query(line)
 
         # Compute top scores
-        top_scores_heap = reRanker.getTopScoresHeap(query, k)
+        top_scores_heap = reRanker.getTopScoresHeap(query)
 
         # re-rank shown items
         (num_reranks, reordered_shown_items) =\
-            reRanker.reRankItems(query, top_scores_heap, insert_position)
+                                   reRanker.reRankItems(query, top_scores_heap)
 
         # construct reordered_query record
         records.append(reRanker.makeRecord(query, num_reranks, reordered_shown_items))
@@ -154,8 +160,8 @@ def reRank(reRanker, test_data, k=1, insert_position=0):
     return records
 
 def singleReRank(test_data, k=1, insert_position=0,\
-           coeff_queries=1.0, coeff_clicks=1.0, coeff_carts=1.0,\
-           exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
+           coeff_rank=0.0, coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0,\
+           exp_rank=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
            index_queries_fname=None, posting_dict_queries_fname=None,\
            index_clicks_fname=None, posting_dict_clicks_fname=None,\
            index_carts_fname=None, posting_dict_carts_fname=None,\
@@ -187,9 +193,10 @@ def singleReRank(test_data, k=1, insert_position=0,\
                       verbose=verbose)
 
     # Instantiate ReRanker (cheap)
-    reRanker = ReRanker.ReRanker(simCalc, verbose=verbose)
+    reRanker = ReRanker.ReRanker(simCalc, k=k, insert_position=insert_position,\
+                      coeff_rank=coeff_rank, exp_rank=exp_rank, verbose=verbose)
 
-    return reRank(reRanker, test_data, k, insert_position)
+    return reRank(reRanker, test_data)
 
 def main():
     (options, args) = parseArgs()
@@ -201,9 +208,11 @@ def main():
     if options.workers == 1: #### single process ####
 
         records = singleReRank(inputFile, options.k, options.insert_position,\
+                               coeff_rank=options.coeff_rank,\
                                coeff_queries=options.coeff_queries,\
                                coeff_clicks=options.coeff_clicks,\
                                coeff_carts=options.coeff_carts,\
+                               exp_rank=options.exp_rank,\
                                exp_queries=options.exp_queries,\
                                exp_clicks=options.exp_clicks,\
                                exp_carts=options.exp_carts,\
@@ -280,9 +289,11 @@ def main():
                                (test_data[data_submitted:data_submitted + data_this_job],\
                                 options.k,\
                                 options.insert_position,\
+                                options.coeff_rank,\
                                 options.coeff_queries,\
                                 options.coeff_clicks,\
                                 options.coeff_carts,\
+                                options.exp_rank,\
                                 options.exp_queries,\
                                 options.exp_clicks,\
                                 options.exp_carts,\

@@ -49,7 +49,21 @@ RAWDATA=000050_0
 #EXP_CLICKS=0.28
 #EXP_CARTS=0.52
 
-K=13
+#K=13
+#INSERT_POSITION=1
+#INDEX_Q=16chunk
+#INDEX_C=48chunk
+#INDEX_A=48chunk
+#COEFF_QUERIES=0.040
+#COEFF_CLICKS=1.00
+#COEFF_CARTS=0.11
+#EXP_QUERIES=0.41
+#EXP_CLICKS=0.28
+#EXP_CARTS=0.52
+
+K=15
+COEFF_RANK=0.0060
+EXP_RANK=1.3
 INSERT_POSITION=1
 INDEX_Q=16chunk
 INDEX_C=48chunk
@@ -90,10 +104,10 @@ fi
 
 if [ "$MODE" == "dump" ]
 then
-    python $RERANK_PROG --workers $WORKERS --verbose -k $K --insert_position $INSERT_POSITION --coeff_queries $COEFF_QUERIES --coeff_clicks $COEFF_CLICKS --coeff_carts $COEFF_CARTS --exp_queries $EXP_QUERIES --exp_clicks $EXP_CLICKS --exp_carts $EXP_CARTS --index_queries $INDEX_QUERIES --dict_queries $DICT_QUERIES --index_clicks $INDEX_CLICKS --dict_clicks $DICT_CLICKS --index_carts $INDEX_CARTS --dict_carts $DICT_CARTS --score_dump_queries $SCORES_QUERIES --score_dump_clicks $SCORES_CLICKS --score_dump_carts $SCORES_CARTS $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
+    python $RERANK_PROG --workers $WORKERS --verbose -k $K --insert_position $INSERT_POSITION --coeff_rank $COEFF_RANK --coeff_queries $COEFF_QUERIES --coeff_clicks $COEFF_CLICKS --coeff_carts $COEFF_CARTS --exp_rank $EXP_RANK --exp_queries $EXP_QUERIES --exp_clicks $EXP_CLICKS --exp_carts $EXP_CARTS --index_queries $INDEX_QUERIES --dict_queries $DICT_QUERIES --index_clicks $INDEX_CLICKS --dict_clicks $DICT_CLICKS --index_carts $INDEX_CARTS --dict_carts $DICT_CARTS --score_dump_queries $SCORES_QUERIES --score_dump_clicks $SCORES_CLICKS --score_dump_carts $SCORES_CARTS $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
 elif [ "$MODE" == "load" ]
 then
-    python $RERANK_PROG --workers $WORKERS --verbose -k $K --insert_position $INSERT_POSITION --coeff_queries $COEFF_QUERIES --coeff_clicks $COEFF_CLICKS --coeff_carts $COEFF_CARTS --exp_queries $EXP_QUERIES --exp_clicks $EXP_CLICKS --exp_carts $EXP_CARTS --score_dict_queries $SCORES_QUERIES --score_dict_clicks $SCORES_CLICKS --score_dict_carts $SCORES_CARTS $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
+    python $RERANK_PROG --workers $WORKERS --verbose -k $K --insert_position $INSERT_POSITION --coeff_rank $COEFF_RANK --coeff_queries $COEFF_QUERIES --coeff_clicks $COEFF_CLICKS --coeff_carts $COEFF_CARTS --exp_rank $EXP_RANK --exp_queries $EXP_QUERIES --exp_clicks $EXP_CLICKS --exp_carts $EXP_CARTS --score_dict_queries $SCORES_QUERIES --score_dict_clicks $SCORES_CLICKS --score_dict_carts $SCORES_CARTS $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
 else
     echo "Invalid mode."
 fi

@@ -146,7 +146,12 @@ def multiReRank(test_data, paramsList,\
                           exp_carts = params['exp_carts'])
 
         # Instantiate ReRanker (cheap)
-        reRanker = ReRanker.ReRanker(simCalc, verbose=verbose)
+        reRanker = ReRanker.ReRanker(simCalc,\
+                          k=params['k'],\
+                          insert_position=params['insert_position'],\
+                          coeff_rank=params['coeff_rank'],\
+                          exp_rank=params['exp_rank'],\
+                          verbose=verbose)
 
         # Instantiate Evaluator (cheap)
         evaluator = Evaluator.Evaluator(k=params['k'])
@@ -160,11 +165,11 @@ def multiReRank(test_data, paramsList,\
                 query = Query.Query(line)
 
                 # Compute top scores
-                top_scores_heap = reRanker.getTopScoresHeap(query, params['k'])
+                top_scores_heap = reRanker.getTopScoresHeap(query)
 
                 # re-rank shown items
                 (num_reranks, reordered_shown_items) =\
-                    reRanker.reRankItems(query, top_scores_heap, params['insert_position'])
+                    reRanker.reRankItems(query, top_scores_heap)
 
                 # construct reordered_query record
                 record = reRanker.makeRecord(query, num_reranks, reordered_shown_items)

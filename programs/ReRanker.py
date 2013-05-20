@@ -13,6 +13,7 @@ __date__ = """16 April 2013"""
 import sys
 import heapq
 from collections import OrderedDict
+from math import log
 
 # import local modules
 from SimilarityCalculator import SimilarityCalculator
@@ -20,11 +21,27 @@ from Query import Query
 
 class ReRanker:
 
-    def __init__(self, simCalc, verbose=False):
+    def __init__(self, simCalc,\
+                 k=1, insert_position=0, coeff_rank=0.0, exp_rank=1.0,\
+                 verbose=False):
         self.simCalc = simCalc
+        self.k = k
+        self.insert_position = insert_position
+        self.coeff_rank = coeff_rank
+        self.exp_rank = exp_rank
         self.verbose = verbose
         self.stats = OrderedDict()
         self.initStats()
+
+    def setParams(self, k=None, insert_position=None, coeff_rank=None, exp_rank=None):
+        if k:
+            self.k = k
+        if insert_position:
+            self.insert_position = insert_position
+        if coeff_rank:
+            self.coeff_rank = coeff_rank
+        if exp_rank:
+            self.exp_rank = exp_rank
 
     def initStats(self):
         self.stats['num_queries'] = 0
@@ -49,8 +66,11 @@ class ReRanker:
         record['num_promoted_items'] = num_reranks
         return record
 
+    def calcRankScore(self, position, num_items):
+        return 1.0 - float(position)/num_items
+
     # Determine the top k scores 
-    def getTopScoresHeap(self, query, k):
+    def getTopScoresHeap(self, query):
         top_scores_heap = []
         for i in range(len(query.shown_items)):
             shownItem = query.shown_items[i]
@@ -62,15 +82,16 @@ class ReRanker:
                     break
                 score += self.simCalc.similarity(query.previously_clicked_items[j], \
                                                  query.shown_items[i])
+            score += self.coeff_rank*self.calcRankScore(i, len(query.shown_items))**self.exp_rank
             if score > 0:
                 self.stats['num_nonzero_scores'] += 1
                 heapq.heappush(top_scores_heap, (score, i))
-                if len(top_scores_heap) > k:
+                if len(top_scores_heap) > self.k:
                     heapq.heappop(top_scores_heap)
 
         return top_scores_heap
 
-    def reRankItems(self, query, top_scores_heap, insert_position=0):
+    def reRankItems(self, query, top_scores_heap):
         num_reranks = 0
         self.stats['num_queries'] += 1
         self.stats['num_shown_items'] += len(query.shown_items)
@@ -85,7 +106,7 @@ class ReRanker:
         k = 0 # number of top_score_idx's encountered within query.shown_items
         reranked_items = []
         while i < len(query.shown_items):
-            if i < insert_position:
+            if i < self.insert_position:
                 reranked_items.append(query.shown_items[j])
                 i += 1
                 j += 1

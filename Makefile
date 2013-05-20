@@ -10,11 +10,13 @@ TESTDATA_LINES_PER_CHUNK ?= 150000
 NUM_WORKERS ?= 8
 NUM_RERANK ?= 3
 INSERT_POSITION ?= 1
+COEFF_RANK ?= 0.0
 COEFF_QUERIES ?= 0.0
-COEFF_CLICKS ?= 0.0
-COEFF_CARTS ?= 1.0
-EXP_QUERIES ?= 0.4
-EXP_CLICKS ?= 0.8
+COEFF_CLICKS ?= 1.0
+COEFF_CARTS ?= 0.0
+EXP_RANK ?= 1.0
+EXP_QUERIES ?= 1.0
+EXP_CLICKS ?= 1.0
 EXP_CARTS ?= 1.0
 
 # raw data variables
@@ -102,7 +104,7 @@ $(filtered_test_data): $(test_data) $(index_queries) $(posting_dict_queries) $(i
 	done
 
 $(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) $(index_carts) $(posting_dict_carts) programs/reRank.py programs/indexRead.py programs/SimilarityCalculator.py
-	cat $< | python programs/reRank.py --verbose --workers $(NUM_WORKERS) -k $(NUM_RERANK) --insert_position $(INSERT_POSITION) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --coeff_carts $(COEFF_CARTS) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --exp_carts $(EXP_CARTS) --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks  $(index_clicks) --dict_clicks $(posting_dict_clicks) --index_carts $(index_carts) --dict_carts $(posting_dict_carts) > $@
+	cat $< | python programs/reRank.py --verbose --workers $(NUM_WORKERS) -k $(NUM_RERANK) --insert_position $(INSERT_POSITION) --coeff_rank $(COEFF_RANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --coeff_carts $(COEFF_CARTS) --exp_rank $(EXP_RANK) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --exp_carts $(EXP_CARTS) --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks  $(index_clicks) --dict_clicks $(posting_dict_clicks) --index_carts $(index_carts) --dict_carts $(posting_dict_carts) > $@
 
 $(evaluation): $(reordered_queries) programs/Evaluator.py
 	cat $< | python programs/Evaluator.py -k $(NUM_RERANK) > $@
