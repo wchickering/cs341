@@ -7,12 +7,12 @@ CHUNK_PREFIX := data/CHUNK_
 CHUNK_SUFFIX := _CHUNK
 RAWDATA_LINES_PER_CHUNK ?= 300000
 TESTDATA_LINES_PER_CHUNK ?= 150000
-TESTDATA_FILTERED_LINES_PER_CHUNK ?= 7000
-NUM_RERANK     ?= 32
-COEFF_QUERIES  ?= 0.26
-COEFF_CLICKS   ?= 1.00
-EXP_QUERIES    ?= 0.4
-EXP_CLICKS     ?= 0.8
+NUM_WORKERS ?= 8
+NUM_RERANK ?= 3
+COEFF_QUERIES ?= 0.26
+COEFF_CLICKS ?= 1.00
+EXP_QUERIES ?= 0.4
+EXP_CLICKS ?= 0.8
 
 # raw data variables
 raw_data                   := data/$(RAWDATA)
@@ -98,17 +98,8 @@ $(filtered_test_data): $(test_data) $(index_queries) $(posting_dict_queries) $(i
 	    cat $$i >> $@ && rm -f $$i; \
 	done
 
-$(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) programs/ReRanker.py programs/indexRead.py programs/SimilarityCalculator.py
-	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
-	split -l $(TESTDATA_FILTERED_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
-	for i in $(CHUNK_PREFIX)*; do \
-	    python programs/ReRanker.py --verbose -k $(NUM_RERANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks  $(index_clicks) --dict_clicks $(posting_dict_clicks) $$i > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
-	done; \
-	wait
-	rm -f $@
-	for i in data/*$(CHUNK_SUFFIX); do \
-	    cat $$i >> $@ && rm -f $$i; \
-	done
+$(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) programs/reRank.py programs/indexRead.py programs/SimilarityCalculator.py
+	cat $< | python programs/reRank.py --verbose --workers $(NUM_WORKERS) -k $(NUM_RERANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks  $(index_clicks) --dict_clicks $(posting_dict_clicks) > $@
 
 $(evaluation): $(reordered_queries) programs/Evaluator.py
 	cat $< | python programs/Evaluator.py -k $(NUM_RERANK) > $@
@@ -175,7 +166,7 @@ allindex : queries.index clicks.index
 # Here we make empty targets for each program so that make can tell when a program
 # has been modified and needs to rebuild a target
 programs = filterRawData.py visitorQueryMapper.py visitorQueryReducer.py\
-           testGen.py filterTestData.py ReRanker.py Evaluator.py\
+           testGen.py filterTestData.py reRank.py Evaluator.py\
            eval_mapper.py eval_reducer.py\
            uniqueQueryMapper.py uniqueQueryReducer.py\
            indexMapperQueries.py indexMapperClicks.py indexReducer.py\

@@ -71,13 +71,17 @@ class SimilarityCalculator:
                 print >> sys.stderr, 'Uploading queries scores from ' + \
                                       queries_score_dict_fname + ' . . .'
             self.queries_score_dict_from_file = True
-            queries_score_dict_f = open(queries_score_dict_fname)
-            for line in queries_score_dict_f:
-                fields = line.rstrip().split(self._score_dump_separator)
-                self.queries_score_dict[(int(fields[0]), int(fields[1]))] = float(fields[2])
-            if self.verbose:
-                print >> sys.stderr, 'Uploaded ' + str(len(self.queries_score_dict)) + \
-                                     ' queries scores.'
+            try:
+                queries_score_dict_f = open(queries_score_dict_fname)
+                for line in queries_score_dict_f:
+                    fields = line.rstrip().split(self._score_dump_separator)
+                    self.queries_score_dict[(int(fields[0]), int(fields[1]))] = float(fields[2])
+                if self.verbose:
+                    print >> sys.stderr, 'Uploaded ' + str(len(self.queries_score_dict)) + \
+                                         ' queries scores.'
+            except:
+                print >> sys.stderr, 'ERROR: Failed to upload queries scores.'
+                raise
 
         # clicks score dictionary
         self.clicks_score_dump_fname = clicks_score_dump_fname
@@ -88,13 +92,17 @@ class SimilarityCalculator:
                 print >> sys.stderr, 'Uploading clicks scores from ' + \
                                       clicks_score_dict_fname + ' . . .'
             self.clicks_score_dict_from_file = True
-            clicks_score_dict_f = open(clicks_score_dict_fname)
-            for line in clicks_score_dict_f:
-                fields = line.rstrip().split(self._score_dump_separator)
-                self.clicks_score_dict[(int(fields[0]), int(fields[1]))] = float(fields[2])
-            if self.verbose:
-                print >> sys.stderr, 'Uploaded ' + str(len(self.clicks_score_dict)) + \
-                                     ' clicks scores.'
+            try:
+                clicks_score_dict_f = open(clicks_score_dict_fname)
+                for line in clicks_score_dict_f:
+                    fields = line.rstrip().split(self._score_dump_separator)
+                    self.clicks_score_dict[(int(fields[0]), int(fields[1]))] = float(fields[2])
+                if self.verbose:
+                    print >> sys.stderr, 'Uploaded ' + str(len(self.clicks_score_dict)) + \
+                                         ' clicks scores.'
+            except:
+                print >> sys.stderr, 'ERROR: Failed to upload clicks scores.'
+                raise
 
         # stats
         self.stats = OrderedDict()
