@@ -34,11 +34,13 @@ def parseArgs():
             + "[--coeff_queries X.X] "\
             + "[--coeff_clicks X.X] "\
             + "[--coeff_carts X.X] "\
+            + "[--coeff_item_title X.X] "\
             + "[--exp_rank X.X] "\
             + "[--exp_items X.X] "\
             + "[--exp_queries X.X] "\
             + "[--exp_clicks X.X] "\
             + "[--exp_carts X.X] "\
+            + "[--exp_item_title X.X] "\
             + "[--index_items <items index filename>] "\
             + "[--dict_items <items dictionary filename>] " \
             + "[--index_queries <queries index filename>] "\
@@ -47,6 +49,8 @@ def parseArgs():
             + "[--dict_clicks <clicks dictionary filename>] " \
             + "[--index_carts <carts index filename>] "\
             + "[--dict_carts <carts dictionary filename>] " \
+            + "[--index_item_title <item_title index filename>] "\
+            + "[--dict_item_title <item_title dictionary filename>] " \
             + "[--score_dict_items <items score dictionary upload filename>] " \
             + "[--score_dump_items <items score dictionary dump filename>] " \
             + "[--score_dict_queries <queries score dictionary upload filename>] " \
@@ -55,6 +59,8 @@ def parseArgs():
             + "[--score_dump_clicks <clicks score dictionary dump filename>] " \
             + "[--score_dict_carts <carts score dictionary upload filename>] " \
             + "[--score_dump_carts <carts score dictionary dump filename>] " \
+            + "[--score_dict_item_title <item_title score dictionary upload filename>] " \
+            + "[--score_dump_item_title <item_title score dictionary dump filename>] " \
             + "[--verbose] " \
             + "<filename>"
 
@@ -78,6 +84,8 @@ def parseArgs():
                          help="clicks coefficient")
     rankGroup.add_option("--coeff_carts", type="float", dest="coeff_carts",\
                          help="carts coefficient")
+    rankGroup.add_option("--coeff_item_title", type="float", dest="coeff_item_title",\
+                         help="item_title coefficient")
     rankGroup.add_option("--exp_rank", type="float", dest="exp_rank",\
                          help="rank exponent")
     rankGroup.add_option("--exp_items", type="float", dest="exp_items",\
@@ -88,6 +96,8 @@ def parseArgs():
                          help="clicks exponent")
     rankGroup.add_option("--exp_carts", type="float", dest="exp_carts",\
                          help="carts exponent")
+    rankGroup.add_option("--exp_item_title", type="float", dest="exp_item_title",\
+                         help="item_title exponent")
     parser.add_option_group(rankGroup)
 
     fileGroup = OptionGroup(parser, "Index options")
@@ -107,6 +117,10 @@ def parseArgs():
                          help="carts index filename")
     fileGroup.add_option("--dict_carts", dest="posting_dict_carts_fname",\
                          help="carts dictionary filename")
+    fileGroup.add_option("--index_item_title", dest="index_item_title_fname",\
+                         help="item_title index filename")
+    fileGroup.add_option("--dict_item_title", dest="posting_dict_item_title_fname",\
+                         help="item_title dictionary filename")
     parser.add_option_group(fileGroup)
 
     scoreGroup = OptionGroup(parser, "Score options")
@@ -126,6 +140,10 @@ def parseArgs():
                           help="carts score dictionary upload filename")
     scoreGroup.add_option("--score_dump_carts", dest="carts_score_dump_fname", \
                           help="carts score dictionary dump filename")
+    scoreGroup.add_option("--score_dict_item_title", dest="item_title_score_dict_fname", \
+                          help="item_title score dictionary upload filename")
+    scoreGroup.add_option("--score_dump_item_title", dest="item_title_score_dump_fname", \
+                          help="item_title score dictionary dump filename")
     parser.add_option_group(scoreGroup)
 
     ppGroup = OptionGroup(parser, "Parallel processing options")
@@ -140,17 +158,20 @@ def parseArgs():
                             dest="verbose")
     parser.add_option_group(verboseGroup)
 
-    parser.set_defaults(k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
-                        coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, exp_rank=1.0,\
-                        exp_items=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
+    parser.set_defaults(k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0, coeff_queries=0.0,\
+                        coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
+                        exp_rank=1.0, exp_items=1.0, exp_queries=1.0,\
+                        exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
                         index_items_fname=None, posting_dict_items_fname=None,\
                         index_queries_fname=None, posting_dict_queries_fname=None,\
                         index_clicks_fname=None, posting_dict_clicks_fname=None,\
                         index_carts_fname=None, posting_dict_carts_fname=None,\
+                        index_item_title_fname=None, posting_dict_item_title_fname=None,\
                         items_score_dict_fname=None, items_score_dump_fname=None,\
                         queries_score_dict_fname=None, queries_score_dump_fname=None,\
                         clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
                         carts_score_dict_fname=None, carts_score_dump_fname=None,\
+                        item_title_score_dict_fname=None, item_title_score_dump_fname=None,\
                         workers=1, verbose=False)
 
     (options, args) = parser.parse_args()
@@ -180,16 +201,18 @@ def reRank(reRanker, test_data):
     return records
 
 def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
-           coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0,exp_rank=1.0,\
-           exp_items=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
+           coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
+           exp_rank=1.0, exp_items=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
            index_items_fname=None, posting_dict_items_fname=None,\
            index_queries_fname=None, posting_dict_queries_fname=None,\
            index_clicks_fname=None, posting_dict_clicks_fname=None,\
            index_carts_fname=None, posting_dict_carts_fname=None,\
+           index_item_title_fname=None, posting_dict_item_title_fname=None,\
            items_score_dict_fname=None, items_score_dump_fname=None,\
            queries_score_dict_fname=None, queries_score_dump_fname=None,\
            clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
            carts_score_dict_fname=None, carts_score_dump_fname=None,\
+           item_title_score_dict_fname=None, item_title_score_dump_fname=None,\
            verbose=False):
 
     # Instantiate Similarity Calculator (expensive)
@@ -198,10 +221,12 @@ def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=
                       coeff_queries=coeff_queries,\
                       coeff_clicks=coeff_clicks,\
                       coeff_carts=coeff_carts,\
+                      coeff_item_title=coeff_item_title,\
                       exp_items=exp_items,\
                       exp_queries=exp_queries,\
                       exp_clicks=exp_clicks,\
                       exp_carts=exp_carts,\
+                      exp_item_title=exp_item_title,\
                       index_items_fname=index_items_fname,\
                       posting_dict_items_fname=posting_dict_items_fname,\
                       index_queries_fname=index_queries_fname,\
@@ -210,6 +235,8 @@ def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=
                       posting_dict_clicks_fname=posting_dict_clicks_fname,\
                       index_carts_fname=index_carts_fname,\
                       posting_dict_carts_fname=posting_dict_carts_fname,\
+                      index_item_title_fname=index_item_title_fname,\
+                      posting_dict_item_title_fname=posting_dict_item_title_fname,\
                       items_score_dict_fname=items_score_dict_fname,\
                       items_score_dump_fname=items_score_dump_fname,\
                       queries_score_dict_fname=queries_score_dict_fname,\
@@ -218,6 +245,8 @@ def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=
                       clicks_score_dump_fname=clicks_score_dump_fname,\
                       carts_score_dict_fname=carts_score_dict_fname,\
                       carts_score_dump_fname=carts_score_dump_fname,\
+                      item_title_score_dict_fname=item_title_score_dict_fname,\
+                      item_title_score_dump_fname=item_title_score_dump_fname,\
                       verbose=verbose)
 
     # Instantiate ReRanker (cheap)
@@ -241,19 +270,23 @@ def main():
                                coeff_queries=options.coeff_queries,\
                                coeff_clicks=options.coeff_clicks,\
                                coeff_carts=options.coeff_carts,\
+                               coeff_item_title=options.coeff_item_title,\
                                exp_rank=options.exp_rank,\
                                exp_items=options.exp_items,\
                                exp_queries=options.exp_queries,\
                                exp_clicks=options.exp_clicks,\
                                exp_carts=options.exp_carts,\
+                               exp_item_title=options.exp_item_title,\
                                index_items_fname=options.index_items_fname,\
-                               posting_dict_items_fname=options.dict_items_fname,\
+                               posting_dict_items_fname=options.posting_dict_items_fname,\
                                index_queries_fname=options.index_queries_fname,\
-                               posting_dict_queries_fname=options.dict_queries_fname,\
+                               posting_dict_queries_fname=options.posting_dict_queries_fname,\
                                index_clicks_fname=options.index_clicks_fname,\
                                posting_dict_clicks_fname=options.posting_dict_clicks_fname,\
                                index_carts_fname=options.index_carts_fname,\
                                posting_dict_carts_fname=options.posting_dict_carts_fname,\
+                               index_item_title_fname=options.index_item_title_fname,\
+                               posting_dict_item_title_fname=options.posting_dict_item_title_fname,\
                                items_score_dict_fname=options.items_score_dict_fname,\
                                items_score_dump_fname=options.items_score_dump_fname,\
                                queries_score_dict_fname=options.queries_score_dict_fname,\
@@ -262,6 +295,8 @@ def main():
                                clicks_score_dump_fname=options.clicks_score_dump_fname,\
                                carts_score_dict_fname=options.carts_score_dict_fname,\
                                carts_score_dump_fname=options.carts_score_dump_fname,\
+                               item_title_score_dict_fname=options.item_title_score_dict_fname,\
+                               item_title_score_dump_fname=options.item_title_score_dump_fname,\
                                verbose=options.verbose)
         for record in records:
             print json.dumps(record)
@@ -326,6 +361,14 @@ def main():
             if options.carts_score_dump_fname:
                 carts_score_dump_fname =\
                     options.carts_score_dump_fname + '.' + str(workerNum)
+            item_title_score_dict_fname = None
+            if options.item_title_score_dict_fname:
+                item_title_score_dict_fname =\
+                    options.item_title_score_dict_fname + '.' + str(workerNum)
+            item_title_score_dump_fname = None
+            if options.item_title_score_dump_fname:
+                item_title_score_dump_fname =\
+                    options.item_title_score_dump_fname + '.' + str(workerNum)
 
             jobs.append(job_server.submit(singleReRank, \
                                (test_data[data_submitted:data_submitted + data_this_job],\
@@ -336,11 +379,13 @@ def main():
                                 options.coeff_queries,\
                                 options.coeff_clicks,\
                                 options.coeff_carts,\
+                                options.coeff_item_title,\
                                 options.exp_rank,\
                                 options.exp_items,\
                                 options.exp_queries,\
                                 options.exp_clicks,\
                                 options.exp_carts,\
+                                options.exp_item_title,\
                                 options.index_items_fname,\
                                 options.posting_dict_items_fname,\
                                 options.index_queries_fname,\
@@ -349,6 +394,8 @@ def main():
                                 options.posting_dict_clicks_fname,\
                                 options.index_carts_fname,\
                                 options.posting_dict_carts_fname,\
+                                options.index_item_title_fname,\
+                                options.posting_dict_item_title_fname,\
                                 items_score_dict_fname,\
                                 items_score_dump_fname,\
                                 queries_score_dict_fname,\
@@ -357,6 +404,8 @@ def main():
                                 clicks_score_dump_fname,\
                                 carts_score_dict_fname,\
                                 carts_score_dump_fname,\
+                                item_title_score_dict_fname,\
+                                item_title_score_dump_fname,\
                                 False),\
                         (reRank,),\
                         ('ReRanker', 'SimilarityCalculator', 'Query')))

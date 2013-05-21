@@ -23,5 +23,5 @@ def get_posting(index_f, posting_dict, itemid):
     #################################################
     # THE FOLLOWING IS FOR READING A COMPRESSED INDEX
     index_f.seek(posting_dict[itemid])
-    return [int(s) for s in index_f.readline().split(',')]
+    return index_f.readline()
     #################################################
