@@ -22,9 +22,13 @@ def get_posting(index_f, posting_dict, itemid):
     #return compression.dgap_decode(dgap_arr)
     #################################################
     # THE FOLLOWING IS FOR READING A COMPRESSED INDEX
-    try:
-        index_f.seek(posting_dict[itemid])
-        return index_f.readline()
-    except KeyError:
-        return ""
+    index_f.seek(posting_dict[itemid])
+    return [int(s) for s in index_f.readline().split(',')]
     #################################################
+
+def get_posting_raw(index_f, posting_dict, itemid):
+    itemid = str(itemid)
+    if itemid not in posting_dict:
+        return ''
+    index_f.seek(posting_dict[itemid])
+    return index_f.readline()
