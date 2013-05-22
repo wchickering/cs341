@@ -12,8 +12,8 @@ __date__ = """16 April 2013"""
 
 import sys
 import heapq
+import math
 from collections import OrderedDict
-from math import log
 
 # import local modules
 from SimilarityCalculator import SimilarityCalculator
