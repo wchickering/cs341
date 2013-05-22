@@ -11,6 +11,7 @@ def main():
     for line in sys.stdin:
         record = json.loads(line)
         if record['wmsessionid'] != last_wmsessionid:
+            previously_shown_items = []
             previously_clicked_items = []
             last_wmsessionid = record['wmsessionid']
  
@@ -20,6 +21,7 @@ def main():
         output['rawquery'] = record['rawquery']
         output['searchattributes'] = record['searchattributes']
         output['shown_items'] = record['shownitems']
+        output['previously_shown_items'] = previously_shown_items
         output['previously_clicked_items'] = previously_clicked_items
         output['clicked_shown_items'] = []
         for click in record['clicks']:
@@ -27,7 +29,11 @@ def main():
                     int(click['ItemId']) not in output['clicked_shown_items']:
                 output['clicked_shown_items'].append(int(click['ItemId']))
         print json.dumps(output)
-        
+       
+        for item in record['shownitems']:
+            if item not in previously_shown_items:
+                previously_shown_items.append(item)
+ 
         for item in record['clickeditems']:
             if item not in previously_clicked_items:
                 previously_clicked_items.append(item)

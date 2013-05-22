@@ -96,18 +96,23 @@ def main():
     for line in inputFile:
         try:
             query = Query(line)
-            if query.previously_clicked_items == []:
-                continue
             if query.clicked_shown_items == []:
                 continue
-    
+            if query.previously_shown_items == [] and \
+               query.previously_clicked_items == []:
+                continue
             for shownItem in query.shown_items:
-                if shownItem in query.previously_clicked_items:
-                    continue
-                for prevItem in query.previously_clicked_items:
-                    if simCalc.similarity(prevItem, shownItem) > 0.0:
+                if shownItem not in query.previously_shown_items:
+                    if simCalc.sessionItemsSimilarity(\
+                                None, query.previously_shown_items, shownItem) > 0.0:
                         print line.rstrip()
                         raise BreakoutException
+                if shownItem not in query.previously_clicked_items:
+                    for prevItem in query.previously_clicked_items:
+                        if simCalc.similarity(prevItem, shownItem) > 0.0:
+                            print line.rstrip()
+                            raise BreakoutException
+                
         except BreakoutException:
             pass
 

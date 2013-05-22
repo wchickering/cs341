@@ -12,8 +12,8 @@ __date__ = """16 April 2013"""
 
 import sys
 import heapq
+import math
 from collections import OrderedDict
-from math import log
 
 # import local modules
 from SimilarityCalculator import SimilarityCalculator
@@ -22,26 +22,35 @@ from Query import Query
 class ReRanker:
 
     def __init__(self, simCalc,\
-                 k=1, insert_position=0, coeff_rank=0.0, exp_rank=1.0,\
+                 k=1, insert_position=0,\
+                 coeff_rank=0.0, coeff_shown=0.0,\
+                 exp_rank=1.0, exp_shown=1.0,\
                  verbose=False):
         self.simCalc = simCalc
         self.k = k
         self.insert_position = insert_position
         self.coeff_rank = coeff_rank
+        self.coeff_shown = coeff_shown
         self.exp_rank = exp_rank
+        self.exp_shown = exp_shown
         self.verbose = verbose
         self.stats = OrderedDict()
         self.initStats()
 
-    def setParams(self, k=None, insert_position=None, coeff_rank=None, exp_rank=None):
+    def setParams(self, k=None, insert_position=None,\
+                  coeff_rank=None, coeff_shown=None, exp_rank=None, exp_shown=None):
         if k:
             self.k = k
         if insert_position:
             self.insert_position = insert_position
         if coeff_rank:
             self.coeff_rank = coeff_rank
+        if coeff_shown:
+            self.coeff_shown = coeff_shown
         if exp_rank:
             self.exp_rank = exp_rank
+        if exp_shown:
+            self.exp_shown = exp_shown
 
     def initStats(self):
         self.stats['num_queries'] = 0
@@ -66,23 +75,28 @@ class ReRanker:
         record['num_promoted_items'] = num_reranks
         return record
 
-    def calcRankScore(self, position, num_items):
-        return 1.0 - float(position)/num_items
-
     # Determine the top k scores 
     def getTopScoresHeap(self, query):
         top_scores_heap = []
+        previously_shown_items_hashcode = hash(frozenset(query.previously_shown_items))
         for i in range(len(query.shown_items)):
             shownItem = query.shown_items[i]
             score = 0
+            if self.simCalc.sessionItems_score_dump_fname or self.coeff_shown > 0:
+                # compute similarity between session and shown item
+                if shownItem not in query.previously_shown_items:
+                    score += self.coeff_shown*self.simCalc.sessionItemsSimilarity(\
+                            previously_shown_items_hashcode,\
+                            query.previously_shown_items,\
+                            query.shown_items[i])**self.exp_shown
             for j in range(len(query.previously_clicked_items)):
                 # ignore previously clicked items themselves
-                if query.previously_clicked_items[j] == shownItem:
-                    score = 0
-                    break
-                score += self.simCalc.similarity(query.previously_clicked_items[j], \
-                                                 query.shown_items[i])
-            score += self.coeff_rank*self.calcRankScore(i, len(query.shown_items))**self.exp_rank
+                if query.previously_clicked_items[j] != shownItem:
+                    # compute similarity between previously clicked and shown item
+                    score += self.simCalc.similarity(query.previously_clicked_items[j], \
+                                                     query.shown_items[i])
+            # compute contribution from original item ranking
+            score += self.coeff_rank*math.exp(-i)**self.exp_rank
             if score > 0:
                 self.stats['num_nonzero_scores'] += 1
                 heapq.heappush(top_scores_heap, (score, i))

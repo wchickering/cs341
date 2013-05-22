@@ -19,6 +19,8 @@ class Query:
 
     shown_items : list
         items shown to the user in a query
+    previously_shown_items : list
+        previously shown items to the user
     previously_clicked_items : list
         previously clicked items by the user
     clicked_shown_items : list
@@ -32,6 +34,7 @@ class Query:
         self.rawquery = record['rawquery']
         self.searchattributes = record['searchattributes']
         self.shown_items = record['shown_items']
+        self.previously_shown_items=record['previously_shown_items']
         self.previously_clicked_items=record['previously_clicked_items']
         self.clicked_shown_items=record['clicked_shown_items']
 
@@ -42,6 +45,7 @@ class Query:
                      "rawquery":self.rawquery,\
                      "searchattributes":self.searchattributes,\
                      "shown_items":self.shown_items,\
+                     "previously_shown_items":self.previously_shown_items,\
                      "previously_clicked_items":self.previously_clicked_items,\
                      "clicked_shown_items":self.clicked_shown_items}))
 
@@ -52,6 +56,7 @@ class Query:
                      "rawquery":self.rawquery,\
                      "searchattributes":self.searchattributes,\
                      "shown_items":self.shown_items,\
+                     "previously_shown_items":self.previously_shown_items,\
                      "previously_clicked_items":self.previously_clicked_items,\
                      "clicked_shown_items":self.clicked_shown_items})
 

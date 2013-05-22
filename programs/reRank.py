@@ -30,11 +30,13 @@ def parseArgs():
             + "[-k N] "\
             + "[--insert_position N] "\
             + "[--coeff_rank X.X] "\
+            + "[--coeff_shown X.X] "\
             + "[--coeff_items X.X] "\
             + "[--coeff_queries X.X] "\
             + "[--coeff_clicks X.X] "\
             + "[--coeff_carts X.X] "\
             + "[--exp_rank X.X] "\
+            + "[--exp_shown X.X] "\
             + "[--exp_items X.X] "\
             + "[--exp_queries X.X] "\
             + "[--exp_clicks X.X] "\
@@ -55,6 +57,8 @@ def parseArgs():
             + "[--score_dump_clicks <clicks score dictionary dump filename>] " \
             + "[--score_dict_carts <carts score dictionary upload filename>] " \
             + "[--score_dump_carts <carts score dictionary dump filename>] " \
+            + "[--score_dict_sessionItems <sessionItems score dictionary upload filename>] " \
+            + "[--score_dump_sessionItems <sessionItems score dictionary dump filename>] " \
             + "[--verbose] " \
             + "<filename>"
 
@@ -70,6 +74,8 @@ def parseArgs():
                          help="insert re-ranked items before this position")
     rankGroup.add_option("--coeff_rank", type="float", dest="coeff_rank",\
                          help="rank coefficient")
+    rankGroup.add_option("--coeff_shown", type="float", dest="coeff_shown",\
+                         help="shown items coefficient")
     rankGroup.add_option("--coeff_items", type="float", dest="coeff_items",\
                          help="items coefficient")
     rankGroup.add_option("--coeff_queries", type="float", dest="coeff_queries",\
@@ -80,6 +86,8 @@ def parseArgs():
                          help="carts coefficient")
     rankGroup.add_option("--exp_rank", type="float", dest="exp_rank",\
                          help="rank exponent")
+    rankGroup.add_option("--exp_shown", type="float", dest="exp_shown",\
+                         help="shown items exponent")
     rankGroup.add_option("--exp_items", type="float", dest="exp_items",\
                          help="items exponent")
     rankGroup.add_option("--exp_queries", type="float", dest="exp_queries",\
@@ -126,6 +134,10 @@ def parseArgs():
                           help="carts score dictionary upload filename")
     scoreGroup.add_option("--score_dump_carts", dest="carts_score_dump_fname", \
                           help="carts score dictionary dump filename")
+    scoreGroup.add_option("--score_dict_sessionItems", dest="sessionItems_score_dict_fname", \
+                          help="sessionItems score dictionary upload filename")
+    scoreGroup.add_option("--score_dump_sessionItems", dest="sessionItems_score_dump_fname", \
+                          help="sessionItems score dictionary dump filename")
     parser.add_option_group(scoreGroup)
 
     ppGroup = OptionGroup(parser, "Parallel processing options")
@@ -140,8 +152,9 @@ def parseArgs():
                             dest="verbose")
     parser.add_option_group(verboseGroup)
 
-    parser.set_defaults(k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
-                        coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, exp_rank=1.0,\
+    parser.set_defaults(k=1, insert_position=0, coeff_rank=0.0, coeff_shown=0.0,\
+                        coeff_items=0.0, coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0,\
+                        exp_rank=1.0, exp_shown=1.0,\
                         exp_items=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
                         index_items_fname=None, posting_dict_items_fname=None,\
                         index_queries_fname=None, posting_dict_queries_fname=None,\
@@ -151,6 +164,7 @@ def parseArgs():
                         queries_score_dict_fname=None, queries_score_dump_fname=None,\
                         clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
                         carts_score_dict_fname=None, carts_score_dump_fname=None,\
+                        sessionItems_score_dict_fname=None, sessionItems_score_dump_fname=None,\
                         workers=1, verbose=False)
 
     (options, args) = parser.parse_args()
@@ -179,8 +193,9 @@ def reRank(reRanker, test_data):
 
     return records
 
-def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
-           coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0,exp_rank=1.0,\
+def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_shown=0.0,\
+           coeff_items=0.0, coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0,\
+           exp_rank=1.0, exp_shown=1.0,\
            exp_items=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0,\
            index_items_fname=None, posting_dict_items_fname=None,\
            index_queries_fname=None, posting_dict_queries_fname=None,\
@@ -190,6 +205,7 @@ def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=
            queries_score_dict_fname=None, queries_score_dump_fname=None,\
            clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
            carts_score_dict_fname=None, carts_score_dump_fname=None,\
+           sessionItems_score_dict_fname=None, sessionItems_score_dump_fname=None,\
            verbose=False):
 
     # Instantiate Similarity Calculator (expensive)
@@ -218,11 +234,15 @@ def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=
                       clicks_score_dump_fname=clicks_score_dump_fname,\
                       carts_score_dict_fname=carts_score_dict_fname,\
                       carts_score_dump_fname=carts_score_dump_fname,\
+                      sessionItems_score_dict_fname=sessionItems_score_dict_fname,\
+                      sessionItems_score_dump_fname=sessionItems_score_dump_fname,\
                       verbose=verbose)
 
     # Instantiate ReRanker (cheap)
     reRanker = ReRanker.ReRanker(simCalc, k=k, insert_position=insert_position,\
-                      coeff_rank=coeff_rank, exp_rank=exp_rank, verbose=verbose)
+                                 coeff_rank=coeff_rank, coeff_shown=coeff_shown,\
+                                 exp_rank=exp_rank, exp_shown=exp_shown,\
+                                 verbose=verbose)
 
     return reRank(reRanker, test_data)
 
@@ -236,33 +256,37 @@ def main():
     if options.workers == 1: #### single process ####
 
         records = singleReRank(inputFile, options.k, options.insert_position,\
-                               coeff_rank=options.coeff_rank,\
-                               coeff_items=options.coeff_items,\
-                               coeff_queries=options.coeff_queries,\
-                               coeff_clicks=options.coeff_clicks,\
-                               coeff_carts=options.coeff_carts,\
-                               exp_rank=options.exp_rank,\
-                               exp_items=options.exp_items,\
-                               exp_queries=options.exp_queries,\
-                               exp_clicks=options.exp_clicks,\
-                               exp_carts=options.exp_carts,\
-                               index_items_fname=options.index_items_fname,\
-                               posting_dict_items_fname=options.dict_items_fname,\
-                               index_queries_fname=options.index_queries_fname,\
-                               posting_dict_queries_fname=options.dict_queries_fname,\
-                               index_clicks_fname=options.index_clicks_fname,\
-                               posting_dict_clicks_fname=options.posting_dict_clicks_fname,\
-                               index_carts_fname=options.index_carts_fname,\
-                               posting_dict_carts_fname=options.posting_dict_carts_fname,\
-                               items_score_dict_fname=options.items_score_dict_fname,\
-                               items_score_dump_fname=options.items_score_dump_fname,\
-                               queries_score_dict_fname=options.queries_score_dict_fname,\
-                               queries_score_dump_fname=options.queries_score_dump_fname,\
-                               clicks_score_dict_fname=options.clicks_score_dict_fname,\
-                               clicks_score_dump_fname=options.clicks_score_dump_fname,\
-                               carts_score_dict_fname=options.carts_score_dict_fname,\
-                               carts_score_dump_fname=options.carts_score_dump_fname,\
-                               verbose=options.verbose)
+                       coeff_rank=options.coeff_rank,\
+                       coeff_shown=options.coeff_shown,\
+                       coeff_items=options.coeff_items,\
+                       coeff_queries=options.coeff_queries,\
+                       coeff_clicks=options.coeff_clicks,\
+                       coeff_carts=options.coeff_carts,\
+                       exp_rank=options.exp_rank,\
+                       exp_shown=options.exp_shown,\
+                       exp_items=options.exp_items,\
+                       exp_queries=options.exp_queries,\
+                       exp_clicks=options.exp_clicks,\
+                       exp_carts=options.exp_carts,\
+                       index_items_fname=options.index_items_fname,\
+                       posting_dict_items_fname=options.dict_items_fname,\
+                       index_queries_fname=options.index_queries_fname,\
+                       posting_dict_queries_fname=options.dict_queries_fname,\
+                       index_clicks_fname=options.index_clicks_fname,\
+                       posting_dict_clicks_fname=options.posting_dict_clicks_fname,\
+                       index_carts_fname=options.index_carts_fname,\
+                       posting_dict_carts_fname=options.posting_dict_carts_fname,\
+                       items_score_dict_fname=options.items_score_dict_fname,\
+                       items_score_dump_fname=options.items_score_dump_fname,\
+                       queries_score_dict_fname=options.queries_score_dict_fname,\
+                       queries_score_dump_fname=options.queries_score_dump_fname,\
+                       clicks_score_dict_fname=options.clicks_score_dict_fname,\
+                       clicks_score_dump_fname=options.clicks_score_dump_fname,\
+                       carts_score_dict_fname=options.carts_score_dict_fname,\
+                       carts_score_dump_fname=options.carts_score_dump_fname,\
+                       sessionItems_score_dict_fname=options.sessionItems_score_dict_fname,\
+                       sessionItems_score_dump_fname=options.sessionItems_score_dump_fname,\
+                       verbose=options.verbose)
         for record in records:
             print json.dumps(record)
 
@@ -326,17 +350,27 @@ def main():
             if options.carts_score_dump_fname:
                 carts_score_dump_fname =\
                     options.carts_score_dump_fname + '.' + str(workerNum)
+            sessionItems_score_dict_fname = None
+            if options.sessionItems_score_dict_fname:
+                sessionItems_score_dict_fname =\
+                    options.sessionItems_score_dict_fname + '.' + str(workerNum)
+            sessionItems_score_dump_fname = None
+            if options.sessionItems_score_dump_fname:
+                sessionItems_score_dump_fname =\
+                    options.sessionItems_score_dump_fname + '.' + str(workerNum)
 
             jobs.append(job_server.submit(singleReRank, \
                                (test_data[data_submitted:data_submitted + data_this_job],\
                                 options.k,\
                                 options.insert_position,\
                                 options.coeff_rank,\
+                                options.coeff_shown,\
                                 options.coeff_items,\
                                 options.coeff_queries,\
                                 options.coeff_clicks,\
                                 options.coeff_carts,\
                                 options.exp_rank,\
+                                options.exp_shown,\
                                 options.exp_items,\
                                 options.exp_queries,\
                                 options.exp_clicks,\
@@ -357,6 +391,8 @@ def main():
                                 clicks_score_dump_fname,\
                                 carts_score_dict_fname,\
                                 carts_score_dump_fname,\
+                                sessionItems_score_dict_fname,\
+                                sessionItems_score_dump_fname,\
                                 False),\
                         (reRank,),\
                         ('ReRanker', 'SimilarityCalculator', 'Query')))
