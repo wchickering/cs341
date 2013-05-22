@@ -66,9 +66,6 @@ class ReRanker:
         record['num_promoted_items'] = num_reranks
         return record
 
-    def calcRankScore(self, position, num_items):
-        return 1.0 - float(position)/num_items
-
     # Determine the top k scores 
     def getTopScoresHeap(self, query):
         top_scores_heap = []
@@ -82,7 +79,7 @@ class ReRanker:
                     break
                 score += self.simCalc.similarity(query.previously_clicked_items[j], \
                                                  query.shown_items[i])
-            score += self.coeff_rank*self.calcRankScore(i, len(query.shown_items))**self.exp_rank
+            score += self.coeff_rank*math.exp(-i)**self.exp_rank
             if score > 0:
                 self.stats['num_nonzero_scores'] += 1
                 heapq.heappush(top_scores_heap, (score, i))
