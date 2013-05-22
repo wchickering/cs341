@@ -123,7 +123,7 @@ DICT_CARTS=${DATA}/${INDEX_A}.carts.posting.dict
 SCORES_ITEMS=${SCORES}/${RAWDATA}.${INDEX_I}.items.scores
 SCORES_QUERIES=${SCORES}/${RAWDATA}.${INDEX_Q}.queries.scores
 SCORES_CLICKS=${SCORES}/${RAWDATA}.${INDEX_C}.clicks.scores
-SCORES_CARTS=${SCORES}/${RAWDATA}.${INDEX_C}.carts.scores
+SCORES_CARTS=${SCORES}/${RAWDATA}.${INDEX_A}.carts.scores
 
 if [ ! -f $FILTERED_TEST_DATA ]
 then
