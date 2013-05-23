@@ -24,6 +24,8 @@ def parseArgs():
             + "[--dict_clicks <clicks dictionary filename>] "\
             + "[--index_carts <carts index filename>] "\
             + "[--dict_carts <carts dictionary filename>] "\
+            + "[--index_item_title <item_title index filename>] "\
+            + "[--dict_item_title <item_title dictionary filename>] "\
             + "[--verbose] "\
             + "<filename>"
 
@@ -50,6 +52,10 @@ def parseArgs():
                          help="carts index filename")
     fileGroup.add_option("--dict_carts", dest="posting_dict_carts_fname",\
                          help="carts dictionary filename")
+    fileGroup.add_option("--index_item_title", dest="index_item_title_fname",\
+                         help="item_title index filename")
+    fileGroup.add_option("--dict_item_title", dest="posting_dict_item_title_fname",\
+                         help="item_title dictionary filename")
     parser.add_option_group(fileGroup)
 
     verboseGroup = OptionGroup(parser, "Verbose")
@@ -63,6 +69,7 @@ def parseArgs():
                         index_queries_fname=None, posting_dict_queries_fname=None,\
                         index_clicks_fname=None, posting_dict_clicks_fname=None,\
                         index_carts_fname=None, posting_dict_carts_fname=None,\
+                        index_item_title_fname=None, posting_dict_item_title_fname=None,\
                         verbose=False)
 
     (options, args) = parser.parse_args()
@@ -83,6 +90,7 @@ def main():
     # Instantiate Similarity Calculator
     simCalc = SimilarityCalculator(coeff_items=1.0, coeff_queries=1.0,\
                                    coeff_clicks=1.0, coeff_carts=1.0,\
+                                   coeff_item_title=1.0,\
                                    index_items_fname=options.index_items_fname,\
                                    posting_dict_items_fname=options.posting_dict_items_fname,\
                                    index_queries_fname=options.index_queries_fname,\
@@ -91,6 +99,8 @@ def main():
                                    posting_dict_clicks_fname=options.posting_dict_clicks_fname,\
                                    index_carts_fname=options.index_carts_fname,\
                                    posting_dict_carts_fname=options.posting_dict_carts_fname,\
+                                   index_item_title_fname=options.index_item_title_fname,\
+                                   posting_dict_item_title_fname=options.posting_dict_item_title_fname,\
                                    verbose=options.verbose) 
     
     for line in inputFile:
