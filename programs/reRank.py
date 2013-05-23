@@ -202,7 +202,8 @@ def reRank(reRanker, test_data):
 
 def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
            coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
-           exp_rank=1.0, exp_items=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
+           exp_rank=1.0, exp_items=1.0, exp_queries=1.0,\
+           exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
            index_items_fname=None, posting_dict_items_fname=None,\
            index_queries_fname=None, posting_dict_queries_fname=None,\
            index_clicks_fname=None, posting_dict_clicks_fname=None,\
@@ -265,39 +266,39 @@ def main():
     if options.workers == 1: #### single process ####
 
         records = singleReRank(inputFile, options.k, options.insert_position,\
-                               coeff_rank=options.coeff_rank,\
-                               coeff_items=options.coeff_items,\
-                               coeff_queries=options.coeff_queries,\
-                               coeff_clicks=options.coeff_clicks,\
-                               coeff_carts=options.coeff_carts,\
-                               coeff_item_title=options.coeff_item_title,\
-                               exp_rank=options.exp_rank,\
-                               exp_items=options.exp_items,\
-                               exp_queries=options.exp_queries,\
-                               exp_clicks=options.exp_clicks,\
-                               exp_carts=options.exp_carts,\
-                               exp_item_title=options.exp_item_title,\
-                               index_items_fname=options.index_items_fname,\
-                               posting_dict_items_fname=options.posting_dict_items_fname,\
-                               index_queries_fname=options.index_queries_fname,\
-                               posting_dict_queries_fname=options.posting_dict_queries_fname,\
-                               index_clicks_fname=options.index_clicks_fname,\
-                               posting_dict_clicks_fname=options.posting_dict_clicks_fname,\
-                               index_carts_fname=options.index_carts_fname,\
-                               posting_dict_carts_fname=options.posting_dict_carts_fname,\
-                               index_item_title_fname=options.index_item_title_fname,\
-                               posting_dict_item_title_fname=options.posting_dict_item_title_fname,\
-                               items_score_dict_fname=options.items_score_dict_fname,\
-                               items_score_dump_fname=options.items_score_dump_fname,\
-                               queries_score_dict_fname=options.queries_score_dict_fname,\
-                               queries_score_dump_fname=options.queries_score_dump_fname,\
-                               clicks_score_dict_fname=options.clicks_score_dict_fname,\
-                               clicks_score_dump_fname=options.clicks_score_dump_fname,\
-                               carts_score_dict_fname=options.carts_score_dict_fname,\
-                               carts_score_dump_fname=options.carts_score_dump_fname,\
-                               item_title_score_dict_fname=options.item_title_score_dict_fname,\
-                               item_title_score_dump_fname=options.item_title_score_dump_fname,\
-                               verbose=options.verbose)
+                       coeff_rank=options.coeff_rank,\
+                       coeff_items=options.coeff_items,\
+                       coeff_queries=options.coeff_queries,\
+                       coeff_clicks=options.coeff_clicks,\
+                       coeff_carts=options.coeff_carts,\
+                       coeff_item_title=options.coeff_item_title,\
+                       exp_rank=options.exp_rank,\
+                       exp_items=options.exp_items,\
+                       exp_queries=options.exp_queries,\
+                       exp_clicks=options.exp_clicks,\
+                       exp_carts=options.exp_carts,\
+                       exp_item_title=options.exp_item_title,\
+                       index_items_fname=options.index_items_fname,\
+                       posting_dict_items_fname=options.posting_dict_items_fname,\
+                       index_queries_fname=options.index_queries_fname,\
+                       posting_dict_queries_fname=options.posting_dict_queries_fname,\
+                       index_clicks_fname=options.index_clicks_fname,\
+                       posting_dict_clicks_fname=options.posting_dict_clicks_fname,\
+                       index_carts_fname=options.index_carts_fname,\
+                       posting_dict_carts_fname=options.posting_dict_carts_fname,\
+                       index_item_title_fname=options.index_item_title_fname,\
+                       posting_dict_item_title_fname=options.posting_dict_item_title_fname,\
+                       items_score_dict_fname=options.items_score_dict_fname,\
+                       items_score_dump_fname=options.items_score_dump_fname,\
+                       queries_score_dict_fname=options.queries_score_dict_fname,\
+                       queries_score_dump_fname=options.queries_score_dump_fname,\
+                       clicks_score_dict_fname=options.clicks_score_dict_fname,\
+                       clicks_score_dump_fname=options.clicks_score_dump_fname,\
+                       carts_score_dict_fname=options.carts_score_dict_fname,\
+                       carts_score_dump_fname=options.carts_score_dump_fname,\
+                       item_title_score_dict_fname=options.item_title_score_dict_fname,\
+                       item_title_score_dump_fname=options.item_title_score_dump_fname,\
+                       verbose=options.verbose)
         for record in records:
             print json.dumps(record)
 

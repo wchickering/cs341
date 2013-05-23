@@ -15,7 +15,7 @@ COEFF_QUERIES ?= 0.0
 COEFF_CLICKS ?= 1.0
 COEFF_ITEMS ?= 0.0
 COEFF_CARTS ?= 0.0
-COEFF_ITEM_TITLE ?= 1.0
+COEFF_ITEM_TITLE ?= 0.0
 EXP_RANK ?= 1.0
 EXP_QUERIES ?= 1.0
 EXP_CLICKS ?= 1.0
@@ -95,11 +95,11 @@ $(query_raw_data) $(query_index_data): %.queries : %.filtered programs/visitorQu
 $(test_data): $(query_raw_data) programs/testGen.py
 	cat $< | python programs/testGen.py > $@
 
-$(filtered_test_data): $(test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) $(index_carts) $(posting_dict_carts) $(index_item_title) $(posting_dict_item_title) programs/filterTestData.py programs/indexRead.py programs/SimilarityCalculator.py
+$(filtered_test_data): $(test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) $(index_items) $(posting_dict_items) $(index_carts) $(posting_dict_carts) $(index_item_title) $(posting_dict_item_title) programs/filterTestData.py programs/indexRead.py programs/SimilarityCalculator.py
 	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
 	split -l $(TESTDATA_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
 	for i in $(CHUNK_PREFIX)*; do \
-	    cat $$i | python programs/filterTestData.py --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks $(index_clicks) --dict_clicks $(posting_dict_clicks) --index_carts $(index_carts) --dict_carts $(posting_dict_carts) --index_item_title $(index_item_title) --dict_item_title $(posting_dict_item_title) > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	    cat $$i | python programs/filterTestData.py --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks $(index_clicks) --dict_clicks $(posting_dict_clicks) --index_items $(index_items) --dict_items $(posting_dict_items) --index_carts $(index_carts) --dict_carts $(posting_dict_carts) --index_item_title $(index_item_title) --dict_item_title $(posting_dict_item_title) > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
 	done; \
 	wait
 	rm -f $@
@@ -107,8 +107,8 @@ $(filtered_test_data): $(test_data) $(index_queries) $(posting_dict_queries) $(i
 	    cat $$i >> $@ && rm -f $$i; \
 	done
 
-$(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) $(index_carts) $(posting_dict_carts) $(index_item_title) $(posting_dict_item_title) programs/reRank.py programs/indexRead.py programs/SimilarityCalculator.py
-	cat $< | python programs/reRank.py --verbose --workers $(NUM_WORKERS) -k $(NUM_RERANK) --insert_position $(INSERT_POSITION) --coeff_rank $(COEFF_RANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --coeff_carts $(COEFF_CARTS) --coeff_item_title $(COEFF_ITEM_TITLE) --exp_rank $(EXP_RANK) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --exp_carts $(EXP_CARTS) --exp_item_title $(EXP_ITEM_TITLE) --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks  $(index_clicks) --dict_clicks $(posting_dict_clicks) --index_carts $(index_carts) --dict_carts $(posting_dict_carts) --index_item_title $(index_item_title) --dict_item_title $(posting_dict_item_title) > $@
+$(reordered_queries): $(filtered_test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) $(index_items) $(posting_dict_items) $(index_carts) $(posting_dict_carts) $(index_item_title) $(posting_dict_item_title) programs/reRank.py programs/indexRead.py programs/SimilarityCalculator.py
+	cat $< | python programs/reRank.py --verbose --workers $(NUM_WORKERS) -k $(NUM_RERANK) --insert_position $(INSERT_POSITION) --coeff_rank $(COEFF_RANK) --coeff_queries $(COEFF_QUERIES) --coeff_clicks $(COEFF_CLICKS) --coeff_items $(COEFF_ITEMS) --coeff_carts $(COEFF_CARTS) --exp_rank $(EXP_RANK) --exp_queries $(EXP_QUERIES) --exp_clicks $(EXP_CLICKS) --exp_items $(EXP_ITEMS) --exp_carts $(EXP_CARTS) --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks  $(index_clicks) --dict_clicks $(posting_dict_clicks) --index_items $(index_items) --dict_items $(dict_items) --index_carts $(index_carts) --dict_carts $(posting_dict_carts) --index_item_title $(index_item_title) --dict_item_title $(posting_dict_item_title) > $@
 
 $(evaluation): $(reordered_queries) programs/Evaluator.py
 	cat $< | python programs/Evaluator.py -k $(NUM_RERANK) > $@

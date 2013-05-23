@@ -86,11 +86,30 @@ def main():
         inputFile = open(args[0])
     else:
         inputFile = sys.stdin
+
+    # Only filter using provided indexes
+    coeff_items = 1.0
+    if not options.index_items_fname:
+        coeff_items = 0.0
+    coeff_queries = 1.0
+    if not options.index_queries_fname:
+        coeff_queries = 0.0
+    coeff_clicks = 1.0
+    if not options.index_clicks_fname:
+        coeff_clicks = 0.0
+    coeff_carts = 1.0
+    if not options.index_carts_fname:
+        coeff_carts = 0.0
+    coeff_item_title = 1.0
+    if not options.index_item_title_fname:
+        coeff_item_title = 0.0
    
     # Instantiate Similarity Calculator
-    simCalc = SimilarityCalculator(coeff_items=1.0, coeff_queries=1.0,\
-                                   coeff_clicks=1.0, coeff_carts=1.0,\
-                                   coeff_item_title=1.0,\
+    simCalc = SimilarityCalculator(coeff_items=coeff_items,\
+                                   coeff_queries=coeff_queries,\
+                                   coeff_clicks=coeff_clicks,\
+                                   coeff_carts=coeff_carts,\
+                                   coeff_item_title=coeff_item_title,\
                                    index_items_fname=options.index_items_fname,\
                                    posting_dict_items_fname=options.posting_dict_items_fname,\
                                    index_queries_fname=options.index_queries_fname,\

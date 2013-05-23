@@ -24,8 +24,10 @@ class SimilarityCalculator:
     _item_title_posting_cache_size = 100
 
     def __init__(self,\
-                 coeff_items=0.0, coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
-                 exp_items=1.0, exp_queries=1.0, exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
+                 coeff_items=0.0, coeff_queries=0.0, coeff_clicks=0.0,\
+                 coeff_carts=0.0, coeff_item_title=0.0,\
+                 exp_items=1.0, exp_queries=1.0, exp_clicks=1.0,\
+                 exp_carts=1.0, exp_item_title=1.0,\
                  index_items_fname=None, posting_dict_items_fname=None,\
                  index_queries_fname=None, posting_dict_queries_fname=None,\
                  index_clicks_fname=None, posting_dict_clicks_fname=None,\
@@ -393,7 +395,8 @@ class SimilarityCalculator:
             self.items_posting_cache_queue.remove(itemid)
         else:
             self.stats['items_posting_cache_misses'] += 1
-            posting = [int(s) for s in idx.get_posting(self.index_index_fd, self.posting_dict_items, itemid).split(',')]
+            posting = idx.get_posting(self.index_items_fd,\
+                                      self.posting_dict_items, itemid)
             self.items_posting_cache[itemid] = posting
             if len(self.items_posting_cache) > self._items_posting_cache_size:
                 del self.items_posting_cache[self.items_posting_cache_queue.pop()]
@@ -406,7 +409,8 @@ class SimilarityCalculator:
             self.queries_posting_cache_queue.remove(itemid)
         else:
             self.stats['queries_posting_cache_misses'] += 1
-            posting = [int(s) for s in idx.get_posting(self.index_queries_fd, self.posting_dict_queries, itemid).split(',')]
+            posting = idx.get_posting(self.index_queries_fd,\
+                                      self.posting_dict_queries, itemid)
             self.queries_posting_cache[itemid] = posting
             if len(self.queries_posting_cache) > self._queries_posting_cache_size:
                 del self.queries_posting_cache[self.queries_posting_cache_queue.pop()]
@@ -419,7 +423,8 @@ class SimilarityCalculator:
             self.clicks_posting_cache_queue.remove(itemid)
         else:
             self.stats['clicks_posting_cache_misses'] += 1
-            posting = [int(s) for s in idx.get_posting(self.index_clicks_fd, self.posting_dict_clicks, itemid).split(',')]
+            posting = idx.get_posting(self.index_clicks_fd,\
+                                      self.posting_dict_clicks, itemid)
             self.clicks_posting_cache[itemid] = posting
             if len(self.clicks_posting_cache) > self._clicks_posting_cache_size:
                 del self.clicks_posting_cache[self.clicks_posting_cache_queue.pop()]
@@ -432,7 +437,8 @@ class SimilarityCalculator:
             self.carts_posting_cache_queue.remove(itemid)
         else:
             self.stats['carts_posting_cache_misses'] += 1
-            posting = [int(s) for s in idx.get_posting(self.index_carts_fd, self.posting_dict_carts, itemid).split(',')]
+            posting = idx.get_posting(self.index_carts_fd,\
+                                      self.posting_dict_carts, itemid)
             self.carts_posting_cache[itemid] = posting
             if len(self.carts_posting_cache) > self._carts_posting_cache_size:
                 del self.carts_posting_cache[self.carts_posting_cache_queue.pop()]
@@ -445,7 +451,8 @@ class SimilarityCalculator:
             self.item_title_posting_cache_queue.remove(itemid)
         else:
             self.stats['item_title_posting_cache_misses'] += 1
-            posting = idx.get_posting(self.index_item_title_fd, self.posting_dict_item_title, itemid)
+            posting = idx.get_posting_raw(self.index_item_title_fd,\
+                                          self.posting_dict_item_title, itemid)
             self.item_title_posting_cache[itemid] = posting
             if len(self.item_title_posting_cache) > self._item_title_posting_cache_size:
                 del self.item_title_posting_cache[self.item_title_posting_cache_queue.pop()]
@@ -456,113 +463,118 @@ class SimilarityCalculator:
 
         # determine items score
         items_score = 0.0
-        if self.items_score_dict_from_file:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.items_score_dict:
-                items_score =\
-                    self.items_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-        elif self.items_score_dump_fname:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.items_score_dict:
-                self.stats['items_score_cache_hits'] += 1
-                items_score =\
-                    self.items_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-            else:
-                self.stats['items_score_cache_misses'] += 1
+        if self.items_score_dump_fname or self.coeff_items > 0:
+            if self.items_score_dict_from_file:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.items_score_dict:
+                    items_score =\
+                        self.items_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+            elif self.items_score_dump_fname:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.items_score_dict:
+                    self.stats['items_score_cache_hits'] += 1
+                    items_score =\
+                        self.items_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+                else:
+                    self.stats['items_score_cache_misses'] += 1
+                    items_score = self.simfunc(self.get_items_posting(itemid1),\
+                                                 self.get_items_posting(itemid2))
+                    if items_score > 0.0:
+                        self.items_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
+                            items_score
+            elif self.index_items_fd:
                 items_score = self.simfunc(self.get_items_posting(itemid1),\
                                              self.get_items_posting(itemid2))
-                if items_score > 0.0:
-                    self.items_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
-                        items_score
-        elif self.index_items_fd:
-            items_score = self.simfunc(self.get_items_posting(itemid1),\
-                                         self.get_items_posting(itemid2))
 
         # determine queries score
         queries_score = 0.0
-        if self.queries_score_dict_from_file:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.queries_score_dict:
-                queries_score =\
-                    self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-        elif self.queries_score_dump_fname:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.queries_score_dict:
-                self.stats['queries_score_cache_hits'] += 1
-                queries_score =\
-                    self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-            else:
-                self.stats['queries_score_cache_misses'] += 1
+        if self.queries_score_dump_fname or self.coeff_queries > 0:
+            if self.queries_score_dict_from_file:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.queries_score_dict:
+                    queries_score =\
+                        self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+            elif self.queries_score_dump_fname:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.queries_score_dict:
+                    self.stats['queries_score_cache_hits'] += 1
+                    queries_score =\
+                        self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+                else:
+                    self.stats['queries_score_cache_misses'] += 1
+                    queries_score = self.simfunc(self.get_queries_posting(itemid1),\
+                                                 self.get_queries_posting(itemid2))
+                    if queries_score > 0.0:
+                        self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
+                            queries_score
+            elif self.index_queries_fd:
                 queries_score = self.simfunc(self.get_queries_posting(itemid1),\
                                              self.get_queries_posting(itemid2))
-                if queries_score > 0.0:
-                    self.queries_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
-                        queries_score
-        elif self.index_queries_fd:
-            queries_score = self.simfunc(self.get_queries_posting(itemid1),\
-                                         self.get_queries_posting(itemid2))
 
         # determine clicks score
         clicks_score = 0.0
-        if self.clicks_score_dict_from_file:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.clicks_score_dict:
-                clicks_score =\
-                    self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-        elif self.clicks_score_dump_fname:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.clicks_score_dict:
-                self.stats['clicks_score_cache_hits'] += 1
-                clicks_score =\
-                    self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-            else:
-                self.stats['clicks_score_cache_misses'] += 1
+        if self.clicks_score_dump_fname or self.coeff_clicks > 0:
+            if self.clicks_score_dict_from_file:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.clicks_score_dict:
+                    clicks_score =\
+                        self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+            elif self.clicks_score_dump_fname:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.clicks_score_dict:
+                    self.stats['clicks_score_cache_hits'] += 1
+                    clicks_score =\
+                        self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+                else:
+                    self.stats['clicks_score_cache_misses'] += 1
+                    clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
+                                                self.get_clicks_posting(itemid2))
+                    if clicks_score > 0.0:
+                        self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
+                            clicks_score
+            elif self.index_clicks_fd:
                 clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
                                             self.get_clicks_posting(itemid2))
-                if clicks_score > 0.0:
-                    self.clicks_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
-                        clicks_score
-        elif self.index_clicks_fd:
-            clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
-                                        self.get_clicks_posting(itemid2))
 
         # determine carts score
         carts_score = 0.0
-        if self.carts_score_dict_from_file:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.carts_score_dict:
-                carts_score =\
-                    self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-        elif self.carts_score_dump_fname:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.carts_score_dict:
-                self.stats['carts_score_cache_hits'] += 1
-                carts_score =\
-                    self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-            else:
-                self.stats['carts_score_cache_misses'] += 1
+        if self.carts_score_dump_fname or self.coeff_carts > 0:
+            if self.carts_score_dict_from_file:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.carts_score_dict:
+                    carts_score =\
+                        self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+            elif self.carts_score_dump_fname:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.carts_score_dict:
+                    self.stats['carts_score_cache_hits'] += 1
+                    carts_score =\
+                        self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+                else:
+                    self.stats['carts_score_cache_misses'] += 1
+                    carts_score = self.simfunc(self.get_carts_posting(itemid1),\
+                                                self.get_carts_posting(itemid2))
+                    if carts_score > 0.0:
+                        self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
+                            carts_score
+            elif self.index_carts_fd:
                 carts_score = self.simfunc(self.get_carts_posting(itemid1),\
                                             self.get_carts_posting(itemid2))
-                if carts_score > 0.0:
-                    self.carts_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
-                        carts_score
-        elif self.index_carts_fd:
-            carts_score = self.simfunc(self.get_carts_posting(itemid1),\
-                                        self.get_carts_posting(itemid2))
 
         # determine item_title score
         item_title_score = 0.0
-        if self.item_title_score_dict_from_file:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.item_title_score_dict:
-                item_title_score =\
-                    self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-        elif self.item_title_score_dump_fname:
-            if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.item_title_score_dict:
-                self.stats['item_title_score_cache_hits'] += 1
-                item_title_score =\
-                    self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
-            else:
-                self.stats['item_title_score_cache_misses'] += 1
-                item_title_score = self.simfunc(self.get_item_title_posting(itemid1).split(),\
-                                                self.get_item_title_posting(itemid2).split())
-                if item_title_score > 0.0:
-                    self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
-                        item_title_score
-        elif self.index_item_title_fd:
-            item_title_score = self.simfunc(self.get_item_title_posting(itemid1),\
-                                        self.get_item_title_posting(itemid2))
+        if self.item_title_score_dump_fname or self.coeff_item_title > 0:
+            if self.item_title_score_dict_from_file:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.item_title_score_dict:
+                    item_title_score =\
+                        self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+            elif self.item_title_score_dump_fname:
+                if (min(itemid1, itemid2), max(itemid1, itemid2)) in self.item_title_score_dict:
+                    self.stats['item_title_score_cache_hits'] += 1
+                    item_title_score =\
+                        self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
+                else:
+                    self.stats['item_title_score_cache_misses'] += 1
+                    item_title_score = self.simfunc(self.get_item_title_posting(itemid1).split(),\
+                                                    self.get_item_title_posting(itemid2).split())
+                    if item_title_score > 0.0:
+                        self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
+                            item_title_score
+            elif self.index_item_title_fd:
+                item_title_score = self.simfunc(self.get_item_title_posting(itemid1),\
+                                            self.get_item_title_posting(itemid2))
 
         return self.coeff_items*items_score**self.exp_items +\
                self.coeff_queries*queries_score**self.exp_queries +\
