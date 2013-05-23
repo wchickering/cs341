@@ -7,7 +7,7 @@ import fileinput
 import json
 
 # PARAMS
-inputFile = 'items.json'
+inputFile = 'data/items.json.raw'
 bufSize = 1024
 
 # GLOBALS
