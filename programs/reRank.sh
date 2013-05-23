@@ -56,6 +56,11 @@ SCORES_CLICKS=${SCORES}/${RAWDATA}.${INDEX_C}.clicks.scores
 SCORES_CARTS=${SCORES}/${RAWDATA}.${INDEX_A}.carts.scores
 SCORES_ITEM_TITLE=${SCORES}/${RAWDATA}.item_title.scores
 
+if [ ! -d ${SCORES} ]
+then
+    mkdir ${SCORES}
+fi
+
 if [ ! -f $FILTERED_TEST_DATA ]
 then
     echo "Filtering test data . . ."

@@ -4,7 +4,7 @@
 # the same values for WORKERS, RAWDATA, INDEX_I, INDEX_Q, INDEX_C, and INDEX_A
 # that are used here.
 
-# This script assumes WCODE and RERANK_PARAMS already defined and exported.
+# This script assumes WCODE and MULTIRERANK_PARAMS already defined and exported.
 # MULTIRERANK_PARAMS should be the path to a file containing variable definitions
 # like these:
 #WORKERS=8
@@ -26,7 +26,7 @@ PROGRAMS=${WCODE}/programs
 RERANK_PROG=${PROGRAMS}/multiReRank.py
 DATA=${WCODE}/data
 SCORES=${DATA}/scores
-PARAMS_FILE=${DATA}/${PARAMS}
+PARAMS_FILE=${PARAMS}
 TEST_DATA=${DATA}/${RAWDATA}.test_data
 FILTERED_TEST_DATA=${TEST_DATA}.${INDEX_I}.filtered
 RERANK_PROG_OUTPUT=${DATA}/${RAWDATA}.${INDEX_I}.${OUTPUT}
