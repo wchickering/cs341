@@ -22,10 +22,18 @@ def main():
         output['shown_items'] = record['shownitems']
         output['previously_clicked_items'] = previously_clicked_items
         output['clicked_shown_items'] = []
+        output['carted_shown_items'] = []
+        output['purchased_shown_items'] = []
         for click in record['clicks']:
             if click['Position'] != '-1' and \
                     int(click['ItemId']) not in output['clicked_shown_items']:
-                output['clicked_shown_items'].append(int(click['ItemId']))
+                itemid = int(click['ItemId'])
+                output['clicked_shown_items'].append(itemid)
+                if click['InCart'] == 'true':
+                    output['carted_shown_items'].append(itemid)
+                if click['Ordered'] == 'true':
+                    output['purchased_shown_items'].append(itemid)
+
         print json.dumps(output)
         
         for item in record['clickeditems']:
