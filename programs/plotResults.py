@@ -48,8 +48,9 @@ def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
 
     usage = "usage: %prog "\
-            + "<filename>"\
-            + "<varying parameter>"
+            + "<filename> "\
+            + "<coeff or exp> "\
+            + "<parameter>"
 
     parser = OptionParser(usage=usage)
     helpFormatter = HelpFormatter(indent_increment=2,
@@ -59,7 +60,7 @@ def parseArgs():
 
     (options, args) = parser.parse_args()
 
-    if (len(args) != 2):
+    if (len(args) != 3):
         parser.print_usage()
         sys.exit()
 
@@ -145,7 +146,8 @@ def main():
     (options, args) = parseArgs()
     
     resultsFo = open(args[0])
-    which, param = args[1].split('_')
+    which = args[1]
+    param = args[2]
     
     plotNDCGCurves(resultsFo)
     plotNDCG16Curve(resultsFo, param, which=which)
