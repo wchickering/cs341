@@ -311,7 +311,7 @@ def main():
         ppservers = ()
 
         # create jobserver with four workers
-        job_server = pp.Server(options.workers, ppservers=ppservers)
+        job_server = pp.Server(options.workers, ppservers=ppservers, secret="")
 
         # determine number of data per job
         data_per_job = len(test_data) / options.workers
