@@ -139,6 +139,11 @@ $(posting_dict_carts) : $(index_carts)
 $(index_carts): $(query_index_data) programs/indexMapperCarts.py programs/indexReducer.py
 	cat $< | python programs/indexMapperCarts.py | sort -k1,1n -k2,2n | python programs/indexReducer.py $(posting_dict_carts) > $@ 
 
+$(index_item_title) : $(all_items_data)
+	python programs/createItemTitleIndex.py $(index_item_title) $(posting_dict_item_title)
+
+$(posting_dict_item_title) : $(index_item_title)
+
 # filter out "bad" data (malformed JSON, missing columns, etc.)
 .PHONY : filtered
 filtered : $(filtered_raw_data) 
@@ -187,6 +192,9 @@ items.index : $(index_items)
 .PHONY : carts.index
 carts.index : $(index_carts)
 
+.PHONY : item_title.index
+item_title.index : $(index_item_title)
+
 # Here we make empty targets for each program so that make can tell when a program
 # has been modified and needs to rebuild a target
 programs = filterRawData.py visitorQueryMapper.py visitorQueryReducer.py\
@@ -195,6 +203,7 @@ programs = filterRawData.py visitorQueryMapper.py visitorQueryReducer.py\
            uniqueQueryMapper.py uniqueQueryReducer.py\
            indexMapperQueries.py indexMapperClicks.py indexMapperCarts.py\
            indexMapperItems.py indexReducerItems.py indexReducer.py\
+		   createItemTitleIndex.py
 
 $(addprefix programs/, $(programs)):
 
