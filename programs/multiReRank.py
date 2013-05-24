@@ -153,8 +153,9 @@ def multiReRank(test_data, paramsList,\
 def main():
     (options, args) = parseArgs()
     paramFile = open(args[0])
+    filteredTestDataFn = args[1]
     if len(args) == 2:
-        inputFile = open(args[1])
+        inputFile = open(filteredTestDataFn)
     else:
         inputFile = sys.stdin
 
@@ -184,7 +185,7 @@ def main():
 
         # output results
         for i in range(len(paramsList)):
-            print json.dumps([paramsList[i], evaluators[i].stats])
+            print json.dumps([dict(dataFn=filteredTestDataFn), paramsList[i], evaluators[i].stats])
 
     else: #### multi-process ####
 
@@ -260,7 +261,7 @@ def main():
 
         # output results
         for i in range(len(paramsList)):
-            print json.dumps([paramsList[i], evaluators[i].stats])
+            print json.dumps([dict(dataFn=filteredTestDataFn), paramsList[i], evaluators[i].stats])
 
 if __name__ == '__main__':
     main()
