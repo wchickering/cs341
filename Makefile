@@ -95,11 +95,11 @@ $(query_raw_data) $(query_index_data): %.queries : %.filtered programs/visitorQu
 $(test_data): $(query_raw_data) programs/testGen.py
 	cat $< | python programs/testGen.py > $@
 
-$(filtered_test_data): $(test_data) $(index_queries) $(posting_dict_queries) $(index_clicks) $(posting_dict_clicks) $(index_items) $(posting_dict_items) $(index_carts) $(posting_dict_carts) $(index_item_title) $(posting_dict_item_title) programs/filterTestData.py programs/indexRead.py programs/SimilarityCalculator.py
+$(filtered_test_data): $(test_data) programs/filterTestData.py
 	rm -f ${CHUNK_PREFIX}* data/*${CHUNK_SUFFIX}
 	split -l $(TESTDATA_LINES_PER_CHUNK) $< $(CHUNK_PREFIX)
 	for i in $(CHUNK_PREFIX)*; do \
-	    cat $$i | python programs/filterTestData.py --index_queries $(index_queries) --dict_queries $(posting_dict_queries) --index_clicks $(index_clicks) --dict_clicks $(posting_dict_clicks) --index_items $(index_items) --dict_items $(posting_dict_items) --index_carts $(index_carts) --dict_carts $(posting_dict_carts) --index_item_title $(index_item_title) --dict_item_title $(posting_dict_item_title) > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
+	    cat $$i | python programs/filterTestData.py > $${i}$(CHUNK_SUFFIX) && rm -f $$i & \
 	done; \
 	wait
 	rm -f $@
