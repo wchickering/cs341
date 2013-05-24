@@ -48,7 +48,8 @@ def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
 
     usage = "usage: %prog "\
-            + "<filename>"
+            + "<filename>"\
+            + "<varying parameter>"
 
     parser = OptionParser(usage=usage)
     helpFormatter = HelpFormatter(indent_increment=2,
