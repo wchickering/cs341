@@ -242,7 +242,7 @@ def main():
 
             multiResultsFo.close()
         else:
-            ax = plotMetric(metric_figure, resultsFn, options, False)
+            ax = plotMetric(metric_figure, resultsFn, options.plot, FreeParam(options.free_param), False)
 
     xlim = list(ax.get_xlim())
     ylim = list(ax.get_ylim())
