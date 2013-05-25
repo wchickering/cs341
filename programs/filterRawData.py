@@ -41,6 +41,7 @@ def main():
             assert(wmsessionid != '')
             rawquery = record['rawquery']
             assert(rawquery != '')
+            assert(rawquery != [])
         except:
             # skip missing data/format errors
             dataErrors += 1
