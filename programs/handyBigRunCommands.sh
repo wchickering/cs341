@@ -1,21 +1,21 @@
 ## make multiple multiReRank json files from a skeleton
 #for param in {item_title,carts,items,queries}
 #do
-#    cat data/k3.start.json | python programs/optimize.py exp_$param 0.01 \
-#        > data/exp_${param}.json
+#    cat shared_multiReRank_json/k3.start.json | python programs/optimize.py exp_$param 0.01 \
+#        > shared_multiReRank_json/exp_${param}.json
 #done
 
 ## create multiReRankrc files from a template
 #for param in {item_title,carts,items,queries}
 #do
-#    sed 's/exp_[^\.]\+/exp_'$param'/' data/multiReRankrc.exp_clicks \
+#    sed 's/exp_[^\.]\+/exp_'$param'/' shared_multiReRank_json/multiReRankrc.exp_clicks \
 #        > data/multiReRankrc.exp_$param
 #done
 
 ## fork multiple runs of multiReRank varying different parameters
 #for param in {clicks,item_title,carts,items,queries}
 #do
-#    export MULTIRERANK_PARAMS=data/multiReRankrc.exp_$param
+#    export MULTIRERANK_PARAMS=shared_multiReRank_json/multiReRankrc.exp_$param
 #    programs/multiReRank.sh &
 #done
 

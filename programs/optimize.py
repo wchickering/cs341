@@ -10,6 +10,11 @@ if (len(sys.argv) != 3):
 line = sys.stdin.readline()
 params = json.loads(line)
 
+paramType, paramName = sys.argv[1].split('_',1)
+
+if (paramType == 'exp'):
+    params["coeff_"+paramName] = 1.0
+
 for i in np.arange(0,1+float(sys.argv[2]),float(sys.argv[2])):
     params[sys.argv[1]] = i
     print json.dumps(params)
