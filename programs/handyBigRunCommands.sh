@@ -8,14 +8,14 @@
 ## create multiReRankrc files from a template
 #for param in {item_title,carts,items,queries}
 #do
-#    sed 's/exp_[^\.]\+/exp_'$param'/' shared_multiReRank_json/multiReRankrc.exp_clicks \
+#    sed 's/exp_[^\.]\+/exp_'$param'/' data/multiReRankrc.exp_clicks \
 #        > data/multiReRankrc.exp_$param
 #done
 
 ## fork multiple runs of multiReRank varying different parameters
 #for param in {clicks,item_title,carts,items,queries}
 #do
-#    export MULTIRERANK_PARAMS=shared_multiReRank_json/multiReRankrc.exp_$param
+#    export MULTIRERANK_PARAMS=`pwd`/data/multiReRankrc.exp_$param
 #    programs/multiReRank.sh &
 #done
 
