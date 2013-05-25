@@ -154,9 +154,9 @@ def plotMetric(metric_figure, resultsFn, metric, free_param, multi):
     else:
         xlabel = str(free_param)+" = ???"
         if free_param[0] == "coeff":
-            xlabel += ", "+str(free_param)+" = "+str(params[str(free_param)])
+            xlabel += ", exp_"+free_param[1]+" = "+str(params["exp_"+free_param[1]])
         elif free_param[0] == "exp":
-            xlabel = str(free_param)+" = "+str(params[str(free_param)])+", "+ xlabel
+            xlabel = "coeff_"+free_param[1]+" = " + str(params["coeff_"+free_param[1]]) +", "+ xlabel
         elif str(free_param) == "k":
             xlabel = "k = ???  insert = " + str(params["insert_position"])
         elif str(free_param) == "insert_position":
