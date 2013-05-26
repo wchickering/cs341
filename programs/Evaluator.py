@@ -183,7 +183,7 @@ class Evaluator:
         print 'total_precision_front_reordered = ' + \
             str(float(self.stats['total_reordered_clicks_front_page'])/\
                 self.stats['total_items_on_front_page'])
-        print 'total_recall_front_reordered = ' + str(self.stats['total_recall_front_reordered'])
+        print 'total_recall_front_reordered = ' + str(self.stats['total_recall_front_reordered']) +\
             str(float(self.stats['total_reordered_clicks_front_page'])/self.stats['clicked_items'])
         print 'total_reordered_clicks_front_page = ' + \
             str(self.stats['total_reordered_clicks_front_page'])
