@@ -24,24 +24,26 @@ titleFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='de
 labelpad = 12
 
 def parameterInfoString(params, free_param):
-    s = "+--------------------------+\n"
-    if (str(free_param) != "k" and str(free_param) != 'insert_position'):
-       s += "|    k = %2d  insert = %2d   |\n" % ( params["k"], params["insert_position"] )\
-          + "+------------+------+------+\n"
-    if (free_param[1] != "rank"):
-       s += "|       Rank | %.2f | %.2f |\n" % ( params["coeff_rank"], params["exp_rank"] )
-    if (free_param[1] != "items"):
-       s += "|      Items | %.2f | %.2f |\n" % ( params["coeff_items"], params["exp_items"] )
-    if (free_param[1] != "clicks"):
-       s += "|     Clicks | %.2f | %.2f |\n" % ( params["coeff_clicks"], params["exp_clicks"] )
-    if (free_param[1] != "queries"):
-       s += "|    Queries | %.2f | %.2f |\n" % ( params["coeff_queries"], params["exp_queries"] )
-    if (free_param[1] != "carts"):
-       s += "|      Carts | %.2f | %.2f |\n" % ( params["coeff_carts"], params["exp_carts"] )
-    if (free_param[1] != "item_title"):
-       s += "| Item title | %.2f | %.2f |\n" % ( params["coeff_item_title"], params["exp_item_title"] )
+    s = "+---------------------------+\n"
+    if str(free_param) == "k":
+       s += "|  k = ??  insert_pos = %2d  |\n" % ( params["insert_position"] )
+    elif str(free_param) == 'insert_position':
+       s += "|  k = %2d  insert_pos = ??  |\n" % ( params["k"] )
+    else:
+       s += "|  k = %2d  insert_pos = %2d  |\n" % ( params["k"], params["insert_position"] )
 
-    s += "+------------+------+------+"
+    s += "+------------+-------+------+\n"\
+       + "|   index    | coeff | exp  |\n"\
+       + "+------------+-------+------+\n"
+
+    for index in ['rank','items','clicks','queries','carts','item_title']:
+        if (free_param[1] != index):
+           s += "| %10s |  %.2f | %.2f |\n" % ( index, params["coeff_"+index], params["exp_"+index] )
+        elif (free_param[0] == 'coeff'):
+           s += "| %10s |  ???? | %.2f |\n" % ( index, params["exp_"+index] )
+        elif (free_param[0] == 'exp'):
+           s += "| %10s |  %.2f | ???? |\n" % ( index, params["coeff_"+index] )
+    s += "+------------+------+------+\n"
 
     return s
 
@@ -50,6 +52,7 @@ def plotNDCGCurve(resultsFn):
     
     NDCG_figure = plt.figure(figsize=(20,12))
     ax = NDCG_figure.gca()
+    NDCG_figure.set_facecolor('w')
 
     for i, line in enumerate(resultsFo):
         marker = matplotlib.lines.Line2D.filled_markers[i]
@@ -75,6 +78,11 @@ def plotNDCGCurve(resultsFn):
     ax.set_ylabel('NDCG score', labelpad=labelpad, fontproperties=middleFont)
 
     legend = ax.legend(prop=smallFont, ncol=4, loc='lower right', fancybox=True, shadow=True)
+    legend.get_frame().set_alpha(0.92)
+    #NDCG_figure.subplots_adjust(right=0.6,left=0.08)
+    #legend = ax.legend(prop=smallFont, ncol=3, loc=2,
+    #                   fancybox=True, shadow=True,
+    #                   bbox_to_anchor=(1.05,1), borderaxespad=0)
     legend.draggable()
 
     NDCG_figure.suptitle('NDCG scores for %s' % dataInfo['dataFn'].split('/')[-1], fontproperties=titleFont)
@@ -159,7 +167,7 @@ def plotMetric(metric_figure, resultsFn, metric, free_param, multi, orig_scores=
     if multi:
         ax.plot([x[0] for x in reordered_scores],
                 [x[1] for x in reordered_scores],
-                'o-', label=str(free_param),
+                'o-', label=parameterInfoString(params, free_param),
                 linewidth=2, markersize=8)
     else:
         ax.plot([x[0] for x in reordered_scores],
@@ -173,15 +181,7 @@ def plotMetric(metric_figure, resultsFn, metric, free_param, multi, orig_scores=
     if multi:
         xlabel = 'free parameter'
     else:
-        xlabel = str(free_param)+" = ???"
-        if free_param[0] == "coeff":
-            xlabel += ", exp_"+free_param[1]+" = "+str(params["exp_"+free_param[1]])
-        elif free_param[0] == "exp":
-            xlabel = "coeff_"+free_param[1]+" = " + str(params["coeff_"+free_param[1]]) +", "+ xlabel
-        elif str(free_param) == "k":
-            xlabel = "k = ???  insert = " + str(params["insert_position"])
-        elif str(free_param) == "insert_position":
-            xlabel = "k = " + str(params['k']) + " insert_position = ???"
+        xlabel = str(free_param)
 
     ax.set_xlabel(xlabel, labelpad=labelpad, fontproperties=middleFont)
     if metric == 'recall':
@@ -259,6 +259,7 @@ def main():
         ax = plotNDCGCurve(resultsFn)
     else:
         metric_figure = plt.figure(figsize=(20,12))
+        metric_figure.set_facecolor('w')
         if options.multi:
             multiResultsFo = open(resultsFn)
             for line in multiResultsFo:
@@ -274,13 +275,19 @@ def main():
                         linewidth=2, markersize=8)
 
             multiResultsFo.close()
+            
+            metric_figure.subplots_adjust(right=0.50,left=0.08)
+            legend = ax.legend(prop=middleFont, ncol=2, loc=2,
+                               fancybox=True, shadow=True,
+                               bbox_to_anchor=(1.05,1), borderaxespad=0)
         else:
             ax = plotMetric(metric_figure, resultsFn, options.plot, FreeParam(options.free_param), False)
+            metric_figure.subplots_adjust(right=0.72)
+            legend = ax.legend(prop=middleFont, ncol=2, loc=2,
+                               fancybox=True, shadow=True,
+                               bbox_to_anchor=(1.05,1), borderaxespad=0)
 
-        legend = ax.legend(prop=middleFont, ncol=4, loc='best',
-                           fancybox=True, shadow=True)
-        legend.draggable()
-
+        #legend.draggable()
 
     xlim = list(ax.get_xlim())
     ylim = list(ax.get_ylim())
