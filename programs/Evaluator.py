@@ -46,6 +46,8 @@ class Evaluator:
         self.stats['total_moved_to_front_page'] = 0
         self.stats['total_moved_off_front_page'] = 0
         self.stats['total_stayed_on_front_page'] = 0
+        self.stats['total_recall_front_orig'] = 0.0
+        self.stats['total_recall_front_reordered'] = 0.0
         self.stats['precision_orig_subtotal'] = 0.0
         self.stats['recall_orig_subtotal'] = 0.0
         self.stats['f1_orig_subtotal'] = 0.0
@@ -92,6 +94,10 @@ class Evaluator:
              self.stats['recall_reordered_subtotal']/self.stats['num_queries']
         self.stats['f1_reordered_avg'] =\
              self.stats['f1_reordered_subtotal']/self.stats['num_queries']
+        self.stats['total_recall_front_orig'] =\
+             float(self.stats['total_shown_clicks_front_page'])/self.stats['clicked_items']
+        self.stats['total_recall_front_reordered'] =\
+             float(self.stats['total_reordered_clicks_front_page'])/self.stats['clicked_items']
 
     def printStats(self, outFile=sys.stdout):
         for key, value in self.stats.items():
@@ -173,12 +179,11 @@ class Evaluator:
         print 'total_precision_front_orig = ' + \
             str(float(self.stats['total_shown_clicks_front_page'])/\
                 self.stats['total_items_on_front_page'])
-        print 'total_recall_front_orig = ' + \
-            str(float(self.stats['total_shown_clicks_front_page'])/self.stats['clicked_items'])
+        print 'total_recall_front_orig = ' + str(self.stats['total_recall_front_orig'])
         print 'total_precision_front_reordered = ' + \
             str(float(self.stats['total_reordered_clicks_front_page'])/\
                 self.stats['total_items_on_front_page'])
-        print 'total_recall_front_reordered = ' + \
+        print 'total_recall_front_reordered = ' + str(self.stats['total_recall_front_reordered'])
             str(float(self.stats['total_reordered_clicks_front_page'])/self.stats['clicked_items'])
         print 'total_reordered_clicks_front_page = ' + \
             str(self.stats['total_reordered_clicks_front_page'])
