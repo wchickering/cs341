@@ -64,7 +64,7 @@ fi
 if [ ! -f $FILTERED_TEST_DATA ]
 then
     echo "Filtering test data . . ."
-    cat $TEST_DATA | python $FILTER_PROG --index_items $INDEX_ITEMS --dict_items $DICT_ITEMS --index_queries $INDEX_QUERIES --dict_queries $DICT_QUERIES --index_clicks $INDEX_CLICKS --dict_clicks $DICT_CLICKS --index_carts $INDEX_CARTS --dict_carts $DICT_CARTS > $FILTERED_TEST_DATA
+    cat $TEST_DATA | python $FILTER_PROG > $FILTERED_TEST_DATA
 fi
 
 if [ "$MODE" == "dump" ]
