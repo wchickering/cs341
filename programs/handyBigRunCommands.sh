@@ -25,6 +25,6 @@
 #    python programs/plotResults.py \
 #        --plot recall \
 #        --free-param exp_$param \
-#        data/000050_0.48chunk.multiReRank_exp_${param}.out
+#        data/000050_0.48chunk.multiReRank_exp_${param}.out &
 #done
 

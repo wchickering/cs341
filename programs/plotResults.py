@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 """plots the json serialized stats from Evaluator objects 
 """
@@ -82,28 +81,43 @@ def plotNDCGCurve(resultsFn):
 
     return ax
 
-def getMetricScores(resultsFn, metric, free_param):
+class ref:
+    def __init__(self, obj): self.obj=obj
+    def get(self): return self.obj
+    def set(self, obj): self.obj=obj
+
+def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[],
+                    multi=False):
     resultsFo = open(resultsFn)
     
-    metric_scores = []
+    reordered_scores = []
     for line in resultsFo:
         dataInfo, params, stats = json.loads(line)
         
         if (metric == 'recall'):
-            metric_scores.append((params[str(free_param)],
+            reordered_scores.append((params[str(free_param)],
                 (stats['recall_reordered_avg']-stats['recall_orig_avg'])\
                         /stats['recall_orig_avg']))
         elif (metric == 'NDCG16'):
-            metric_scores.append((params[str(free_param)],
+            reordered_scores.append((params[str(free_param)],
                 stats['avg_reordered_NDCG_scores'][15]))
+            if multi:
+                orig_scores.append((params[str(free_param)],
+                    stats['avg_orig_NDCG_scores'][15]))
         else:
-            metric_scores.append((params[str(free_param)],
+            reordered_scores.append((params[str(free_param)],
                 stats[metric]))
+            if multi:
+                orig_scores.append((params[str(free_param)],
+                    stats[metric]))
+
+    if (metric == 'NDCG16'):
+        orig_score.set(stats['avg_orig_NDCG_scores'][15])
 
     resultsFo.close()
 
-    metric_scores.sort(key=lambda a: a[0])
-    return metric_scores, params, dataInfo
+    reordered_scores.sort(key=lambda a: a[0])
+    return reordered_scores, params, dataInfo 
 
 ### messy class to deal with free paramters
 class FreeParam:
@@ -130,19 +144,26 @@ class FreeParam:
     def __repr__(self):
         return 'FreeParam(%r)' % repr(self._p)
 
-def plotMetric(metric_figure, resultsFn, metric, free_param, multi):
-    metric_scores, params, dataInfo = getMetricScores(resultsFn, metric, free_param)
+def plotMetric(metric_figure, resultsFn, metric, free_param, multi, orig_scores=[]):
+    
+    orig_score_ref = ref(0)
+    if multi:
+        reordered_scores, params, dataInfo = getMetricScores(resultsFn, metric,
+                                                          free_param, orig_score_ref,
+                                                          orig_scores, True)
+    else:
+        reordered_scores, params, dataInfo = getMetricScores(resultsFn, metric, free_param, orig_score_ref)
 
     ax = metric_figure.gca()
 
     if multi:
-        ax.plot([x[0] for x in metric_scores],
-                [x[1] for x in metric_scores],
+        ax.plot([x[0] for x in reordered_scores],
+                [x[1] for x in reordered_scores],
                 'o-', label=str(free_param),
                 linewidth=2, markersize=8)
     else:
-        ax.plot([x[0] for x in metric_scores],
-                [x[1] for x in metric_scores],
+        ax.plot([x[0] for x in reordered_scores],
+                [x[1] for x in reordered_scores],
                 'o-', label=parameterInfoString(params, free_param),
                 linewidth=2, markersize=8)
 
@@ -163,11 +184,17 @@ def plotMetric(metric_figure, resultsFn, metric, free_param, multi):
             xlabel = "k = " + str(params['k']) + " insert_position = ???"
 
     ax.set_xlabel(xlabel, labelpad=labelpad, fontproperties=middleFont)
-    ax.set_ylabel(metric, labelpad=labelpad, fontproperties=middleFont)
-
-    legend = ax.legend(prop=middleFont, ncol=4, loc='best',
-                       fancybox=True, shadow=True)
-    legend.draggable()
+    if metric == 'recall':
+        ax.set_ylabel('% increase in recall over original data', labelpad=labelpad, fontproperties=middleFont)
+    elif metric == 'NDCG16':
+        ax.set_ylabel('top page NDCG score', labelpad=labelpad, fontproperties=middleFont)
+        
+        if not multi:
+            ax.text(0.4,0.95,'original NDCG score = %.3f' % orig_score_ref.get(),
+                    transform=ax.transAxes, fontproperties=middleFont,
+                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    else:
+        ax.set_ylabel(metric, labelpad=labelpad, fontproperties=middleFont)
 
     metric_figure.suptitle(metric + ' scores for %s'
                              % dataInfo['dataFn'].split('/')[-1],
@@ -238,11 +265,22 @@ def main():
                 line = line.rstrip()
                 free_param, fn = line.split()
                 free_param = FreeParam(free_param)
-                ax = plotMetric(metric_figure, fn, options.plot, free_param, True)
+                orig_scores=[]
+                ax = plotMetric(metric_figure, fn, options.plot, free_param, True, orig_scores)
+            if not (options.plot == 'recall'):
+                ax.plot([x[0] for x in orig_scores],
+                        [x[1] for x in orig_scores],
+                        '^-', label='original',
+                        linewidth=2, markersize=8)
 
             multiResultsFo.close()
         else:
             ax = plotMetric(metric_figure, resultsFn, options.plot, FreeParam(options.free_param), False)
+
+        legend = ax.legend(prop=middleFont, ncol=4, loc='best',
+                           fancybox=True, shadow=True)
+        legend.draggable()
+
 
     xlim = list(ax.get_xlim())
     ylim = list(ax.get_ylim())
@@ -256,6 +294,8 @@ def main():
         ylim[1] = options.ymax
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
+
+    ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.5f'))
 
     plt.show()
 
