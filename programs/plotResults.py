@@ -105,7 +105,7 @@ def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[],
         if (metric == 'recall'):
             reordered_scores.append((params[str(free_param)],
                 (stats['recall_reordered_avg']-stats['recall_orig_avg'])\
-                        /stats['recall_orig_avg']))
+                        /stats['recall_orig_avg']*100))
         elif (metric == 'NDCG16'):
             reordered_scores.append((params[str(free_param)],
                 stats['avg_reordered_NDCG_scores'][15]))
