@@ -34,6 +34,8 @@ class Query:
         self.shown_items = record['shown_items']
         self.previously_clicked_items=record['previously_clicked_items']
         self.clicked_shown_items=record['clicked_shown_items']
+        self.carted_shown_items=record['carted_shown_items']
+        self.purchased_shown_items=record['purchased_shown_items']
 
     def __repr__(self):
         return "Query(%s)" % repr(json.dumps({\
@@ -43,7 +45,9 @@ class Query:
                      "searchattributes":self.searchattributes,\
                      "shown_items":self.shown_items,\
                      "previously_clicked_items":self.previously_clicked_items,\
-                     "clicked_shown_items":self.clicked_shown_items}))
+                     "clicked_shown_items":self.clicked_shown_items,\
+                     "carted_shown_items":self.carted_shown_items,\
+                     "purchased_shown_items":self.purchased_shown_items}))
 
     def __str__(self):
         return json.dumps({\
@@ -53,7 +57,9 @@ class Query:
                      "searchattributes":self.searchattributes,\
                      "shown_items":self.shown_items,\
                      "previously_clicked_items":self.previously_clicked_items,\
-                     "clicked_shown_items":self.clicked_shown_items})
+                     "clicked_shown_items":self.clicked_shown_items,\
+                     "carted_shown_items":self.carted_shown_items,\
+                     "purchased_shown_items":self.purchased_shown_items})
 
 def main():
     return
