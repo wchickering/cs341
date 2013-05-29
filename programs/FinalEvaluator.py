@@ -249,8 +249,8 @@ def main():
             front_page_clicks_reordered * front_page_clicks_reordered 
         #diff_clicks_front_page = front_page_clicks_reordered - front_page_clicks_orig
         #total_sqr_diff_clicks_front_page += (diff_clicks_front_page * diff_clicks_front_page)
-        #total_clicks_in_topK_orig += clicks_in_topK_orig
-        #total_clicks_in_topK_reordered += clicks_in_topK_reordered
+        total_clicks_in_topK_orig += clicks_in_topK_orig
+        total_clicks_in_topK_reordered += clicks_in_topK_reordered
 
         precision_orig = float(clicks_in_topK_orig)/k
         assert(precision_orig <= 1.0)
