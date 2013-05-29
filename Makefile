@@ -31,7 +31,7 @@ test_data                   = $(raw_data).test_data
 reordered_queries           = $(raw_data).$(INDEX).reordered_queries
 evaluation                  = $(raw_data).$(INDEX).eval
 histogram                   = $(raw_data).$(INDEX).histogram
-filtered_test_data          = $(test_data).$(INDEX).filtered
+filtered_test_data          = $(test_data).filtered
 
 # index data variables
 index_data  		       := data/$(INDEX)
