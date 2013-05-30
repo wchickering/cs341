@@ -13,12 +13,12 @@ for pos in range(10,20):
         lineDict = json.loads(line)
         if (len(lineDict['reordered_shown_items']) >= pos\
                 and lineDict['reordered_shown_items'] != lineDict['shown_items']):
-            itempos = lineDict['reordered_shown_items'][pos-1]
+            item = lineDict['reordered_shown_items'][pos-1]
     
             n += 1
-            origPosCount += lineDict['shown_items'].index(itempos)+1
+            origPosCount += lineDict['shown_items'].index(item)+1
             for i in range(5):
-                if lineDict['shown_items'].index(itempos) < i+1:
+                if lineDict['shown_items'].index(item) <= i:
                     top[i] += 1
     
     print "===== " + str(pos) + " ====="
