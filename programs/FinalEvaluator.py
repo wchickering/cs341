@@ -9,6 +9,7 @@ from collections import Iterable
 
 MAX_FRONT_PAGE_ITEMS = 16
 NUM_NDCG_SCORES = 16
+POSITIONS = 32
 
 def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -90,11 +91,13 @@ def main():
     total_shown_clicks_off_front_page = 0
     total_reordered_clicks_front_page = 0
     total_reordered_clicks_off_front_page = 0
-    total_moved_to_front_page = 0
-    total_moved_off_front_page = 0
+    total_clicks_moved_to_front_page = 0
+    total_clicks_moved_off_front_page = 0
     total_purchases_moved_to_front_page = 0
     total_purchases_moved_off_front_page = 0
-    total_stayed_on_front_page = 0
+    total_clicks_stayed_on_front_page = 0
+    total_items_moved_to_front_page = 0
+    total_items_moved_off_front_page = 0
     precision_orig_subtotal = 0.0
     recall_orig_subtotal = 0.0
     f1_orig_subtotal = 0.0
@@ -120,6 +123,11 @@ def main():
     total_sqr_purchases_front_page_orig = 0
     total_sqr_purchases_front_page_reordered = 0
     total_shown_items = 0
+    items_by_position = [0]*POSITIONS
+    orig_clicks_by_position = [0]*POSITIONS
+    orig_purchases_by_position = [0]*POSITIONS
+    reordered_clicks_by_position = [0]*POSITIONS
+    reordered_purchases_by_position = [0]*POSITIONS
 
     print "Processing Data..."
     ### PROCESS DATA ###
@@ -154,6 +162,20 @@ def main():
         if promoted_items > 0:
             total_affected_queries += 1
 
+        # calculate stats by position
+        for i in range(POSITIONS):
+            if i >= len(shown_items):
+                break
+            items_by_position[i] += 1
+            if shown_items[i] in clicked_shown_items:
+                orig_clicks_by_position[i] += 1
+            if shown_items[i] in purchased_shown_items:
+                orig_purchases_by_position[i] += 1
+            if reordered_shown_items[i] in clicked_shown_items:
+                reordered_clicks_by_position[i] += 1
+            if reordered_shown_items[i] in purchased_shown_items:
+                reordered_purchases_by_position[i] += 1
+
         # calculate NDCG
         best_DCG = 0.0
         orig_DCG = 0.0
@@ -172,6 +194,11 @@ def main():
                 reordered_DCG += DCGScore(i)
             total_orig_NDCG_scores[i] += (orig_DCG/best_DCG)
             total_reordered_NDCG_scores[i] += (reordered_DCG/best_DCG)
+            # get total_items_moved_to_front_page
+            if reordered_shown_items[i] not in shown_items[0:MAX_FRONT_PAGE_ITEMS]:
+                total_items_moved_to_front_page += 1
+            if shown_items[i] not in reordered_shown_items[0:MAX_FRONT_PAGE_ITEMS]:
+                total_items_moved_off_front_page +=1
         orig_NDCG = orig_DCG/best_DCG
         reordered_NDCG = reordered_DCG/best_DCG
         total_orig_NDCG_16 += orig_NDCG
@@ -227,11 +254,11 @@ def main():
             shown_front_page = isFrontPage(shown_index)
             top_page_advantage += reordered_front_page - shown_front_page 
             if reordered_front_page - shown_front_page > 0:
-                total_moved_to_front_page += 1
+                total_clicks_moved_to_front_page += 1
             elif reordered_front_page - shown_front_page < 0:
-                total_moved_off_front_page += 1
+                total_clicks_moved_off_front_page += 1
             elif reordered_front_page and shown_front_page:
-                total_stayed_on_front_page += 1
+                total_clicks_stayed_on_front_page += 1
             if reordered_front_page:
                 front_page_clicks_reordered += 1
                 total_reordered_clicks_front_page += 1
@@ -290,6 +317,9 @@ def main():
         test_data_front_page_clicks = record['num_front_page_clicks']
         test_data_front_page_purchases = record['num_front_page_purchases']
         test_data_front_page_items = record['num_front_page_items'] 
+        test_data_items_by_position = record['num_items_by_position']
+        test_data_clicks_by_position = record['num_clicks_by_position']
+        test_data_purchases_by_position = record['num_purchases_by_position']
     for line in rankable_data_file:
         record = json.loads(line)
         rankable_data_queries = record['num_queries']
@@ -301,6 +331,9 @@ def main():
         rankable_data_front_page_clicks = record['num_front_page_clicks']
         rankable_data_front_page_purchases = record['num_front_page_purchases']
         rankable_data_front_page_items = record['num_front_page_items'] 
+        rankable_data_items_by_position = record['num_items_by_position']
+        rankable_data_clicks_by_position = record['num_clicks_by_position']
+        rankable_data_purchases_by_position = record['num_purchases_by_position']
     test_data_file.close()
     rankable_data_file.close()
 
@@ -362,15 +395,77 @@ def main():
     perc_one_page_queries_rankable_data = float(rankable_data_one_page_queries) /\
             rankable_data_queries
 
-    #other_page_clicks = clicked_items - front_page_clicks_orig 
-    #other_page_purchases = purchased_items - front_page_purchases_orig 
-    #other_page_items = total_shown_items - total_items_on_front_page
-    #other_page_CTR = float(other_page_clicks)/other_page_items
-    #other_page_purchase_rate = float(other_page_purchases)/other_page_items
+    other_page_clicks_orig = clicked_items - total_shown_clicks_front_page 
+    other_page_purchases_orig = purchased_items - total_purchased_front_page_orig 
+    other_page_items = total_shown_items - total_items_on_front_page
+    print 'other clicks: ', other_page_clicks_orig
+    print 'oter items: ', other_page_items
+    print 'total items: ', total_shown_items
+    print 'clicks: ', clicked_items
+    print 'front clicks: ', front_page_clicks_orig
+    other_page_CTR_orig = float(other_page_clicks_orig)/other_page_items
+    other_page_conversion_rate_orig = float(other_page_purchases_orig)/other_page_clicks_orig
+    other_page_purchase_rate_orig = float(other_page_purchases_orig)/other_page_items
+
+    other_page_clicks_reordered = clicked_items - total_reordered_clicks_front_page  
+    other_page_purchases_reordered = purchased_items - total_purchased_front_page_reordered 
+    other_page_CTR_reordered = float(other_page_clicks_reordered)/other_page_items
+    other_page_conversion_rate_reordered = float(other_page_purchases_reordered) / \
+            other_page_clicks_reordered
+    other_page_purchase_rate_reordered = float(other_page_purchases_reordered)/other_page_items
 
     perc_clicks_in_rankable = float(rankable_data_clicks)/test_data_clicks
     perc_purchases_in_rankable = float(rankable_data_purchases)/test_data_purchases
+    perc_clicks_front_page_in_rankable = float(rankable_data_front_page_clicks) / \
+            test_data_clicks
+    perc_purchases_front_page_in_rankable = float(rankable_data_front_page_purchases) / \
+            test_data_purchases
+
+    # position stats
+    test_data_CTR_by_position = [0]*POSITIONS
+    test_data_conversion_rate_by_position = [0]*POSITIONS
+    test_data_purchase_rate_by_position = [0]*POSITIONS
+    for i in range(POSITIONS):
+        test_data_CTR_by_position[i] = float(test_data_clicks_by_position[i]) / \
+                test_data_items_by_position[i]
+        test_data_conversion_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
+                test_data_clicks_by_position[i]
+        test_data_purchase_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
+                test_data_items_by_position[i]
+
+    rankable_data_CTR_by_position = [0]*POSITIONS
+    rankable_data_conversion_rate_by_position = [0]*POSITIONS
+    rankable_data_purchase_rate_by_position = [0]*POSITIONS
+    for i in range(POSITIONS):
+        rankable_data_CTR_by_position[i] = float(rankable_data_clicks_by_position[i]) / \
+                rankable_data_items_by_position[i]
+        rankable_data_conversion_rate_by_position[i] =  \
+                float(test_data_purchases_by_position[i]) / rankable_data_clicks_by_position[i]
+        rankable_data_purchase_rate_by_position[i] = \
+                float(test_data_purchases_by_position[i]) / rankable_data_items_by_position[i]
    
+    orig_CTR_by_position = [0]*POSITIONS
+    orig_conversion_rate_by_position = [0]*POSITIONS
+    orig_purchase_rate_by_position = [0]*POSITIONS
+    for i in range(POSITIONS):
+        orig_CTR_by_position[i] = float(orig_clicks_by_position[i]) / \
+                items_by_position[i]
+        orig_conversion_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
+                orig_clicks_by_position[i]
+        orig_purchase_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
+                items_by_position[i]
+ 
+    reordered_CTR_by_position = [0]*POSITIONS
+    reordered_conversion_rate_by_position = [0]*POSITIONS
+    reordered_purchase_rate_by_position = [0]*POSITIONS
+    for i in range(POSITIONS):
+        reordered_CTR_by_position[i] = float(reordered_clicks_by_position[i]) / \
+                items_by_position[i]
+        reordered_conversion_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
+                reordered_clicks_by_position[i]
+        reordered_purchase_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
+                items_by_position[i]
+ 
     # calculate averages, etc
     for i in range(NUM_NDCG_SCORES):
         avg_orig_NDCG_scores[i] = total_orig_NDCG_scores[i]/num_queries
@@ -400,9 +495,13 @@ def main():
     our_front_page_conversion = float(total_purchased_front_page_reordered) / \
             total_reordered_clicks_front_page
     promoted_to_front_conversion = float(total_purchases_moved_to_front_page)/ \
-            total_moved_to_front_page
+            total_clicks_moved_to_front_page
     bumped_off_front_conversion = float(total_purchases_moved_off_front_page)/ \
-            total_moved_off_front_page
+            total_clicks_moved_off_front_page
+    ctr_promoted_to_front = float(total_clicks_moved_to_front_page)/ \
+            total_items_moved_to_front_page
+    ctr_bumped_off_front = float(total_clicks_moved_off_front_page)/ \
+            total_items_moved_off_front_page
 
     # standard deviation calculations
     # clicks:
@@ -473,6 +572,7 @@ def main():
     print 'percent_unmoved = ', float(unmoved_clicked_items)/clicked_items
     print 'reordered_clicked_items = ', reordered_clicked_items
     print 'num_queries_affected = ', total_affected_queries
+    print 'promoted_items_per_query = ', float(total_promoted_items) / num_queries
     print
 
     print '=== FRONT PAGE CLICKS ==='
@@ -485,8 +585,8 @@ def main():
         float(total_reordered_clicks_front_page)/clicked_items
     print 'total_original_clicks_front_page = ', total_shown_clicks_front_page
     print 'total_reordered_clicks_front_page = ', total_reordered_clicks_front_page
-    print 'total_moved_to_front_page = ', total_moved_to_front_page
-    print 'total_moved_off_front_page = ', total_moved_off_front_page
+    print 'total_clicks_moved_to_front_page = ', total_clicks_moved_to_front_page
+    print 'total_clicks_moved_off_front_page = ', total_clicks_moved_off_front_page
     print
  
     print '=== FRONT PAGE PURCHASES ==='
@@ -516,7 +616,65 @@ def main():
     print 'purchases_in_filtered_data = ', purchased_items
     print 'percent_data_rankable = ', perc_data_affectable_all
     print
-    
+
+    print '=== BY POSITION ==='
+    print 'TEST_DATA:'
+    print 'CTR:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', test_data_CTR_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_CTR_test_data
+    print 'Conversion:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', test_data_conversion_rate_by_position[i]
+    print '>', POSITIONS, ' :\t', test_data_other_pages_conversion
+    print 'Purchase rate:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', test_data_purchase_rate_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_purchase_rate_test_data
+    print
+    print 'RANKABLE_DATA:'
+    print 'CTR:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', rankable_data_CTR_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_CTR_rankable_data
+    print 'Conversion:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', rankable_data_conversion_rate_by_position[i]
+    print '>', POSITIONS, ' :\t', rankable_data_other_pages_conversion
+    print 'Purchase rate:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', rankable_data_purchase_rate_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_purchase_rate_rankable_data
+    print
+    print 'FILTERED_DATA_ORIGINAL:'
+    print 'CTR:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', orig_CTR_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_CTR_orig
+    print 'Conversion:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', orig_conversion_rate_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_conversion_rate_orig
+    print 'Purchase rate:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', orig_purchase_rate_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_purchase_rate_orig
+    print
+    print 'FILTERED_DATA_RANKABLE:'
+    print 'CTR:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', reordered_CTR_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_CTR_reordered
+    print 'Conversion:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', reordered_conversion_rate_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_conversion_rate_reordered
+    print 'Purchase rate:'
+    for i in range(POSITIONS):
+        print i+1, ':\t', reordered_purchase_rate_by_position[i]
+    print '>', POSITIONS, ' :\t', other_page_purchase_rate_reordered
+    print
+
     print '=== TEST DATA vs RANKABLE DATA ==='
     print 'queries per user = ?'
     print 'clicks per user = ?'
@@ -550,6 +708,9 @@ def main():
             front_page_purchase_recall_rankable_data
     print 'percent of clicks in rankable = ', perc_clicks_in_rankable
     print 'percent of purchases in rankable = ', perc_purchases_in_rankable
+    print 'percent of clicks on front page in rankable = ', perc_clicks_front_page_in_rankable
+    print 'percent of purchases on front page in rankable = ', \
+            perc_purchases_front_page_in_rankable
     print
            
     print '=== CONVERSION RATES ==='
@@ -562,6 +723,8 @@ def main():
     print 'conversion_rate_our_front_page = ', our_front_page_conversion
     print 'conversion_rate_promoted_to_front_items = ', promoted_to_front_conversion
     print 'conversion_rate_bumped_off_front_items = ', bumped_off_front_conversion
+    print 'CTR_promoted_to_front = ', ctr_promoted_to_front
+    print 'CTR_bumped_off_front = ', ctr_bumped_off_front
     print
     
     print
@@ -583,7 +746,7 @@ def main():
         ",", "{0:.4f}".format((1+perc_click_ratio_95)*percent_increase_total_clicks), "]"
            
     print 'purchases:'
-    print 'first_purchase_difference = \t\t', \
+    print 'front_page_purchase_diff = \t\t', \
         purch_front_reordered - purch_front_orig, ' / ', purch_front_orig
     #print 'purchase_diff_std_dev = \t\t', math.sqrt(purchase_diff_variance)
     print 'percent_increase_purchases = \t\t', \

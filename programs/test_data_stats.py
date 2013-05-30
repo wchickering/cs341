@@ -6,6 +6,8 @@ import sys
 import fileinput
 import json
 
+FRONT_PAGE_ITEMS = 16
+POSITIONS = 32
 
 def main():
     num_queries = 0
@@ -26,6 +28,9 @@ def main():
     num_front_page_purchase_with_prev = 0
     num_queries_with_front_page_and_prev = 0
     num_one_page_queries = 0
+    num_clicks_by_position = [0]*POSITIONS
+    num_purchases_by_position = [0]*POSITIONS
+    num_items_by_position = [0]*POSITIONS
 
     for line in fileinput.input(sys.argv[1]):
         record = json.loads(line)
@@ -41,11 +46,19 @@ def main():
         num_purchases += len(purchaseditems)
         has_clicks = False
         has_prev_clicks = False
-        if len(shownitems) <= 16:
+        for i in range(POSITIONS):
+            if i >= len(shownitems):
+                break
+            num_items_by_position[i] += 1
+            if shownitems[i] in clickeditems:
+                num_clicks_by_position[i] += 1
+            if shownitems[i] in purchaseditems:
+                num_purchases_by_position[i] += 1
+        if len(shownitems) <= FRONT_PAGE_ITEMS:
             num_one_page_queries += 1
             num_front_page_items += len(shownitems)
         else:
-            num_front_page_items += 16
+            num_front_page_items += FRONT_PAGE_ITEMS
         if len(clickeditems) > 0:
             num_queries_with_clicks+=1
             has_clicks = True
@@ -62,11 +75,11 @@ def main():
                 num_clicks_with_prev_clicks+=1
                 if click in purchaseditems:
                     num_purchases_with_prev_clicks+=1
-                if position <= 16:
+                if position <= FRONT_PAGE_ITEMS:
                     num_front_page_clicks_with_prev+=1
                     if click in purchaseditems:
                         num_front_page_purchase_with_prev+=1
-            if position <= 16:
+            if position <= FRONT_PAGE_ITEMS:
                 has_front_page_click = True
                 num_front_page_clicks+=1
                 if click in purchaseditems:
@@ -105,6 +118,9 @@ def main():
     output['num_queries_with_clicks_and_prev_clicks'] = num_queries_with_clicks_and_prev_clicks
     output['num_queries_with_prev_clicks'] = num_queries_with_prev_clicks
     output['num_one_page_queries'] = num_one_page_queries
+    output['num_items_by_position'] = num_items_by_position
+    output['num_clicks_by_position'] = num_clicks_by_position
+    output['num_purchases_by_position'] = num_purchases_by_position
     print json.dumps(output)
 
     #print "TOTALS:"
