@@ -8,7 +8,8 @@ n = 0
 
 for line in reorderedQueriesFo:
     lineDict = json.loads(line)
-    if (len(lineDict['reordered_shown_items']) >= 16):
+    if (len(lineDict['reordered_shown_items']) >= 16\
+            and lineDict['reordered_shown_items'] != lineDict['shown_items']):
         item16 = lineDict['reordered_shown_items'][15]
 
         print str(item16),
@@ -16,5 +17,6 @@ for line in reorderedQueriesFo:
         n += 1
         origPosCount += lineDict['shown_items'].index(item16)+1
 
+print "Number of reranked queries with >= 16 items: " + str(n)
 print "Average original position of 16th reranked item: " + str(float(origPosCount)/n)
 
