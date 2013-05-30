@@ -62,6 +62,8 @@ class ReRanker:
         record['searchattributes'] = query.searchattributes
         record['shown_items'] = query.shown_items
         record['clicked_shown_items'] = query.clicked_shown_items
+        record['carted_shown_items'] = query.carted_shown_items
+        record['purchased_shown_items'] = query.purchased_shown_items
         record['reordered_shown_items'] = reordered_shown_items
         record['num_promoted_items'] = num_reranks
         return record
