@@ -13,6 +13,7 @@ __date__ = """16 April 2013"""
 import sys
 import heapq
 import math
+import random
 from collections import OrderedDict
 
 # import local modules
@@ -68,6 +69,16 @@ class ReRanker:
         record['num_promoted_items'] = num_reranks
         return record
 
+    # Used for testing and data analysis
+    def getRandomTopScoresHeap(self, query):
+        top_scores_heap = []
+        for i in range(self.insert_position, len(query.shown_items)):
+            self.stats['num_nonzero_scores'] += 1
+            heapq.heappush(top_scores_heap, (random.random(), i))
+            if len(top_scores_heap) > self.k:
+                heapq.heappop(top_scores_heap)
+        return top_scores_heap
+
     # Determine the top k scores 
     def getTopScoresHeap(self, query):
         top_scores_heap = []
@@ -87,7 +98,6 @@ class ReRanker:
                 heapq.heappush(top_scores_heap, (score, i))
                 if len(top_scores_heap) > self.k:
                     heapq.heappop(top_scores_heap)
-
         return top_scores_heap
 
     def reRankItems(self, query, top_scores_heap):
@@ -111,11 +121,10 @@ class ReRanker:
                 j += 1
             elif n < len(top_scores):
                 index = top_scores[n][1]
-                if j <= index:
-                    reranked_items.append(query.shown_items[index])
-                    num_reranks += 1
-                    self.stats['num_reranks'] += 1
-                    i += 1
+                reranked_items.append(query.shown_items[index])
+                num_reranks += 1
+                self.stats['num_reranks'] += 1
+                i += 1
                 n += 1
             elif k < len(top_score_idxs):
                 if j < top_score_idxs[k][1]:

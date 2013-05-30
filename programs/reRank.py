@@ -29,6 +29,7 @@ def parseArgs():
             + "[--workers N] "\
             + "[-k N] "\
             + "[--insert_position N] "\
+            + "[--random] "\
             + "[--coeff_rank X.X] "\
             + "[--coeff_items X.X] "\
             + "[--coeff_queries X.X] "\
@@ -74,6 +75,8 @@ def parseArgs():
     rankGroup.add_option("-k", type="int", dest="k", help="re-rank top k items")
     rankGroup.add_option("--insert_position", type="int", dest="insert_position",\
                          help="insert re-ranked items before this position")
+    rankGroup.add_option("--random", action="store_true", dest="random",\
+                         help="apply random scores to all shown items")
     rankGroup.add_option("--coeff_rank", type="float", dest="coeff_rank",\
                          help="rank coefficient")
     rankGroup.add_option("--coeff_items", type="float", dest="coeff_items",\
@@ -158,7 +161,8 @@ def parseArgs():
                             dest="verbose")
     parser.add_option_group(verboseGroup)
 
-    parser.set_defaults(k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0, coeff_queries=0.0,\
+    parser.set_defaults(k=1, insert_position=0, random=False,\
+                        coeff_rank=0.0, coeff_items=0.0, coeff_queries=0.0,\
                         coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
                         exp_rank=1.0, exp_items=1.0, exp_queries=1.0,\
                         exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
@@ -182,14 +186,17 @@ def parseArgs():
 
     return (options, args)
 
-def reRank(reRanker, test_data):
+def reRank(reRanker, test_data, random=False):
     records = []
     for line in test_data:
         # Instantiate query object
         query = Query.Query(line)
 
         # Compute top scores
-        top_scores_heap = reRanker.getTopScoresHeap(query)
+        if random:
+            top_scores_heap = reRanker.getRandomTopScoresHeap(query)
+        else:
+            top_scores_heap = reRanker.getTopScoresHeap(query)
 
         # re-rank shown items
         (num_reranks, reordered_shown_items) =\
@@ -214,7 +221,7 @@ def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=
            clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
            carts_score_dict_fname=None, carts_score_dump_fname=None,\
            item_title_score_dict_fname=None, item_title_score_dump_fname=None,\
-           verbose=False):
+           random=False, verbose=False):
 
     # Instantiate Similarity Calculator (expensive)
     simCalc = SimilarityCalculator.SimilarityCalculator(\
@@ -254,7 +261,7 @@ def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=
     reRanker = ReRanker.ReRanker(simCalc, k=k, insert_position=insert_position,\
                       coeff_rank=coeff_rank, exp_rank=exp_rank, verbose=verbose)
 
-    return reRank(reRanker, test_data)
+    return reRank(reRanker, test_data, random)
 
 def main():
     (options, args) = parseArgs()
@@ -298,6 +305,7 @@ def main():
                        carts_score_dump_fname=options.carts_score_dump_fname,\
                        item_title_score_dict_fname=options.item_title_score_dict_fname,\
                        item_title_score_dump_fname=options.item_title_score_dump_fname,\
+                       random=options.random,\
                        verbose=options.verbose)
         for record in records:
             print json.dumps(record)
@@ -407,6 +415,7 @@ def main():
                                 carts_score_dump_fname,\
                                 item_title_score_dict_fname,\
                                 item_title_score_dump_fname,\
+                                options.random,\
                                 False),\
                         (reRank,),\
                         ('ReRanker', 'SimilarityCalculator', 'Query')))
