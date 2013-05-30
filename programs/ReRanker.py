@@ -71,7 +71,7 @@ class ReRanker:
     # Determine the top k scores 
     def getTopScoresHeap(self, query):
         top_scores_heap = []
-        for i in range(len(query.shown_items)):
+        for i in range(self.insert_position, len(query.shown_items)):
             shownItem = query.shown_items[i]
             score = 0
             for j in range(len(query.previously_clicked_items)):
@@ -111,7 +111,7 @@ class ReRanker:
                 j += 1
             elif n < len(top_scores):
                 index = top_scores[n][1]
-                if j <= index: 
+                if j <= index:
                     reranked_items.append(query.shown_items[index])
                     num_reranks += 1
                     self.stats['num_reranks'] += 1
