@@ -104,8 +104,10 @@ def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[],
         
         if (metric == 'recall'):
             reordered_scores.append((params[str(free_param)],
-                (stats['recall_reordered_avg']-stats['recall_orig_avg'])\
-                        /stats['recall_orig_avg']*100))
+                #(stats['recall_reordered_avg']-stats['recall_orig_avg'])\
+                #        /stats['recall_orig_avg']*100))
+                (stats['total_recall_front_reordered']-stats['total_recall_front_orig'])\
+                        /stats['total_recall_front_orig']*100))
         elif (metric == 'NDCG16'):
             reordered_scores.append((params[str(free_param)],
                 stats['avg_reordered_NDCG_scores'][15]))
@@ -152,7 +154,8 @@ class FreeParam:
     def __repr__(self):
         return 'FreeParam(%r)' % repr(self._p)
 
-def plotMetric(metric_figure, resultsFn, metric, free_param, multi, orig_scores=[]):
+def plotMetric(metric_figure, resultsFn, metric, free_param,
+               multi, orig_scores=[]):
     
     orig_score_ref = ref(0)
     if multi:
