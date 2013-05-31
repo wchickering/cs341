@@ -12,7 +12,10 @@ __date__ = """16 April 2013"""
 
 # import standard modules
 import sys
+import os
 import json
+import thread
+import tempfile
 
 # import non-standard modules
 import pp
@@ -180,34 +183,14 @@ def parseArgs():
 
     (options, args) = parser.parse_args()
 
-    if (len(args) > 1):
+    if (len(args) != 1):
         parser.print_usage()
         sys.exit()
 
     return (options, args)
 
-def reRank(reRanker, test_data, random=False):
-    records = []
-    for line in test_data:
-        # Instantiate query object
-        query = Query.Query(line)
-
-        # Compute top scores
-        if random:
-            top_scores_heap = reRanker.getRandomTopScoresHeap(query)
-        else:
-            top_scores_heap = reRanker.getTopScoresHeap(query)
-
-        # re-rank shown items
-        (num_reranks, reordered_shown_items) =\
-                                   reRanker.reRankItems(query, top_scores_heap)
-
-        # construct reordered_query record
-        records.append(reRanker.makeRecord(query, num_reranks, reordered_shown_items))
-
-    return records
-
-def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
+def singleReRank_iter(inputFile, numLines=float('inf'),\
+           k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
            coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
            exp_rank=1.0, exp_items=1.0, exp_queries=1.0,\
            exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
@@ -261,18 +244,102 @@ def singleReRank(test_data, k=1, insert_position=0, coeff_rank=0.0, coeff_items=
     reRanker = ReRanker.ReRanker(simCalc, k=k, insert_position=insert_position,\
                       coeff_rank=coeff_rank, exp_rank=exp_rank, verbose=verbose)
 
-    return reRank(reRanker, test_data, random)
+    n = 0
+    for line in inputFile:
+        n += 1
+        # Instantiate query object
+        query = Query.Query(line)
+
+        # Compute top scores
+        if random:
+            top_scores_heap = reRanker.getRandomTopScoresHeap(query)
+        else:
+            top_scores_heap = reRanker.getTopScoresHeap(query)
+
+        # re-rank shown items
+        (num_reranks, reordered_shown_items) =\
+                                   reRanker.reRankItems(query, top_scores_heap)
+
+        # construct and yield reordered_query record
+        yield reRanker.makeRecord(query, num_reranks, reordered_shown_items)
+
+        if n >= numLines:
+            break
+
+def singleReRankAndDump(inputFileName, startLine, numLines,\
+           k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
+           coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
+           exp_rank=1.0, exp_items=1.0, exp_queries=1.0,\
+           exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
+           index_items_fname=None, posting_dict_items_fname=None,\
+           index_queries_fname=None, posting_dict_queries_fname=None,\
+           index_clicks_fname=None, posting_dict_clicks_fname=None,\
+           index_carts_fname=None, posting_dict_carts_fname=None,\
+           index_item_title_fname=None, posting_dict_item_title_fname=None,\
+           items_score_dict_fname=None, items_score_dump_fname=None,\
+           queries_score_dict_fname=None, queries_score_dump_fname=None,\
+           clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
+           carts_score_dict_fname=None, carts_score_dump_fname=None,\
+           item_title_score_dict_fname=None, item_title_score_dump_fname=None,\
+           random=False, verbose=False):
+
+    inputFile = open(inputFileName)
+    for i in range(startLine):
+        inputFile.readline()
+
+    # open temp file for writing intermediate output
+    tempFile = tempfile.NamedTemporaryFile(delete=False)
+
+    for record in singleReRank_iter(inputFile, numLines=numLines,\
+                       k=k, insert_position=insert_position,\
+                       coeff_rank=coeff_rank,\
+                       coeff_items=coeff_items,\
+                       coeff_queries=coeff_queries,\
+                       coeff_clicks=coeff_clicks,\
+                       coeff_carts=coeff_carts,\
+                       coeff_item_title=coeff_item_title,\
+                       exp_rank=exp_rank,\
+                       exp_items=exp_items,\
+                       exp_queries=exp_queries,\
+                       exp_clicks=exp_clicks,\
+                       exp_carts=exp_carts,\
+                       exp_item_title=exp_item_title,\
+                       index_items_fname=index_items_fname,\
+                       posting_dict_items_fname=posting_dict_items_fname,\
+                       index_queries_fname=index_queries_fname,\
+                       posting_dict_queries_fname=posting_dict_queries_fname,\
+                       index_clicks_fname=index_clicks_fname,\
+                       posting_dict_clicks_fname=posting_dict_clicks_fname,\
+                       index_carts_fname=index_carts_fname,\
+                       posting_dict_carts_fname=posting_dict_carts_fname,\
+                       index_item_title_fname=index_item_title_fname,\
+                       posting_dict_item_title_fname=posting_dict_item_title_fname,\
+                       items_score_dict_fname=items_score_dict_fname,\
+                       items_score_dump_fname=items_score_dump_fname,\
+                       queries_score_dict_fname=queries_score_dict_fname,\
+                       queries_score_dump_fname=queries_score_dump_fname,\
+                       clicks_score_dict_fname=clicks_score_dict_fname,\
+                       clicks_score_dump_fname=clicks_score_dump_fname,\
+                       carts_score_dict_fname=carts_score_dict_fname,\
+                       carts_score_dump_fname=carts_score_dump_fname,\
+                       item_title_score_dict_fname=item_title_score_dict_fname,\
+                       item_title_score_dump_fname=item_title_score_dump_fname,\
+                       random=random,\
+                       verbose=verbose):
+        print >> tempFile, json.dumps(record)
+
+    return tempFile.name
 
 def main():
     (options, args) = parseArgs()
-    if len(args) == 1:
-        inputFile = open(args[0])
-    else:
-        inputFile = sys.stdin
+    inputFileName = args[0]
+    inputFile = open(args[0])
 
     if options.workers == 1: #### single process ####
 
-        records = singleReRank(inputFile, options.k, options.insert_position,\
+        for record in singleReRank_iter(\
+                       inputFile, k=options.k,\
+                       insert_position=options.insert_position,\
                        coeff_rank=options.coeff_rank,\
                        coeff_items=options.coeff_items,\
                        coeff_queries=options.coeff_queries,\
@@ -306,14 +373,16 @@ def main():
                        item_title_score_dict_fname=options.item_title_score_dict_fname,\
                        item_title_score_dump_fname=options.item_title_score_dump_fname,\
                        random=options.random,\
-                       verbose=options.verbose)
-        for record in records:
+                       verbose=options.verbose):
             print json.dumps(record)
 
     else: #### multi-process ####
        
-        # read input into memory
-        test_data = inputFile.readlines()
+        # count lines in input file
+        num_lines = 0
+        for line in inputFile:
+            num_lines += 1 
+        inputFile.close()
 
         # tuple of all parallel python servers to connect with
         ppservers = ()
@@ -322,20 +391,20 @@ def main():
         job_server = pp.Server(options.workers, ppservers=ppservers, secret="")
 
         # determine number of data per job
-        data_per_job = len(test_data) / options.workers
-        if len(test_data) % options.workers != 0:
+        data_per_job = num_lines / options.workers
+        if num_lines % options.workers != 0:
             data_per_job += 1
 
         # submit reRank jobs for execution
-        data_submitted = 0
         jobs = []
+        data_submitted = 0
         workerNum = 0
-        while data_submitted < len(test_data):
+        while data_submitted < num_lines:
             workerNum += 1
-            if len(test_data) - data_submitted >= data_per_job:
+            if num_lines - data_submitted >= data_per_job:
                 data_this_job = data_per_job
             else:
-                data_this_job = len(test_data) - data_submitted
+                data_this_job = num_lines - data_submitted
 
             # construct workerNum-dependent scores filenames
             items_score_dict_fname = None
@@ -379,8 +448,11 @@ def main():
                 item_title_score_dump_fname =\
                     options.item_title_score_dump_fname + '.' + str(workerNum)
 
-            jobs.append(job_server.submit(singleReRank, \
-                               (test_data[data_submitted:data_submitted + data_this_job],\
+            # submit worker job
+            jobs.append(job_server.submit(singleReRankAndDump, \
+                               (inputFileName,\
+                                data_submitted,\
+                                data_this_job,\
                                 options.k,\
                                 options.insert_position,\
                                 options.coeff_rank,\
@@ -417,14 +489,18 @@ def main():
                                 item_title_score_dump_fname,\
                                 options.random,\
                                 False),\
-                        (reRank,),\
-                        ('ReRanker', 'SimilarityCalculator', 'Query')))
+                        (singleReRank_iter,),\
+                        ('tempfile', 'json', 'ReRanker', 'SimilarityCalculator', 'Query')))
             data_submitted += data_this_job
 
-        # print output from jobs
+        # read worker temp files print content
         for job in jobs:
-            for record in job():
-                print json.dumps(record)
+            tempFileName = job()
+            fd = open(tempFileName)
+            for line in fd:
+                sys.stdout.write(line)
+            fd.close()
+            os.remove(tempFileName)
 
 if __name__ == '__main__':
     main()
