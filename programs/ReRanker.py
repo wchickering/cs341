@@ -22,23 +22,32 @@ from Query import Query
 
 class ReRanker:
 
-    def __init__(self, simCalc,\
-                 k=1, insert_position=0, coeff_rank=0.0, exp_rank=1.0,\
+    def __init__(self, simCalc, k=1, insert_position=0,\
+                 coeff_ctr=0.0, ctr_by_position=None,\
+                 coeff_rank=0.0, exp_rank=1.0,\
                  verbose=False):
         self.simCalc = simCalc
         self.k = k
         self.insert_position = insert_position
+        self.coeff_ctr = coeff_ctr
+        self.ctr_by_position = ctr_by_position
         self.coeff_rank = coeff_rank
         self.exp_rank = exp_rank
         self.verbose = verbose
         self.stats = OrderedDict()
         self.initStats()
 
-    def setParams(self, k=None, insert_position=None, coeff_rank=None, exp_rank=None):
+    def setParams(self, k=None, insert_position=None,\
+                  coeff_ctr=None, ctr_by_position=None,\
+                  coeff_rank=None, exp_rank=None):
         if k:
             self.k = k
         if insert_position:
             self.insert_position = insert_position
+        if coeff_ctr:
+            self.coeff_ctr = coeff_ctr
+        if ctr_by_position:
+            self.ctr_by_position = ctr_by_position
         if coeff_rank:
             self.coeff_rank = coeff_rank
         if exp_rank:
@@ -92,6 +101,8 @@ class ReRanker:
                     break
                 score += self.simCalc.similarity(query.previously_clicked_items[j], \
                                                  query.shown_items[i])
+            if self.ctr_by_position and i < len(self.ctr_by_position):
+                score += self.coeff_ctr*self.ctr_by_position[i]
             score += self.coeff_rank*math.exp(-i)**self.exp_rank
             if score > 0:
                 self.stats['num_nonzero_scores'] += 1

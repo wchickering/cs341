@@ -33,6 +33,8 @@ def parseArgs():
             + "[-k N] "\
             + "[--insert_position N] "\
             + "[--random] "\
+            + "[--coeff_ctr X.X] "\
+            + "[--ctr_by_position <ctr filename>] "\
             + "[--coeff_rank X.X] "\
             + "[--coeff_items X.X] "\
             + "[--coeff_queries X.X] "\
@@ -80,6 +82,10 @@ def parseArgs():
                          help="insert re-ranked items before this position")
     rankGroup.add_option("--random", action="store_true", dest="random",\
                          help="apply random scores to all shown items")
+    rankGroup.add_option("--coeff_ctr", type="float", dest="coeff_ctr",\
+                         help="CTR coefficient")
+    rankGroup.add_option("--ctr_by_position", dest="ctr_by_position",\
+                         help="CTR by position filename")
     rankGroup.add_option("--coeff_rank", type="float", dest="coeff_rank",\
                          help="rank coefficient")
     rankGroup.add_option("--coeff_items", type="float", dest="coeff_items",\
@@ -165,6 +171,7 @@ def parseArgs():
     parser.add_option_group(verboseGroup)
 
     parser.set_defaults(k=1, insert_position=0, random=False,\
+                        coeff_ctr=0.0, ctr_by_position=None,\
                         coeff_rank=0.0, coeff_items=0.0, coeff_queries=0.0,\
                         coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
                         exp_rank=1.0, exp_items=1.0, exp_queries=1.0,\
@@ -190,8 +197,9 @@ def parseArgs():
     return (options, args)
 
 def singleReRank_iter(inputFile, numLines=float('inf'),\
-           k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
-           coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
+           k=1, insert_position=0, coeff_ctr=0.0, ctr_by_position=None,\
+           coeff_rank=0.0, coeff_items=0.0, coeff_queries=0.0,\
+           coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
            exp_rank=1.0, exp_items=1.0, exp_queries=1.0,\
            exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
            index_items_fname=None, posting_dict_items_fname=None,\
@@ -242,6 +250,7 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
 
     # Instantiate ReRanker (cheap)
     reRanker = ReRanker.ReRanker(simCalc, k=k, insert_position=insert_position,\
+                      coeff_ctr=coeff_ctr, ctr_by_position=ctr_by_position,\
                       coeff_rank=coeff_rank, exp_rank=exp_rank, verbose=verbose)
 
     n = 0
@@ -267,8 +276,9 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
             break
 
 def singleReRankAndDump(inputFileName, startLine, numLines,\
-           k=1, insert_position=0, coeff_rank=0.0, coeff_items=0.0,\
-           coeff_queries=0.0, coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
+           k=1, insert_position=0, coeff_ctr=0.0, ctr_by_position=None,\
+           coeff_rank=0.0, coeff_items=0.0, coeff_queries=0.0,\
+           coeff_clicks=0.0, coeff_carts=0.0, coeff_item_title=0.0,\
            exp_rank=1.0, exp_items=1.0, exp_queries=1.0,\
            exp_clicks=1.0, exp_carts=1.0, exp_item_title=1.0,\
            index_items_fname=None, posting_dict_items_fname=None,\
@@ -292,6 +302,8 @@ def singleReRankAndDump(inputFileName, startLine, numLines,\
 
     for record in singleReRank_iter(inputFile, numLines=numLines,\
                        k=k, insert_position=insert_position,\
+                       coeff_ctr=coeff_ctr,\
+                       ctr_by_position=ctr_by_position,\
                        coeff_rank=coeff_rank,\
                        coeff_items=coeff_items,\
                        coeff_queries=coeff_queries,\
@@ -335,11 +347,20 @@ def main():
     inputFileName = args[0]
     inputFile = open(args[0])
 
+    # CTR by position data
+    ctr_by_position = None
+    if options.ctr_by_position:
+        ctr_by_position_fd = open(options.ctr_by_position)
+        ctr_by_position = json.loads(ctr_by_position_fd.readline())
+        ctr_by_position_fd.close()
+
     if options.workers == 1: #### single process ####
 
         for record in singleReRank_iter(\
                        inputFile, k=options.k,\
                        insert_position=options.insert_position,\
+                       coeff_ctr=options.coeff_ctr,\
+                       ctr_by_position=ctr_by_position,\
                        coeff_rank=options.coeff_rank,\
                        coeff_items=options.coeff_items,\
                        coeff_queries=options.coeff_queries,\
@@ -455,6 +476,8 @@ def main():
                                 data_this_job,\
                                 options.k,\
                                 options.insert_position,\
+                                options.coeff_ctr,\
+                                ctr_by_position,\
                                 options.coeff_rank,\
                                 options.coeff_items,\
                                 options.coeff_queries,\

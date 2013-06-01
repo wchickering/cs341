@@ -11,6 +11,8 @@
 #
 #RAWDATA=000050_0
 #
+#CTR_BY_POSITION=16chunk.CTRs.json
+#
 #INDEX_I=000051_0
 #INDEX_Q=000051_0
 #INDEX_C=000051_0
@@ -30,11 +32,12 @@ PARAMS_FILE=${DATA}/${PARAMS}
 TEST_DATA=${DATA}/${RAWDATA}.test_data
 FILTERED_TEST_DATA=${TEST_DATA}.filtered
 RERANK_PROG_OUTPUT=${DATA}/${RAWDATA}.${INDEX_I}.${OUTPUT}
+CTR_BY_POSITION_FILE=${PROGRAMS}/${CTR_BY_POSITION}
 SCORES_ITEMS=${SCORES}/${RAWDATA}.${INDEX_I}.items.scores
 SCORES_QUERIES=${SCORES}/${RAWDATA}.${INDEX_Q}.queries.scores
 SCORES_CLICKS=${SCORES}/${RAWDATA}.${INDEX_C}.clicks.scores
 SCORES_CARTS=${SCORES}/${RAWDATA}.${INDEX_A}.carts.scores
 SCORES_ITEM_TITLE=${SCORES}/${RAWDATA}.item_title.scores
 
-python $RERANK_PROG --workers $WORKERS --score_dict_items $SCORES_ITEMS --score_dict_queries $SCORES_QUERIES --score_dict_clicks $SCORES_CLICKS --score_dict_carts $SCORES_CARTS --score_dict_item_title $SCORES_ITEM_TITLE $PARAMS_FILE $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
+python $RERANK_PROG --workers $WORKERS --ctr_by_position $CTR_BY_POSITION_FILE --score_dict_items $SCORES_ITEMS --score_dict_queries $SCORES_QUERIES --score_dict_clicks $SCORES_CLICKS --score_dict_carts $SCORES_CARTS --score_dict_item_title $SCORES_ITEM_TITLE $PARAMS_FILE $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
 

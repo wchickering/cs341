@@ -28,7 +28,7 @@ def parseArgs():
     
     usage = "usage: %prog "\
             + "[--workers N] "\
-            + "[--index_items <items index filename>] "\
+            + "[--ctr_by_position <ctr filename>] "\
             + "[--score_dict_items <items score dictionary upload filename>] " \
             + "[--score_dict_queries <queries score dictionary upload filename>] " \
             + "[--score_dict_clicks <clicks score dictionary upload filename>] " \
@@ -42,6 +42,11 @@ def parseArgs():
                                   max_help_position=10,\
                                   width=80,\
                                   short_first=1)
+
+    rankGroup = OptionGroup(parser, "Ranking options")
+    rankGroup.add_option("--ctr_by_position", dest="ctr_by_position",\
+                         help="CTR by position filename")
+    parser.add_option_group(rankGroup)
 
     scoreGroup = OptionGroup(parser, "Score options")
     scoreGroup.add_option("--score_dict_items", dest="items_score_dict_fname", \
@@ -61,7 +66,8 @@ def parseArgs():
                        help="maximum number of worker processes to spawn")
     parser.add_option_group(ppGroup)
 
-    parser.set_defaults(items_score_dict_fname=None,\
+    parser.set_defaults(ctr_by_position=None,\
+                        items_score_dict_fname=None,\
                         queries_score_dict_fname=None,\
                         clicks_score_dict_fname=None,\
                         carts_score_dict_fname=None,\
@@ -77,6 +83,7 @@ def parseArgs():
     return (options, args)
 
 def multiReRank(test_data, paramsList,\
+                ctr_by_position=None,\
                 items_score_dict_fname=None,\
                 queries_score_dict_fname=None,\
                 clicks_score_dict_fname=None,\
@@ -115,6 +122,8 @@ def multiReRank(test_data, paramsList,\
         reRanker = ReRanker.ReRanker(simCalc,\
                           k=params['k'],\
                           insert_position=params['insert_position'],\
+                          coeff_ctr=params['coeff_ctr'],\
+                          ctr_by_position=ctr_by_position,\
                           coeff_rank=params['coeff_rank'],\
                           exp_rank=params['exp_rank'])
 
@@ -159,6 +168,13 @@ def main():
     else:
         inputFile = sys.stdin
 
+    # CTR by position data
+    ctr_by_position = None
+    if options.ctr_by_position:
+        ctr_by_position_fd = open(options.ctr_by_position)
+        ctr_by_position = json.loads(ctr_by_position_fd.readline())
+        ctr_by_position_fd.close()
+
     # read params into memory
     paramsList = []
     for line in paramFile:
@@ -172,6 +188,7 @@ def main():
         statsList = \
             multiReRank(test_data,\
                         paramsList,\
+                        ctr_by_position=ctr_by_position,\
                         items_score_dict_fname=options.items_score_dict_fname,\
                         queries_score_dict_fname=options.queries_score_dict_fname,\
                         clicks_score_dict_fname=options.clicks_score_dict_fname,\
@@ -237,6 +254,7 @@ def main():
             jobs.append(job_server.submit(multiReRank, \
                                (test_data[data_submitted:data_submitted + data_this_job],\
                                 paramsList,\
+                                ctr_by_position,\
                                 items_score_dict_fname,\
                                 queries_score_dict_fname,\
                                 clicks_score_dict_fname,\
