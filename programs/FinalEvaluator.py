@@ -510,14 +510,22 @@ def main():
             total_shown_clicks_front_page
     our_front_page_conversion = float(total_purchased_front_page_reordered) / \
             total_reordered_clicks_front_page
-    promoted_to_front_conversion = float(total_purchases_moved_to_front_page)/ \
-            total_clicks_moved_to_front_page
-    bumped_off_front_conversion = float(total_purchases_moved_off_front_page)/ \
-            total_clicks_moved_off_front_page
-    ctr_promoted_to_front = float(total_clicks_moved_to_front_page)/ \
-            total_items_moved_to_front_page
-    ctr_bumped_off_front = float(total_clicks_moved_off_front_page)/ \
-            total_items_moved_off_front_page
+    promoted_to_front_conversion = 0.0
+    if total_clicks_moved_to_front_page > 0:
+        promoted_to_front_conversion = float(total_purchases_moved_to_front_page)/ \
+                total_clicks_moved_to_front_page
+    bumped_off_front_conversion = 0.0
+    if total_clicks_moved_off_front_page > 0:
+        bumped_off_front_conversion = float(total_purchases_moved_off_front_page)/ \
+                total_clicks_moved_off_front_page
+    ctr_promoted_to_front = 0.0
+    if total_items_moved_to_front_page > 0:
+        ctr_promoted_to_front = float(total_clicks_moved_to_front_page)/ \
+                total_items_moved_to_front_page
+    ctr_bumped_off_front = 0.0
+    if total_items_moved_to_front_page > 0:
+        ctr_bumped_off_front = float(total_clicks_moved_off_front_page)/ \
+                total_items_moved_off_front_page
 
     # standard deviation calculations
     # clicks:
@@ -527,7 +535,9 @@ def main():
         (total_reordered_clicks_front_page * total_reordered_clicks_front_page / num_queries)
     click_diff_variance = click_var_reordered + click_var_orig
     click_diff_std_dev = math.sqrt(click_diff_variance)
-    perc_click_ratio_95 = 1.96*click_diff_std_dev / front_page_diff
+    perc_click_ratio_95 = float('inf')
+    if front_page_diff > 0:
+        perc_click_ratio_95 = 1.96*click_diff_std_dev / front_page_diff
     # purchases:
     purchase_var_orig = total_sqr_purchases_front_page_orig - \
         (total_purchased_front_page_orig * total_purchased_front_page_orig / num_queries)
@@ -535,7 +545,9 @@ def main():
         (total_purchased_front_page_reordered*total_purchased_front_page_reordered/num_queries)
     purchase_diff_variance = purchase_var_reordered + purchase_var_orig
     purchase_diff_std_dev = math.sqrt(purchase_diff_variance)
-    perc_purchase_ratio_95 = 1.96*purchase_diff_std_dev / front_page_purchase_diff
+    perc_purchase_ratio_95 = float('inf')
+    if front_page_purchase_diff > 0:
+        perc_purchase_ratio_95 = 1.96*purchase_diff_std_dev / front_page_purchase_diff
 
 
     ### PRINT STATS ###
@@ -676,7 +688,7 @@ def main():
         print i+1, ':\t', orig_purchase_rate_by_position[i]
     print '>', POSITIONS, ' :\t', other_page_purchase_rate_orig
     print
-    print 'FILTERED_DATA_RANKABLE:'
+    print 'FILTERED_DATA_REORDERED:'
     print 'CTR:'
     for i in range(POSITIONS):
         print i+1, ':\t', reordered_CTR_by_position[i]
