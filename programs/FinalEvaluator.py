@@ -426,45 +426,61 @@ def main():
     test_data_conversion_rate_by_position = [0]*POSITIONS
     test_data_purchase_rate_by_position = [0]*POSITIONS
     for i in range(POSITIONS):
+        #test_data_CTR_by_position[i] = float(test_data_clicks_by_position[i]) / \
+        #        test_data_items_by_position[i]
         test_data_CTR_by_position[i] = float(test_data_clicks_by_position[i]) / \
-                test_data_items_by_position[i]
+                test_data_queries
         test_data_conversion_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
                 test_data_clicks_by_position[i]
+        #test_data_purchase_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
+        #        test_data_items_by_position[i]
         test_data_purchase_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
-                test_data_items_by_position[i]
+                test_data_queries
 
     rankable_data_CTR_by_position = [0]*POSITIONS
     rankable_data_conversion_rate_by_position = [0]*POSITIONS
     rankable_data_purchase_rate_by_position = [0]*POSITIONS
     for i in range(POSITIONS):
+        #rankable_data_CTR_by_position[i] = float(rankable_data_clicks_by_position[i]) / \
+        #        rankable_data_items_by_position[i]
         rankable_data_CTR_by_position[i] = float(rankable_data_clicks_by_position[i]) / \
-                rankable_data_items_by_position[i]
+                rankable_data_queries
         rankable_data_conversion_rate_by_position[i] =  \
                 float(test_data_purchases_by_position[i]) / rankable_data_clicks_by_position[i]
+        #rankable_data_purchase_rate_by_position[i] = \
+        #        float(test_data_purchases_by_position[i]) / rankable_data_items_by_position[i]
         rankable_data_purchase_rate_by_position[i] = \
-                float(test_data_purchases_by_position[i]) / rankable_data_items_by_position[i]
+                float(test_data_purchases_by_position[i]) / rankable_data_queries
    
     orig_CTR_by_position = [0]*POSITIONS
     orig_conversion_rate_by_position = [0]*POSITIONS
     orig_purchase_rate_by_position = [0]*POSITIONS
     for i in range(POSITIONS):
+        #orig_CTR_by_position[i] = float(orig_clicks_by_position[i]) / \
+        #        items_by_position[i]
         orig_CTR_by_position[i] = float(orig_clicks_by_position[i]) / \
-                items_by_position[i]
+                num_queries
         orig_conversion_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
                 orig_clicks_by_position[i]
+        #orig_purchase_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
+        #        items_by_position[i]
         orig_purchase_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
-                items_by_position[i]
+                num_queries
  
     reordered_CTR_by_position = [0]*POSITIONS
     reordered_conversion_rate_by_position = [0]*POSITIONS
     reordered_purchase_rate_by_position = [0]*POSITIONS
     for i in range(POSITIONS):
+        #reordered_CTR_by_position[i] = float(reordered_clicks_by_position[i]) / \
+        #        items_by_position[i]
         reordered_CTR_by_position[i] = float(reordered_clicks_by_position[i]) / \
-                items_by_position[i]
+                num_queries
         reordered_conversion_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
                 reordered_clicks_by_position[i]
+        #reordered_purchase_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
+        #        items_by_position[i]
         reordered_purchase_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
-                items_by_position[i]
+                num_queries
  
     # calculate averages, etc
     for i in range(NUM_NDCG_SCORES):
