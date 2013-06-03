@@ -217,9 +217,11 @@ def main():
             if shown_front_page:
                 front_page_purchases_orig += 1
                 total_purchased_front_page_orig += 1
-            if reordered_front_page - shown_front_page > 0:
+            #if reordered_front_page - shown_front_page > 0:
+            if reordered_front_page and not shown_front_page:
                 total_purchases_moved_to_front_page += 1
-            elif reordered_front_page - shown_front_page < 0:
+            #elif reordered_front_page - shown_front_page < 0:
+            elif shown_front_page and not reordered_front_page:
                 total_purchases_moved_off_front_page += 1
 
         total_sqr_purchases_front_page_orig += \
@@ -771,7 +773,8 @@ def main():
     print 'conversion_rate_test_data_other_pages = ', test_data_other_pages_conversion
     print 'conversion_rate_filtered_data = ', filtered_data_conversion
     print 'conversion_rate_filtered_front_page = ', front_page_conversion
-    print 'conversion_rate_filtered_other_pages = ', rankable_data_other_pages_conversion
+    print 'conversion_rate_rankable_other_pages = ', rankable_data_other_pages_conversion
+    print 'conversion_rate_filtered_other_pages = ', other_page_conversion_rate_orig
     print 'conversion_rate_our_front_page = ', our_front_page_conversion
     print 'conversion_rate_promoted_to_front_items = ', promoted_to_front_conversion
     print 'conversion_rate_bumped_off_front_items = ', bumped_off_front_conversion
