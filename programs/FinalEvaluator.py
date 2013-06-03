@@ -217,9 +217,11 @@ def main():
             if shown_front_page:
                 front_page_purchases_orig += 1
                 total_purchased_front_page_orig += 1
-            if reordered_front_page - shown_front_page > 0:
+            #if reordered_front_page - shown_front_page > 0:
+            if reordered_front_page and not shown_front_page:
                 total_purchases_moved_to_front_page += 1
-            elif reordered_front_page - shown_front_page < 0:
+            #elif reordered_front_page - shown_front_page < 0:
+            elif shown_front_page and not reordered_front_page:
                 total_purchases_moved_off_front_page += 1
 
         total_sqr_purchases_front_page_orig += \
@@ -398,11 +400,6 @@ def main():
     other_page_clicks_orig = clicked_items - total_shown_clicks_front_page 
     other_page_purchases_orig = purchased_items - total_purchased_front_page_orig 
     other_page_items = total_shown_items - total_items_on_front_page
-    print 'other clicks: ', other_page_clicks_orig
-    print 'oter items: ', other_page_items
-    print 'total items: ', total_shown_items
-    print 'clicks: ', clicked_items
-    print 'front clicks: ', front_page_clicks_orig
     other_page_CTR_orig = float(other_page_clicks_orig)/other_page_items
     other_page_conversion_rate_orig = float(other_page_purchases_orig)/other_page_clicks_orig
     other_page_purchase_rate_orig = float(other_page_purchases_orig)/other_page_items
@@ -646,62 +643,119 @@ def main():
     print
 
     print '=== BY POSITION ==='
-    print 'TEST_DATA:'
-    print 'CTR:'
+    print 'test_data:'
+    print 'items:'
     for i in range(POSITIONS):
-        print i+1, ':\t', test_data_CTR_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_CTR_test_data
-    print 'Conversion:'
+        print i+1, ':\t', test_data_items_by_position[i]
+    print 'other_pages :\t', test_data_other_page_items
+    print 'clicks:'
     for i in range(POSITIONS):
-        print i+1, ':\t', test_data_conversion_rate_by_position[i]
-    print '>', POSITIONS, ' :\t', test_data_other_pages_conversion
-    print 'Purchase rate:'
+        print i+1, ':\t', test_data_clicks_by_position[i]
+    print 'other_pages :\t', test_data_other_page_clicks
+    print 'purchases:'
     for i in range(POSITIONS):
-        print i+1, ':\t', test_data_purchase_rate_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_purchase_rate_test_data
+        print i+1, ':\t', test_data_purchases_by_position[i]
+    print 'other_pages :\t', test_data_other_page_purchases
     print
-    print 'RANKABLE_DATA:'
-    print 'CTR:'
+    print 'rankable_data:'
+    print 'items:'
     for i in range(POSITIONS):
-        print i+1, ':\t', rankable_data_CTR_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_CTR_rankable_data
-    print 'Conversion:'
+        print i+1, ':\t', rankable_data_items_by_position[i]
+    print 'other_pages :\t', rankable_data_other_page_items
+    print 'clicks'
     for i in range(POSITIONS):
-        print i+1, ':\t', rankable_data_conversion_rate_by_position[i]
-    print '>', POSITIONS, ' :\t', rankable_data_other_pages_conversion
-    print 'Purchase rate:'
+        print i+1, ':\t', rankable_data_clicks_by_position[i]
+    print 'other_pages :\t', rankable_data_other_page_clicks
+    print 'purchases:'
     for i in range(POSITIONS):
-        print i+1, ':\t', rankable_data_purchase_rate_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_purchase_rate_rankable_data
+        print i+1, ':\t', rankable_data_purchases_by_position[i]
+    print 'other_pages :\t', rankable_data_other_page_purchases
     print
-    print 'FILTERED_DATA_ORIGINAL:'
-    print 'CTR:'
+    print 'filtered_data_original:'
+    print 'items:'
     for i in range(POSITIONS):
-        print i+1, ':\t', orig_CTR_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_CTR_orig
-    print 'Conversion:'
+        print i+1, ':\t', items_by_position[i]
+    print 'other_pages :\t', other_page_items
+    print 'clicks'
     for i in range(POSITIONS):
-        print i+1, ':\t', orig_conversion_rate_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_conversion_rate_orig
-    print 'Purchase rate:'
+        print i+1, ':\t', orig_clicks_by_position[i]
+    print 'other_pages :\t', other_page_clicks_orig
+    print 'purchases:'
     for i in range(POSITIONS):
-        print i+1, ':\t', orig_purchase_rate_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_purchase_rate_orig
+        print i+1, ':\t', orig_purchases_by_position[i]
+    print 'other_pages :\t', other_page_purchases_orig
     print
-    print 'FILTERED_DATA_REORDERED:'
-    print 'CTR:'
+    print 'filtered_data_rankable:'
+    print 'items:'
     for i in range(POSITIONS):
-        print i+1, ':\t', reordered_CTR_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_CTR_reordered
-    print 'Conversion:'
+        print i+1, ':\t', items_by_position[i]
+    print 'other_pages :\t', other_page_items
+    print 'clicks'
     for i in range(POSITIONS):
-        print i+1, ':\t', reordered_conversion_rate_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_conversion_rate_reordered
-    print 'Purchase rate:'
+        print i+1, ':\t', reordered_clicks_by_position[i]
+    print 'other_pages :\t', other_page_clicks_reordered
+    print 'purchases:'
     for i in range(POSITIONS):
-        print i+1, ':\t', reordered_purchase_rate_by_position[i]
-    print '>', POSITIONS, ' :\t', other_page_purchase_rate_reordered
+        print i+1, ':\t', reordered_purchases_by_position[i]
+    print 'other_pages :\t', other_page_purchases_reordered
     print
+
+    #print 'test_data:'
+    #print 'ctr:'
+    #for i in range(positions):
+    #    print i+1, ':\t', test_data_ctr_by_position[i]
+    #print '>', positions, ' :\t', other_page_ctr_test_data
+    #print 'conversion:'
+    #for i in range(positions):
+    #    print i+1, ':\t', test_data_conversion_rate_by_position[i]
+    #print '>', positions, ' :\t', test_data_other_pages_conversion
+    #print 'purchase rate:'
+    #for i in range(positions):
+    #    print i+1, ':\t', test_data_purchase_rate_by_position[i]
+    #print '>', positions, ' :\t', other_page_purchase_rate_test_data
+    #print
+    #print 'rankable_data:'
+    #print 'ctr:'
+    #for i in range(positions):
+    #    print i+1, ':\t', rankable_data_ctr_by_position[i]
+    #print '>', positions, ' :\t', other_page_ctr_rankable_data
+    #print 'conversion:'
+    #for i in range(positions):
+    #    print i+1, ':\t', rankable_data_conversion_rate_by_position[i]
+    #print '>', positions, ' :\t', rankable_data_other_pages_conversion
+    #print 'purchase rate:'
+    #for i in range(positions):
+    #    print i+1, ':\t', rankable_data_purchase_rate_by_position[i]
+    #print '>', positions, ' :\t', other_page_purchase_rate_rankable_data
+    #print
+    #print 'filtered_data_original:'
+    #print 'ctr:'
+    #for i in range(positions):
+    #    print i+1, ':\t', orig_ctr_by_position[i]
+    #print '>', positions, ' :\t', other_page_ctr_orig
+    #print 'conversion:'
+    #for i in range(positions):
+    #    print i+1, ':\t', orig_conversion_rate_by_position[i]
+    #print '>', positions, ' :\t', other_page_conversion_rate_orig
+    #print 'purchase rate:'
+    #for i in range(positions):
+    #    print i+1, ':\t', orig_purchase_rate_by_position[i]
+    #print '>', positions, ' :\t', other_page_purchase_rate_orig
+    #print
+    #print 'filtered_data_rankable:'
+    #print 'ctr:'
+    #for i in range(positions):
+    #    print i+1, ':\t', reordered_ctr_by_position[i]
+    #print '>', positions, ' :\t', other_page_ctr_reordered
+    #print 'conversion:'
+    #for i in range(positions):
+    #    print i+1, ':\t', reordered_conversion_rate_by_position[i]
+    #print '>', positions, ' :\t', other_page_conversion_rate_reordered
+    #print 'purchase rate:'
+    #for i in range(positions):
+    #    print i+1, ':\t', reordered_purchase_rate_by_position[i]
+    #print '>', positions, ' :\t', other_page_purchase_rate_reordered
+    #print
 
     print '=== TEST DATA vs RANKABLE DATA ==='
     print 'queries per user = ?'
@@ -747,7 +801,8 @@ def main():
     print 'conversion_rate_test_data_other_pages = ', test_data_other_pages_conversion
     print 'conversion_rate_filtered_data = ', filtered_data_conversion
     print 'conversion_rate_filtered_front_page = ', front_page_conversion
-    print 'conversion_rate_filtered_other_pages = ', rankable_data_other_pages_conversion
+    print 'conversion_rate_rankable_other_pages = ', rankable_data_other_pages_conversion
+    print 'conversion_rate_filtered_other_pages = ', other_page_conversion_rate_orig
     print 'conversion_rate_our_front_page = ', our_front_page_conversion
     print 'conversion_rate_promoted_to_front_items = ', promoted_to_front_conversion
     print 'conversion_rate_bumped_off_front_items = ', bumped_off_front_conversion
