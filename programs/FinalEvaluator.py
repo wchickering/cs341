@@ -18,6 +18,7 @@ def parseArgs():
             + "[-k N]"\
             + "[--test_data_fname filename of unfiltered test data stats]"\
             + "[--rankable_data_fname filename of rankable test data stats]"\
+            + "[--ctr_fname filename of test data ctr's]"\
             + "<filename>"
 
     parser = OptionParser(usage=usage)
@@ -31,10 +32,12 @@ def parseArgs():
             help="file name of unfiltered test data")
     optionGroup.add_option("--rankable_data_fname", type="string", dest="rankable_data_fname",\
             help="file name of test data filtered for rankability")
+    optionGroup.add_option("--ctr_fname", type="string", dest="ctr_fname",\
+            help="file name of ctr's in test data for first 1000 positions")
     optionGroup.add_option("-k", type="int", dest="k", help="re-ranked top k items")
     parser.add_option_group(optionGroup)
 
-    parser.set_defaults(k=1, test_data_fname="", rankable_data_fname="")
+    parser.set_defaults(k=1, test_data_fname="", rankable_data_fname="", ctr_fname="")
     (options, args) = parser.parse_args()
 
     if (len(args) > 1):
@@ -67,6 +70,47 @@ def main():
         print "args != 1"
         inputFile = sys.stdin
     k = options.k
+
+    print "Reading stats on data files..."
+    test_data_file = open(options.test_data_fname, 'r')
+    rankable_data_file = open(options.rankable_data_fname, 'r')
+    ctr_file = open(options.ctr_fname, 'r')
+    for line in test_data_file:
+        record = json.loads(line)
+        test_data_queries = record['num_queries']
+        test_data_clicks = record['num_clicks']
+        test_data_purchases = record['num_purchases']
+        test_data_items = record['num_shown_items']
+        test_data_queries_with_clicks = record['num_queries_with_clicks']
+        test_data_one_page_queries = record['num_one_page_queries']
+        test_data_front_page_clicks = record['num_front_page_clicks']
+        test_data_front_page_purchases = record['num_front_page_purchases']
+        test_data_front_page_items = record['num_front_page_items'] 
+        test_data_items_by_position = record['num_items_by_position']
+        test_data_clicks_by_position = record['num_clicks_by_position']
+        test_data_purchases_by_position = record['num_purchases_by_position']
+    for line in rankable_data_file:
+        record = json.loads(line)
+        rankable_data_queries = record['num_queries']
+        rankable_data_clicks = record['num_clicks']
+        rankable_data_purchases = record['num_purchases']
+        rankable_data_items = record['num_shown_items']
+        rankable_data_queries_with_clicks = record['num_queries_with_clicks']
+        rankable_data_one_page_queries = record['num_one_page_queries']
+        rankable_data_front_page_clicks = record['num_front_page_clicks']
+        rankable_data_front_page_purchases = record['num_front_page_purchases']
+        rankable_data_front_page_items = record['num_front_page_items'] 
+        rankable_data_items_by_position = record['num_items_by_position']
+        rankable_data_clicks_by_position = record['num_clicks_by_position']
+        rankable_data_purchases_by_position = record['num_purchases_by_position']
+    for line in ctr_file:
+        ctr_by_position = json.loads(line)
+    test_data_file.close()
+    rankable_data_file.close()
+    ctr_file.close()
+
+    test_data_users = 1
+    test_data_users_with_clicks = 1
 
     print "Initializing..." 
     ### INITIALIZE ###
@@ -128,6 +172,8 @@ def main():
     orig_purchases_by_position = [0]*POSITIONS
     reordered_clicks_by_position = [0]*POSITIONS
     reordered_purchases_by_position = [0]*POSITIONS
+    click_position_score_orig = 0.0
+    click_position_score_reordered = 0.0
 
     print "Processing Data..."
     ### PROCESS DATA ###
@@ -235,7 +281,11 @@ def main():
             assert(item in shown_items)
             reordered_index = reordered_shown_items.index(item)
             shown_index = shown_items.index(item)
-            total_clicked_positions += shown_index
+            total_clicked_positions += shown_index+1
+            if shown_index < 1000:
+                click_position_score_orig += ctr_by_position[shown_index]
+            if reordered_index < 1000:
+                click_position_score_reordered += ctr_by_position[reordered_index]
             if shown_index < k:
                 clicks_in_topK_orig +=1
             assert(clicks_in_topK_orig <= k)
@@ -304,43 +354,6 @@ def main():
         precision_reordered_subtotal += precision_reordered
         recall_reordered_subtotal += recall_reordered
         f1_reordered_subtotal += f1_reordered
-
-    print "Reading stats on data files..."
-    test_data_file = open(options.test_data_fname, 'r')
-    rankable_data_file = open(options.rankable_data_fname, 'r')
-    for line in test_data_file:
-        record = json.loads(line)
-        test_data_queries = record['num_queries']
-        test_data_clicks = record['num_clicks']
-        test_data_purchases = record['num_purchases']
-        test_data_items = record['num_shown_items']
-        test_data_queries_with_clicks = record['num_queries_with_clicks']
-        test_data_one_page_queries = record['num_one_page_queries']
-        test_data_front_page_clicks = record['num_front_page_clicks']
-        test_data_front_page_purchases = record['num_front_page_purchases']
-        test_data_front_page_items = record['num_front_page_items'] 
-        test_data_items_by_position = record['num_items_by_position']
-        test_data_clicks_by_position = record['num_clicks_by_position']
-        test_data_purchases_by_position = record['num_purchases_by_position']
-    for line in rankable_data_file:
-        record = json.loads(line)
-        rankable_data_queries = record['num_queries']
-        rankable_data_clicks = record['num_clicks']
-        rankable_data_purchases = record['num_purchases']
-        rankable_data_items = record['num_shown_items']
-        rankable_data_queries_with_clicks = record['num_queries_with_clicks']
-        rankable_data_one_page_queries = record['num_one_page_queries']
-        rankable_data_front_page_clicks = record['num_front_page_clicks']
-        rankable_data_front_page_purchases = record['num_front_page_purchases']
-        rankable_data_front_page_items = record['num_front_page_items'] 
-        rankable_data_items_by_position = record['num_items_by_position']
-        rankable_data_clicks_by_position = record['num_clicks_by_position']
-        rankable_data_purchases_by_position = record['num_purchases_by_position']
-    test_data_file.close()
-    rankable_data_file.close()
-
-    test_data_users = 1
-    test_data_users_with_clicks = 1
 
     print "Calculating stats..."
     # data stats
@@ -812,6 +825,11 @@ def main():
     
     print
     print '=== KEY STATS ==='
+    print 'click_position_score_orig = \t\t', click_position_score_orig
+    print 'click_position_score_reordered = \t', click_position_score_reordered
+    print 'precent_increase__position_score = \t', \
+            float(click_position_score_reordered - click_position_score_orig) / \
+            click_position_score_orig
     print 'percent_increase_NDCG_16 = \t\t', \
         "{0:.4f}".format(float(avg_reordered_NDCG_scores[15] - \
         avg_orig_NDCG_scores[15])/avg_orig_NDCG_scores[15])
