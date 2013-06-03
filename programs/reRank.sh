@@ -101,7 +101,7 @@ else
 fi
 
 echo "Evaluating . . ."
-python $EVAL_PROG -k $K --test_data_fname $TEST_DATA_STATS --rankable_data_fname $FILTERED_TEST_DATA_RANKABLE_STATS $RERANK_PROG_OUTPUT > $EVAL_OUTPUT
+python $EVAL_PROG -k $K --test_data_fname $TEST_DATA_STATS --rankable_data_fname $FILTERED_TEST_DATA_RANKABLE_STATS --ctr_fname $CTR_BY_POSITION_FILE $RERANK_PROG_OUTPUT > $EVAL_OUTPUT
 echo "***********************************************************" >> $RERANK_LOG
 echo $(date) >> $RERANK_LOG
 echo >> $RERANK_LOG
