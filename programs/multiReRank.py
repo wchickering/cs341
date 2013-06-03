@@ -128,7 +128,7 @@ def multiReRank(test_data, paramsList,\
                           exp_rank=params['exp_rank'])
 
         # Instantiate Evaluator (cheap)
-        evaluator = Evaluator.Evaluator(k=params['k'])
+        evaluator = Evaluator.Evaluator(k=params['k'], ctr_by_position=ctr_by_position)
 
         try:
             lineNum = 0
@@ -267,7 +267,7 @@ def main():
         # aggregate results
         evaluators = []
         for params in paramsList:
-            evaluators.append(Evaluator.Evaluator(k=params['k']))
+            evaluators.append(Evaluator.Evaluator(k=params['k'], ctr_by_position=ctr_by_position))
         for job in jobs:
             statsList = job()
             if not statsList:
