@@ -1,0 +1,11 @@
+WORKERS=8
+
+RAWDATA=000050_0
+
+INDEX_I=48chunk
+INDEX_Q=16chunk
+INDEX_C=48chunk
+INDEX_A=48chunk
+
+CTR_BY_POSITION=16chunk.CTRs.json
+

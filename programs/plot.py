@@ -33,10 +33,21 @@ def parameterInfoString(params, free_param):
        s += "|  k = %2d  insert_pos = %2d  |\n" % ( params["k"], params["insert_position"] )
 
     s += "+------------+-------+------+\n"\
-       + "|   index    | coeff | exp  |\n"\
-       + "+------------+-------+------+\n"
+       + "|            | coeff | exp  |\n"\
+       + "+------------+-------+------+\n"\
+       + "| %10s |  %.2f | ---- |\n" % ( 'ctr', params["coeff_ctr"] )
+    if (free_param[1] != 'rank'):
+       s += "| %10s |  %.2f | %.2f |\n" % ( 'rank', params["coeff_"+'rank'], params["exp_"+'rank'] )
+    elif (free_param[0] == 'coeff'):
+       s += "| %10s |  ???? | %.2f |\n" % ( 'rank', params["exp_"+'rank'] )
+    elif (free_param[0] == 'exp'):
+       s += "| %10s |  %.2f | ???? |\n" % ( 'rank', params["coeff_"+'rank'] )
 
-    for index in ['rank','items','clicks','queries','carts','item_title']:
+    s += "+------------+-------+------+\n"\
+       + "|   index    | ----- | ---- |\n"\
+       + "+------------+-------+------+\n"\
+
+    for index in ['items','clicks','queries','carts','item_title']:
         if (free_param[1] != index):
            s += "| %10s |  %.2f | %.2f |\n" % ( index, params["coeff_"+index], params["exp_"+index] )
         elif (free_param[0] == 'coeff'):
@@ -118,8 +129,12 @@ def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[],
             reordered_scores.append((params[str(free_param)],
                 stats[metric]))
             if multi:
-                orig_scores.append((params[str(free_param)],
-                    stats[metric]))
+                orig_metric='_'.join(metric.split('_')[0:-1])+"_orig"
+                try:
+                    orig_scores.append((params[str(free_param)],
+                        stats[orig_metric]))
+                except KeyError:
+                    orig_scores = []
 
     if (metric == 'NDCG16'):
         orig_score.set(stats['avg_orig_NDCG_scores'][15])
@@ -271,7 +286,7 @@ def main():
                 free_param = FreeParam(free_param)
                 orig_scores=[]
                 ax = plotMetric(metric_figure, fn, options.plot, free_param, True, orig_scores)
-            if not (options.plot == 'recall'):
+            if not (options.plot == 'recall' and orig_scores):
                 ax.plot([x[0] for x in orig_scores],
                         [x[1] for x in orig_scores],
                         '^-', label='original',
@@ -280,7 +295,7 @@ def main():
             multiResultsFo.close()
             
             metric_figure.subplots_adjust(right=0.50,left=0.08)
-            legend = ax.legend(prop=middleFont, ncol=2, loc=2,
+            legend = ax.legend(prop=smallFont, ncol=2, loc=2,
                                fancybox=True, shadow=True,
                                bbox_to_anchor=(1.05,1), borderaxespad=0)
         else:
