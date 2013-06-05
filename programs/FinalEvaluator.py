@@ -580,6 +580,18 @@ def main():
     perc_purchase_ratio_95 = float('inf')
     if front_page_purchase_diff > 0:
         perc_purchase_ratio_95 = 1.96*purchase_diff_std_dev / front_page_purchase_diff
+    
+    # scores by page length
+    click_position_score_increase_by_pagelen = [0.0]*MAX_NUM_PAGES
+    for i in range(MAX_NUM_PAGES):
+        if num_queries_by_pagelen[i] > 0:
+            click_position_score_increase_by_pagelen[i] = \
+                    float(click_position_score_reordered_by_pagelen[i] - \
+                    click_position_score_orig_by_pagelen[i]) / \
+                    click_position_score_orig_by_pagelen[i]
+        else:
+            click_position_score_increase_by_pagelen[i] = 0.0
+
 
 
     ### PRINT STATS ###
@@ -845,18 +857,7 @@ def main():
     print 'CTR_bumped_off_front = ', ctr_bumped_off_front
     print
 
-
-    click_position_score_increase_by_pagelen = [0.0]*MAX_NUM_PAGES
-    for i in range(MAX_NUM_PAGES):
-        if num_queries_by_pagelen[i] > 0:
-            click_position_score_increase_by_pagelen[i] = \
-                    float(click_position_score_reordered_by_pagelen[i] - \
-                    click_position_score_orig_by_pagelen[i]) / \
-                    click_position_score_orig_by_pagelen[i]
-        else:
-            click_position_score_increase_by_pagelen[i] = 0.0
-
-    print '=== SCORES BY PAGE ==='
+    print '=== SCORES BY PAGE LENGTH ==='
     print 'Click position score by pagelength:'
     print 'pages\tqueries\t\torig_score\treorder_score\tincrease'
     for i in range(MAX_NUM_PAGES):
