@@ -457,11 +457,10 @@ class SimilarityCalculator:
             if len(self.item_title_posting_cache) > self._item_title_posting_cache_size:
                 del self.item_title_posting_cache[self.item_title_posting_cache_queue.pop()]
         self.item_title_posting_cache_queue.insert(0, itemid)
-        return self.item_title_posting_cache[itemid]
+        return [term.strip(',.') for term in self.item_title_posting_cache[itemid].split()]
 
-    def similarity(self, itemid1, itemid2):
-
-        # determine items score
+    # determine items score
+    def items_sim(self, itemid1, itemid2):
         items_score = 0.0
         if self.items_score_dump_fname or self.coeff_items > 0:
             if self.items_score_dict_from_file:
@@ -483,8 +482,10 @@ class SimilarityCalculator:
             elif self.index_items_fd:
                 items_score = self.simfunc(self.get_items_posting(itemid1),\
                                              self.get_items_posting(itemid2))
+        return self.coeff_items*items_score**self.exp_items
 
-        # determine queries score
+    # determine queries score
+    def queries_sim(self, itemid1, itemid2):
         queries_score = 0.0
         if self.queries_score_dump_fname or self.coeff_queries > 0:
             if self.queries_score_dict_from_file:
@@ -506,8 +507,10 @@ class SimilarityCalculator:
             elif self.index_queries_fd:
                 queries_score = self.simfunc(self.get_queries_posting(itemid1),\
                                              self.get_queries_posting(itemid2))
+        return self.coeff_queries*queries_score**self.exp_queries
 
-        # determine clicks score
+    # determine clicks score
+    def clicks_sim(self, itemid1, itemid2):
         clicks_score = 0.0
         if self.clicks_score_dump_fname or self.coeff_clicks > 0:
             if self.clicks_score_dict_from_file:
@@ -529,8 +532,10 @@ class SimilarityCalculator:
             elif self.index_clicks_fd:
                 clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
                                             self.get_clicks_posting(itemid2))
+        return self.coeff_clicks*clicks_score**self.exp_clicks
 
-        # determine carts score
+    # determine carts score
+    def carts_sim(self, itemid1, itemid2):
         carts_score = 0.0
         if self.carts_score_dump_fname or self.coeff_carts > 0:
             if self.carts_score_dict_from_file:
@@ -552,8 +557,10 @@ class SimilarityCalculator:
             elif self.index_carts_fd:
                 carts_score = self.simfunc(self.get_carts_posting(itemid1),\
                                             self.get_carts_posting(itemid2))
+        return self.coeff_carts*carts_score**self.exp_carts
 
-        # determine item_title score
+    # determine item_title score
+    def item_title_sim(self, itemid1, itemid2):
         item_title_score = 0.0
         if self.item_title_score_dump_fname or self.coeff_item_title > 0:
             if self.item_title_score_dict_from_file:
@@ -567,20 +574,22 @@ class SimilarityCalculator:
                         self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
                 else:
                     self.stats['item_title_score_cache_misses'] += 1
-                    item_title_score = self.simfunc(self.get_item_title_posting(itemid1).split(),\
-                                                    self.get_item_title_posting(itemid2).split())
+                    item_title_score = self.simfunc(self.get_item_title_posting(itemid1),\
+                                                    self.get_item_title_posting(itemid2))
                     if item_title_score > 0.0:
-                        self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
-                            item_title_score
+                        self.item_title_score_dict[(min(itemid1, itemid2),\
+                                           max(itemid1, itemid2))] = item_title_score
             elif self.index_item_title_fd:
                 item_title_score = self.simfunc(self.get_item_title_posting(itemid1),\
-                                            self.get_item_title_posting(itemid2))
+                                                self.get_item_title_posting(itemid2))
+        return self.coeff_item_title*item_title_score**self.exp_item_title
 
-        return self.coeff_items*items_score**self.exp_items +\
-               self.coeff_queries*queries_score**self.exp_queries +\
-               self.coeff_clicks*clicks_score**self.exp_clicks +\
-               self.coeff_carts*carts_score**self.exp_carts +\
-               self.coeff_item_title*item_title_score**self.exp_item_title
+    def similarity(self, itemid1, itemid2):
+        return self.items_sim(itemid1, itemid2) +\
+               self.queries_sim(itemid1, itemid2) +\
+               self.clicks_sim(itemid1, itemid2) +\
+               self.carts_sim(itemid1, itemid2) +\
+               self.item_title_sim(itemid1, itemid2)
 
     def simfunc(self, l1, l2):
         return self.jaccard(l1, l2)
@@ -602,4 +611,95 @@ class SimilarityCalculator:
             return 0.0
         else:
             return dotProd/(math.sqrt(len(sl1))*math.sqrt(len(sl2)))
-              
+
+def parseArgs():
+    from optparse import OptionParser, OptionGroup, HelpFormatter
+
+    usage = "usage: %prog "\
+            + "[--index_items <items index filename>] "\
+            + "[--dict_items <items dictionary filename>] " \
+            + "[--index_queries <queries index filename>] "\
+            + "[--dict_queries <queries dictionary filename>] " \
+            + "[--index_clicks <clicks index filename>] "\
+            + "[--dict_clicks <clicks dictionary filename>] " \
+            + "[--index_carts <carts index filename>] "\
+            + "[--dict_carts <carts dictionary filename>] " \
+            + "[--index_item_title <item_title index filename>] "\
+            + "[--dict_item_title <item_title dictionary filename>] " \
+            + "<item1> <item2>"
+
+    parser = OptionParser(usage=usage)
+    helpFormatter = HelpFormatter(indent_increment=2,\
+                                  max_help_position=10,\
+                                  width=80,\
+                                  short_first=1)
+
+    fileGroup = OptionGroup(parser, "Index options")
+    fileGroup.add_option("--index_items", dest="index_items_fname",\
+                         help="items index filename")
+    fileGroup.add_option("--dict_items", dest="posting_dict_items_fname",\
+                         help="items dictionary filename")
+    fileGroup.add_option("--index_queries", dest="index_queries_fname",\
+                         help="queries index filename")
+    fileGroup.add_option("--dict_queries", dest="posting_dict_queries_fname",\
+                         help="queries dictionary filename")
+    fileGroup.add_option("--index_clicks", dest="index_clicks_fname",\
+                         help="clicks index filename")
+    fileGroup.add_option("--dict_clicks", dest="posting_dict_clicks_fname",\
+                         help="clicks dictionary filename")
+    fileGroup.add_option("--index_carts", dest="index_carts_fname",\
+                         help="carts index filename")
+    fileGroup.add_option("--dict_carts", dest="posting_dict_carts_fname",\
+                         help="carts dictionary filename")
+    fileGroup.add_option("--index_item_title", dest="index_item_title_fname",\
+                         help="item_title index filename")
+    fileGroup.add_option("--dict_item_title", dest="posting_dict_item_title_fname",\
+                         help="item_title dictionary filename")
+    parser.add_option_group(fileGroup)
+
+    parser.set_defaults(index_items_fname=None, posting_dict_items_fname=None,\
+                        index_queries_fname=None, posting_dict_queries_fname=None,\
+                        index_clicks_fname=None, posting_dict_clicks_fname=None,\
+                        index_carts_fname=None, posting_dict_carts_fname=None,\
+                        index_item_title_fname=None, posting_dict_item_title_fname=None,\
+                        items_score_dict_fname=None, items_score_dump_fname=None)
+
+    (options, args) = parser.parse_args()
+
+    if (len(args) != 2):
+        parser.print_usage()
+        sys.exit()
+
+    return (options, args)
+
+def main():
+    (options, args) = parseArgs()
+    item1 = int(args[0])
+    item2 = int(args[1])
+
+    simCalc = SimilarityCalculator(\
+                      coeff_items=1.0,\
+                      coeff_queries=1.0,\
+                      coeff_clicks=1.0,\
+                      coeff_carts=1.0,\
+                      coeff_item_title=1.0,\
+                      index_items_fname=options.index_items_fname,\
+                      posting_dict_items_fname=options.posting_dict_items_fname,\
+                      index_queries_fname=options.index_queries_fname,\
+                      posting_dict_queries_fname=options.posting_dict_queries_fname,\
+                      index_clicks_fname=options.index_clicks_fname,\
+                      posting_dict_clicks_fname=options.posting_dict_clicks_fname,\
+                      index_carts_fname=options.index_carts_fname,\
+                      posting_dict_carts_fname=options.posting_dict_carts_fname,\
+                      index_item_title_fname=options.index_item_title_fname,\
+                      posting_dict_item_title_fname=options.posting_dict_item_title_fname)
+
+    print '    clicks: ' + str(simCalc.clicks_sim(item1, item2))
+    print '     items: ' + str(simCalc.items_sim(item1, item2))
+    print '     carts: ' + str(simCalc.carts_sim(item1, item2))
+    print '   queries: ' + str(simCalc.queries_sim(item1, item2))
+    print 'item_title: ' + str(simCalc.item_title_sim(item1, item2))
+
+if __name__ == '__main__':
+    main()
+

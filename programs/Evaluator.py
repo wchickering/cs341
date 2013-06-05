@@ -12,8 +12,9 @@ NUM_NDCG_SCORES = 32
 
 class Evaluator:
 
-    def __init__(self, k=1, stats=None):
+    def __init__(self, k=1, ctr_by_position=None, stats=None):
         self.k = k
+        self.ctr_by_position = ctr_by_position
         if stats:
             self.stats = stats
         else:
@@ -68,6 +69,9 @@ class Evaluator:
         self.stats['total_clicks_in_topK_reordered'] = 0
         self.stats['total_purchased_front_page_orig'] = 0
         self.stats['total_purchased_front_page_reordered'] = 0
+        self.stats['click_position_score_orig'] = 0.0
+        self.stats['click_position_score_reordered'] = 0.0
+        self.stats['precent_increase_position_score'] = 0.0
 
     def mergeStats(self, stats):
         for key, value in stats.items():
@@ -101,6 +105,10 @@ class Evaluator:
              float(self.stats['total_shown_clicks_front_page'])/self.stats['clicked_items']
         self.stats['total_recall_front_reordered'] =\
              float(self.stats['total_reordered_clicks_front_page'])/self.stats['clicked_items']
+        if self.stats['click_position_score_orig'] > 0.0:
+            self.stats['percent_increase_position_score'] =\
+                 (self.stats['click_position_score_reordered'] - \
+                  self.stats['click_position_score_orig'])/self.stats['click_position_score_orig']
 
     def printStats(self, outFile=sys.stdout):
         for key, value in self.stats.items():
@@ -350,7 +358,14 @@ class Evaluator:
                 assert(item in shown_items)
                 reordered_index = reordered_shown_items.index(item)
                 shown_index = shown_items.index(item)
-                self.stats['total_clicked_positions'] += shown_index
+                self.stats['total_clicked_positions'] += shown_index+1
+                if self.ctr_by_position:
+                    if shown_index < 1000:
+                        self.stats['click_position_score_orig'] +=\
+                            self.ctr_by_position[shown_index]
+                    if reordered_index < 1000:
+                        self.stats['click_position_score_reordered'] +=\
+                            self.ctr_by_position[reordered_index]
                 if shown_index < self.k:
                     clicks_in_topK_orig +=1
                 assert(clicks_in_topK_orig <= self.k)
@@ -423,12 +438,13 @@ def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
 
     usage = "usage: %prog "\
-            + "[-k N]"\
-            + "[-q --quiet]"\
-            + "[--num_all_queries : number of queries in all the data]"\
-            + "[--num_rankable_queries_all : number of rankable queries using all indexes]"\
-            + "[--is_all : this reranking uses all the indexes]"\
-            + "[--num_reordered_queries_all : number of reordered queries using all indexes - used to estimate percent rankable with subset of indexes if not is_all]"\
+            + "[-k N] "\
+            + "[--ctr_fname : filename of test data ctr's] "\
+            + "[--num_all_queries : number of queries in all the data] "\
+            + "[--num_rankable_queries_all : number of rankable queries using all indexes] "\
+            + "[--is_all : this reranking uses all the indexes] "\
+            + "[--num_reordered_queries_all : number of reordered queries using all indexes - used to estimate percent rankable with subset of indexes if not is_all] "\
+            + "[-q --quiet] "\
             + "<filename>"
 
     parser = OptionParser(usage=usage)
@@ -451,10 +467,11 @@ def parseArgs():
             dest="num_reordered_queries_all", \
             help="number reordered queries in data chunk with all indexes on - "\
             "to estimate percent rankable with subset of indexes")
+    optionGroup.add_option("--ctr_fname", dest="ctr_fname", help="file name of ctr's in test data for first 1000 positions")
     parser.add_option_group(optionGroup)
 
     parser.set_defaults(k=1, verbose=True, is_all=False, num_all_queries=0,\
-            num_rankable_queries_all=0, num_reordered_queries_all=0)
+            num_rankable_queries_all=0, num_reordered_queries_all=0, ctr_fname=None)
 
     (options, args) = parser.parse_args()
 
@@ -471,7 +488,13 @@ def main():
     else:
         inputFile = sys.stdin
 
-    evaluator = Evaluator(k=options.k)
+    # Read CTRs from external file
+    ctr_by_position = None
+    if options.ctr_fname:
+        ctr_file = open(options.ctr_fname)
+        ctr_by_position = json.loads(ctr_file.readline())
+
+    evaluator = Evaluator(k=options.k, ctr_by_position=ctr_by_position)
 
     lineNum = 0
     for line in inputFile:

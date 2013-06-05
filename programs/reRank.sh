@@ -95,13 +95,13 @@ then
     python $RERANK_PROG --workers $WORKERS --verbose -k $K --insert_position $INSERT_POSITION --coeff_ctr $COEFF_CTR --ctr_by_position $CTR_BY_POSITION_FILE --coeff_rank $COEFF_RANK --coeff_items $COEFF_ITEMS --coeff_queries $COEFF_QUERIES --coeff_clicks $COEFF_CLICKS --coeff_carts $COEFF_CARTS --coeff_item_title $COEFF_ITEM_TITLE --exp_rank $EXP_RANK --exp_items $EXP_ITEMS --exp_queries $EXP_QUERIES --exp_clicks $EXP_CLICKS --exp_carts $EXP_CARTS --exp_item_title $EXP_ITEM_TITLE --index_items $INDEX_ITEMS --dict_items $DICT_ITEMS --index_queries $INDEX_QUERIES --dict_queries $DICT_QUERIES --index_clicks $INDEX_CLICKS --dict_clicks $DICT_CLICKS --index_carts $INDEX_CARTS --dict_carts $DICT_CARTS --index_item_title $INDEX_ITEM_TITLE --dict_item_title $DICT_ITEM_TITLE --score_dump_items $SCORES_ITEMS --score_dump_queries $SCORES_QUERIES --score_dump_clicks $SCORES_CLICKS --score_dump_carts $SCORES_CARTS --score_dump_item_title $SCORES_ITEM_TITLE $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
 elif [ "$MODE" == "load" ]
 then
-    python $RERANK_PROG --workers $WORKERS --verbose -k $K --insert_position $INSERT_POSITION --coeff_ctr $COEFF_CTR --ctr_by_position $CTR_BY_POSITION_FILE --coeff_rank $COEFF_RANK --coeff_items $COEFF_ITEMS --coeff_queries $COEFF_QUERIES --coeff_clicks $COEFF_CLICKS --coeff_carts $COEFF_CARTS --coeff_item_title $COEFF_ITEM_TITLE --exp_rank $EXP_RANK --exp_items $EXP_ITEMS --exp_queries $EXP_QUERIES --exp_clicks $EXP_CLICKS --exp_carts $EXP_CARTS --exp_item_title $EXP_ITEM_TITLE --score_dict_items $SCORES_ITEMS --score_dict_queries $SCORES_QUERIES --score_dict_clicks $SCORES_CLICKS --score_dict_carts $SCORES_CARTS --score_dict_item_title $SCORES_ITEM_TITLE $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
+    python $RERANK_PROG --workers $WORKERS --verbose -k $K --insert_position $INSERT_POSITION --coeff_ctr $COEFF_CTR --ctr_by_position $CTR_BY_POSITION_FILE --coeff_rank $COEFF_RANK --coeff_items $COEFF_ITEMS --coeff_queries $COEFF_QUERIES --coeff_clicks $COEFF_CLICKS --coeff_carts $COEFF_CARTS --coeff_item_title $COEFF_ITEM_TITLE --exp_rank $EXP_RANK --exp_items $EXP_ITEMS --exp_queries $EXP_QUERIES --exp_clicks $EXP_CLICKS --exp_carts $EXP_CARTS --exp_item_title $EXP_ITEM_TITLE --index_item_title $INDEX_ITEM_TITLE --dict_item_title $DICT_ITEM_TITLE --score_dict_items $SCORES_ITEMS --score_dict_queries $SCORES_QUERIES --score_dict_clicks $SCORES_CLICKS --score_dict_carts $SCORES_CARTS --score_dict_item_title $SCORES_ITEM_TITLE $FILTERED_TEST_DATA > $RERANK_PROG_OUTPUT
 else
     echo "Invalid mode."
 fi
 
 echo "Evaluating . . ."
-python $EVAL_PROG -k $K --test_data_fname $TEST_DATA_STATS --rankable_data_fname $FILTERED_TEST_DATA_RANKABLE_STATS $RERANK_PROG_OUTPUT > $EVAL_OUTPUT
+python $EVAL_PROG -k $K --test_data_fname $TEST_DATA_STATS --rankable_data_fname $FILTERED_TEST_DATA_RANKABLE_STATS --ctr_fname $CTR_BY_POSITION_FILE $RERANK_PROG_OUTPUT > $EVAL_OUTPUT
 echo "***********************************************************" >> $RERANK_LOG
 echo $(date) >> $RERANK_LOG
 echo >> $RERANK_LOG

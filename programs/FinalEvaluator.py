@@ -405,10 +405,14 @@ def main():
     rankable_data_other_page_purchases = rankable_data_purchases - \
             rankable_data_front_page_purchases
     rankable_data_other_page_items = rankable_data_items - rankable_data_front_page_items
-    other_page_CTR_test_data = float(test_data_other_page_clicks) / \
-            test_data_other_page_items
-    other_page_CTR_rankable_data = float(rankable_data_other_page_clicks) / \
-            rankable_data_other_page_items
+    other_page_CTR_test_data = 0.0
+    if test_data_other_page_items > 0:
+        other_page_CTR_test_data = float(test_data_other_page_clicks) / \
+                test_data_other_page_items
+    other_page_CTR_rankable_data = 0.0
+    if rankable_data_other_page_items > 0:
+        other_page_CTR_rankable_data = float(rankable_data_other_page_clicks) / \
+                rankable_data_other_page_items
     front_page_click_recall_test_data = float(test_data_front_page_clicks)/test_data_clicks
     front_page_click_recall_rankable_data = \
             float(rankable_data_front_page_clicks)/rankable_data_clicks
@@ -420,14 +424,22 @@ def main():
             test_data_purchases
     front_page_purchase_recall_rankable_data = float(rankable_data_front_page_purchases) / \
             rankable_data_purchases
-    other_page_purchase_rate_test_data = float(test_data_other_page_purchases)/\
-            test_data_other_page_items
-    other_page_purchase_rate_rankable_data = float(rankable_data_other_page_purchases)/\
-            rankable_data_other_page_items
-    test_data_other_pages_conversion = float(test_data_other_page_purchases) / \
-            test_data_other_page_clicks
-    rankable_data_other_pages_conversion = float(rankable_data_other_page_purchases) / \
-            rankable_data_other_page_clicks
+    other_page_purchase_rate_test_data = 0.0
+    if test_data_other_page_items > 0:
+        other_page_purchase_rate_test_data = float(test_data_other_page_purchases)/\
+                test_data_other_page_items
+    other_page_purchase_rate_rankable_data = 0.0
+    if rankable_data_other_page_items > 0:
+        other_page_purchase_rate_rankable_data = float(rankable_data_other_page_purchases)/\
+                rankable_data_other_page_items
+    test_data_other_pages_conversion = 0.0
+    if test_data_other_page_clicks > 0:
+        test_data_other_pages_conversion = float(test_data_other_page_purchases) / \
+                test_data_other_page_clicks
+    rankable_data_other_pages_conversion = 0.0
+    if rankable_data_other_page_clicks > 0:
+        rankable_data_other_pages_conversion = float(rankable_data_other_page_purchases) / \
+                rankable_data_other_page_clicks
     perc_one_page_queries_test_data = float(test_data_one_page_queries) / test_data_queries
     perc_one_page_queries_rankable_data = float(rankable_data_one_page_queries) /\
             rankable_data_queries
@@ -435,16 +447,28 @@ def main():
     other_page_clicks_orig = clicked_items - total_shown_clicks_front_page 
     other_page_purchases_orig = purchased_items - total_purchased_front_page_orig 
     other_page_items = total_shown_items - total_items_on_front_page
-    other_page_CTR_orig = float(other_page_clicks_orig)/other_page_items
-    other_page_conversion_rate_orig = float(other_page_purchases_orig)/other_page_clicks_orig
-    other_page_purchase_rate_orig = float(other_page_purchases_orig)/other_page_items
+    other_page_clicks_orig = 0.0
+    if other_page_items > 0:
+        other_page_CTR_orig = float(other_page_clicks_orig)/other_page_items
+    other_page_conversion_rate_orig = 0.0
+    if other_page_clicks_orig > 0:
+        other_page_conversion_rate_orig = float(other_page_purchases_orig)/other_page_clicks_orig
+    other_page_purchase_rate_orig = 0.0
+    if other_page_items > 0:
+        other_page_purchase_rate_orig = float(other_page_purchases_orig)/other_page_items
 
     other_page_clicks_reordered = clicked_items - total_reordered_clicks_front_page  
     other_page_purchases_reordered = purchased_items - total_purchased_front_page_reordered 
-    other_page_CTR_reordered = float(other_page_clicks_reordered)/other_page_items
-    other_page_conversion_rate_reordered = float(other_page_purchases_reordered) / \
-            other_page_clicks_reordered
-    other_page_purchase_rate_reordered = float(other_page_purchases_reordered)/other_page_items
+    other_page_CTR_reordered = 0.0
+    if other_page_items > 0:
+        other_page_CTR_reordered = float(other_page_clicks_reordered)/other_page_items
+    other_page_conversion_rate_reordered = 0.0
+    if other_page_clicks_reordered > 0:
+        other_page_conversion_rate_reordered = float(other_page_purchases_reordered) / \
+                other_page_clicks_reordered
+    other_page_purchase_rate_reordered = 0.0
+    if other_page_items > 0:
+        other_page_purchase_rate_reordered = float(other_page_purchases_reordered)/other_page_items
 
     perc_clicks_in_rankable = float(rankable_data_clicks)/test_data_clicks
     perc_purchases_in_rankable = float(rankable_data_purchases)/test_data_purchases
@@ -462,10 +486,12 @@ def main():
         #        test_data_items_by_position[i]
         test_data_CTR_by_position[i] = float(test_data_clicks_by_position[i]) / \
                 test_data_queries
-        test_data_conversion_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
-                test_data_clicks_by_position[i]
-        #test_data_purchase_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
-        #        test_data_items_by_position[i]
+        if test_data_clicks_by_position[i] > 0:
+            test_data_conversion_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
+                    test_data_clicks_by_position[i]
+        #if test_data_items_by_position[i] > 0:
+        #    test_data_purchase_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
+        #            test_data_items_by_position[i]
         test_data_purchase_rate_by_position[i] = float(test_data_purchases_by_position[i]) / \
                 test_data_queries
 
@@ -477,10 +503,12 @@ def main():
         #        rankable_data_items_by_position[i]
         rankable_data_CTR_by_position[i] = float(rankable_data_clicks_by_position[i]) / \
                 rankable_data_queries
-        rankable_data_conversion_rate_by_position[i] =  \
-                float(test_data_purchases_by_position[i]) / rankable_data_clicks_by_position[i]
-        #rankable_data_purchase_rate_by_position[i] = \
-        #        float(test_data_purchases_by_position[i]) / rankable_data_items_by_position[i]
+        if rankable_data_clicks_by_position[i] > 0:
+            rankable_data_conversion_rate_by_position[i] =  \
+                    float(test_data_purchases_by_position[i]) / rankable_data_clicks_by_position[i]
+        #if rankable_data_items_by_position[i] > 0:
+        #    rankable_data_purchase_rate_by_position[i] = \
+        #            float(test_data_purchases_by_position[i]) / rankable_data_items_by_position[i]
         rankable_data_purchase_rate_by_position[i] = \
                 float(test_data_purchases_by_position[i]) / rankable_data_queries
    
@@ -492,10 +520,12 @@ def main():
         #        items_by_position[i]
         orig_CTR_by_position[i] = float(orig_clicks_by_position[i]) / \
                 num_queries
-        orig_conversion_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
-                orig_clicks_by_position[i]
-        #orig_purchase_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
-        #        items_by_position[i]
+        if orig_clicks_by_position[i] > 0:
+            orig_conversion_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
+                    orig_clicks_by_position[i]
+        #if items_by_position[i] > 0:
+        #    orig_purchase_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
+        #            items_by_position[i]
         orig_purchase_rate_by_position[i] = float(orig_purchases_by_position[i]) / \
                 num_queries
  
@@ -507,10 +537,12 @@ def main():
         #        items_by_position[i]
         reordered_CTR_by_position[i] = float(reordered_clicks_by_position[i]) / \
                 num_queries
-        reordered_conversion_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
-                reordered_clicks_by_position[i]
-        #reordered_purchase_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
-        #        items_by_position[i]
+        if reordered_clicks_by_position[i] > 0:
+            reordered_conversion_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
+                    reordered_clicks_by_position[i]
+        #if items_by_position[i] > 0:
+        #    reordered_purchase_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
+        #            items_by_position[i]
         reordered_purchase_rate_by_position[i] = float(reordered_purchases_by_position[i]) / \
                 num_queries
  

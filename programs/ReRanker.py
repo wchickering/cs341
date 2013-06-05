@@ -88,22 +88,20 @@ class ReRanker:
                 heapq.heappop(top_scores_heap)
         return top_scores_heap
 
+    def getItemScore(self, query, item, pos):
+        score = 0
+        for j in range(len(query.previously_clicked_items)):
+            score += self.simCalc.similarity(query.previously_clicked_items[j], item)
+        if self.ctr_by_position and pos < len(self.ctr_by_position):
+            score += self.coeff_ctr*self.ctr_by_position[pos]
+        score += self.coeff_rank*math.exp(-pos)**self.exp_rank
+        return score
+
     # Determine the top k scores 
     def getTopScoresHeap(self, query):
         top_scores_heap = []
         for i in range(self.insert_position, len(query.shown_items)):
-            shownItem = query.shown_items[i]
-            score = 0
-            for j in range(len(query.previously_clicked_items)):
-                # ignore previously clicked items themselves
-                if query.previously_clicked_items[j] == shownItem:
-                    score = 0
-                    break
-                score += self.simCalc.similarity(query.previously_clicked_items[j], \
-                                                 query.shown_items[i])
-            if self.ctr_by_position and i < len(self.ctr_by_position):
-                score += self.coeff_ctr*self.ctr_by_position[i]
-            score += self.coeff_rank*math.exp(-i)**self.exp_rank
+            score = self.getItemScore(query, query.shown_items[i], i)
             if score > 0:
                 self.stats['num_nonzero_scores'] += 1
                 heapq.heappush(top_scores_heap, (score, i))
