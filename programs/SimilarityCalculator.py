@@ -457,11 +457,10 @@ class SimilarityCalculator:
             if len(self.item_title_posting_cache) > self._item_title_posting_cache_size:
                 del self.item_title_posting_cache[self.item_title_posting_cache_queue.pop()]
         self.item_title_posting_cache_queue.insert(0, itemid)
-        return self.item_title_posting_cache[itemid]
+        return [term.strip(',.') for term in self.item_title_posting_cache[itemid].split()]
 
-    def similarity(self, itemid1, itemid2):
-
-        # determine items score
+    # determine items score
+    def items_sim(self, itemid1, itemid2):
         items_score = 0.0
         if self.items_score_dump_fname or self.coeff_items > 0:
             if self.items_score_dict_from_file:
@@ -483,8 +482,10 @@ class SimilarityCalculator:
             elif self.index_items_fd:
                 items_score = self.simfunc(self.get_items_posting(itemid1),\
                                              self.get_items_posting(itemid2))
+        return items_score
 
-        # determine queries score
+    # determine queries score
+    def queries_sim(self, itemid1, itemid2):
         queries_score = 0.0
         if self.queries_score_dump_fname or self.coeff_queries > 0:
             if self.queries_score_dict_from_file:
@@ -506,8 +507,10 @@ class SimilarityCalculator:
             elif self.index_queries_fd:
                 queries_score = self.simfunc(self.get_queries_posting(itemid1),\
                                              self.get_queries_posting(itemid2))
+        return queries_score
 
-        # determine clicks score
+    # determine clicks score
+    def clicks_sim(self, itemid1, itemid2):
         clicks_score = 0.0
         if self.clicks_score_dump_fname or self.coeff_clicks > 0:
             if self.clicks_score_dict_from_file:
@@ -529,8 +532,10 @@ class SimilarityCalculator:
             elif self.index_clicks_fd:
                 clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
                                             self.get_clicks_posting(itemid2))
+        return clicks_score
 
-        # determine carts score
+    # determine carts score
+    def carts_sim(self, itemid1, itemid2):
         carts_score = 0.0
         if self.carts_score_dump_fname or self.coeff_carts > 0:
             if self.carts_score_dict_from_file:
@@ -552,8 +557,10 @@ class SimilarityCalculator:
             elif self.index_carts_fd:
                 carts_score = self.simfunc(self.get_carts_posting(itemid1),\
                                             self.get_carts_posting(itemid2))
+        return carts_score
 
-        # determine item_title score
+    # determine item_title score
+    def item_title_sim(self, itemid1, itemid2):
         item_title_score = 0.0
         if self.item_title_score_dump_fname or self.coeff_item_title > 0:
             if self.item_title_score_dict_from_file:
@@ -567,20 +574,22 @@ class SimilarityCalculator:
                         self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))]
                 else:
                     self.stats['item_title_score_cache_misses'] += 1
-                    item_title_score = self.simfunc(self.get_item_title_posting(itemid1).split(),\
-                                                    self.get_item_title_posting(itemid2).split())
+                    item_title_score = self.simfunc(self.get_item_title_posting(itemid1),\
+                                                    self.get_item_title_posting(itemid2))
                     if item_title_score > 0.0:
-                        self.item_title_score_dict[(min(itemid1, itemid2), max(itemid1, itemid2))] =\
-                            item_title_score
+                        self.item_title_score_dict[(min(itemid1, itemid2),\
+                                           max(itemid1, itemid2))] = item_title_score
             elif self.index_item_title_fd:
                 item_title_score = self.simfunc(self.get_item_title_posting(itemid1),\
-                                            self.get_item_title_posting(itemid2))
+                                                self.get_item_title_posting(itemid2))
+        return item_title_score
 
-        return self.coeff_items*items_score**self.exp_items +\
-               self.coeff_queries*queries_score**self.exp_queries +\
-               self.coeff_clicks*clicks_score**self.exp_clicks +\
-               self.coeff_carts*carts_score**self.exp_carts +\
-               self.coeff_item_title*item_title_score**self.exp_item_title
+    def similarity(self, itemid1, itemid2):
+        return self.coeff_items*self.items_sim(itemid1, itemid2)**self.exp_items +\
+               self.coeff_queries*self.queries_sim(itemid1, itemid2)**self.exp_queries +\
+               self.coeff_clicks*self.clicks_sim(itemid1, itemid2)**self.exp_clicks +\
+               self.coeff_carts*self.carts_sim(itemid1, itemid2)**self.exp_carts +\
+               self.coeff_item_title*self.item_title_sim(itemid1, itemid2)**self.exp_item_title
 
     def simfunc(self, l1, l2):
         return self.jaccard(l1, l2)
@@ -685,7 +694,11 @@ def main():
                       index_item_title_fname=options.index_item_title_fname,\
                       posting_dict_item_title_fname=options.posting_dict_item_title_fname)
 
-    print str(simCalc.similarity(item1, item2))
+    print '    clicks: ' + str(simCalc.clicks_sim(item1, item2))
+    print '     items: ' + str(simCalc.items_sim(item1, item2))
+    print '     carts: ' + str(simCalc.carts_sim(item1, item2))
+    print '   queries: ' + str(simCalc.queries_sim(item1, item2))
+    print 'item_title: ' + str(simCalc.item_title_sim(item1, item2))
 
 if __name__ == '__main__':
     main()

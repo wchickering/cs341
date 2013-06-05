@@ -31,4 +31,4 @@ def get_posting_raw(index_f, posting_dict, itemid):
     if itemid not in posting_dict:
         return ''
     index_f.seek(posting_dict[itemid])
-    return index_f.readline()
+    return index_f.readline().rstrip()
