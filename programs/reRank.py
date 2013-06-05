@@ -24,6 +24,8 @@ import pp
 import ReRanker
 import SimilarityCalculator
 import Query
+import QueryPrinter
+import QueryScorer
 
 def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -212,7 +214,7 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
            clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
            carts_score_dict_fname=None, carts_score_dump_fname=None,\
            item_title_score_dict_fname=None, item_title_score_dump_fname=None,\
-           random=False, verbose=False):
+           random=False, verbose=False, queryPrintFileName=None):
 
     # Instantiate Similarity Calculator (expensive)
     simCalc = SimilarityCalculator.SimilarityCalculator(\
@@ -253,6 +255,17 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
                       coeff_ctr=coeff_ctr, ctr_by_position=ctr_by_position,\
                       coeff_rank=coeff_rank, exp_rank=exp_rank, verbose=verbose)
 
+    ## DEBUGGING
+    ## Instantiate QueryScorer (cheap, for debugging only)
+    #queryScorer = QueryScorer.QueryScorer(ctr_by_position)
+
+    ## Instantiate QueryPrinter (cheap, for debugging only)
+    #queryPrinter = QueryPrinter.QueryPrinter(\
+    #                  outFile=open(queryPrintFileName, 'w'),\
+    #                  index_item_title_fname=index_item_title_fname,\
+    #                  posting_dict_item_title_fname=posting_dict_item_title_fname,\
+    #                  reRanker=reRanker)
+
     n = 0
     for line in inputFile:
         n += 1
@@ -268,6 +281,11 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
         # re-rank shown items
         (num_reranks, reordered_shown_items) =\
                                    reRanker.reRankItems(query, top_scores_heap)
+
+        ## DEBUGGING
+        #query.reordered_shown_items = reordered_shown_items
+        #if queryScorer.clickPositionIncrease(query) > 400.0:
+        #    queryPrinter.printQuery(query)
 
         # construct and yield reordered_query record
         yield reRanker.makeRecord(query, num_reranks, reordered_shown_items)
@@ -291,7 +309,7 @@ def singleReRankAndDump(inputFileName, startLine, numLines,\
            clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
            carts_score_dict_fname=None, carts_score_dump_fname=None,\
            item_title_score_dict_fname=None, item_title_score_dump_fname=None,\
-           random=False, verbose=False):
+           random=False, verbose=False, queryPrintFileName=None):
 
     inputFile = open(inputFileName)
     for i in range(startLine):
@@ -337,7 +355,8 @@ def singleReRankAndDump(inputFileName, startLine, numLines,\
                        item_title_score_dict_fname=item_title_score_dict_fname,\
                        item_title_score_dump_fname=item_title_score_dump_fname,\
                        random=random,\
-                       verbose=verbose):
+                       verbose=verbose,\
+                       queryPrintFileName=queryPrintFileName):
         print >> tempFile, json.dumps(record)
 
     return tempFile.name
@@ -469,6 +488,9 @@ def main():
                 item_title_score_dump_fname =\
                     options.item_title_score_dump_fname + '.' + str(workerNum)
 
+            # construct workerNum-dependent queryPrintFileName
+            queryPrintFileName = 'data/queryPrintout' + str(workerNum) + '.out'
+
             # submit worker job
             jobs.append(job_server.submit(singleReRankAndDump, \
                                (inputFileName,\
@@ -511,9 +533,11 @@ def main():
                                 item_title_score_dict_fname,\
                                 item_title_score_dump_fname,\
                                 options.random,\
-                                False),\
+                                False,\
+                                queryPrintFileName),\
                         (singleReRank_iter,),\
-                        ('tempfile', 'json', 'ReRanker', 'SimilarityCalculator', 'Query')))
+                        ('tempfile', 'json', 'ReRanker', 'SimilarityCalculator',\
+                         'Query', 'QueryPrinter', 'QueryScorer')))
             data_submitted += data_this_job
 
         # read worker temp files print content

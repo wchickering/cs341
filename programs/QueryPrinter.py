@@ -67,9 +67,9 @@ class QueryPrinter:
         self.printLine('Original Items:')
         for item in query.shown_items:
             self.printItem(item)
-        if query.reordered_items:
+        if query.reordered_shown_items:
             self.printLine('Reordered Items:')
-            for item in query.reordered_items:
+            for item in query.reordered_shown_items:
                 score = None
                 if self.reRanker:
                     score = self.reRanker.getItemScore(query, item,\
