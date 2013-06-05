@@ -259,6 +259,7 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
     ## Instantiate QueryScorer (cheap, for debugging only)
     #queryScorer = QueryScorer.QueryScorer(ctr_by_position)
 
+    ## DEBUGGING
     ## Instantiate QueryPrinter (cheap, for debugging only)
     #queryPrinter = QueryPrinter.QueryPrinter(\
     #                  outFile=open(queryPrintFileName, 'w'),\
@@ -284,7 +285,8 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
 
         ## DEBUGGING
         #query.reordered_shown_items = reordered_shown_items
-        #if queryScorer.clickPositionIncrease(query) > 400.0:
+        #if queryScorer.clickPositionIncrease(query) > 100.0 and\
+        #   queryScorer.clickPositionIncrease(query) < 400.0:
         #    queryPrinter.printQuery(query)
 
         # construct and yield reordered_query record
@@ -372,6 +374,8 @@ def main():
         ctr_by_position_fd = open(options.ctr_by_position)
         ctr_by_position = json.loads(ctr_by_position_fd.readline())
         ctr_by_position_fd.close()
+        for i in range(len(ctr_by_position)):
+            assert(ctr_by_position[i] < 1.0)
 
     if options.workers == 1: #### single process ####
 

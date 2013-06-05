@@ -482,7 +482,7 @@ class SimilarityCalculator:
             elif self.index_items_fd:
                 items_score = self.simfunc(self.get_items_posting(itemid1),\
                                              self.get_items_posting(itemid2))
-        return items_score
+        return self.coeff_items*items_score**self.exp_items
 
     # determine queries score
     def queries_sim(self, itemid1, itemid2):
@@ -507,7 +507,7 @@ class SimilarityCalculator:
             elif self.index_queries_fd:
                 queries_score = self.simfunc(self.get_queries_posting(itemid1),\
                                              self.get_queries_posting(itemid2))
-        return queries_score
+        return self.coeff_queries*queries_score**self.exp_queries
 
     # determine clicks score
     def clicks_sim(self, itemid1, itemid2):
@@ -532,7 +532,7 @@ class SimilarityCalculator:
             elif self.index_clicks_fd:
                 clicks_score = self.simfunc(self.get_clicks_posting(itemid1),\
                                             self.get_clicks_posting(itemid2))
-        return clicks_score
+        return self.coeff_clicks*clicks_score**self.exp_clicks
 
     # determine carts score
     def carts_sim(self, itemid1, itemid2):
@@ -557,7 +557,7 @@ class SimilarityCalculator:
             elif self.index_carts_fd:
                 carts_score = self.simfunc(self.get_carts_posting(itemid1),\
                                             self.get_carts_posting(itemid2))
-        return carts_score
+        return self.coeff_carts*carts_score**self.exp_carts
 
     # determine item_title score
     def item_title_sim(self, itemid1, itemid2):
@@ -582,14 +582,14 @@ class SimilarityCalculator:
             elif self.index_item_title_fd:
                 item_title_score = self.simfunc(self.get_item_title_posting(itemid1),\
                                                 self.get_item_title_posting(itemid2))
-        return item_title_score
+        return self.coeff_item_title*item_title_score**self.exp_item_title
 
     def similarity(self, itemid1, itemid2):
-        return self.coeff_items*self.items_sim(itemid1, itemid2)**self.exp_items +\
-               self.coeff_queries*self.queries_sim(itemid1, itemid2)**self.exp_queries +\
-               self.coeff_clicks*self.clicks_sim(itemid1, itemid2)**self.exp_clicks +\
-               self.coeff_carts*self.carts_sim(itemid1, itemid2)**self.exp_carts +\
-               self.coeff_item_title*self.item_title_sim(itemid1, itemid2)**self.exp_item_title
+        return self.items_sim(itemid1, itemid2) +\
+               self.queries_sim(itemid1, itemid2) +\
+               self.clicks_sim(itemid1, itemid2) +\
+               self.carts_sim(itemid1, itemid2) +\
+               self.item_title_sim(itemid1, itemid2)
 
     def simfunc(self, l1, l2):
         return self.jaccard(l1, l2)

@@ -8,6 +8,7 @@ __date__ = """13 April 2013"""
 
 import sys
 import unicodedata
+from math import log10, floor
 
 #local modules
 import Query
@@ -17,7 +18,13 @@ def normalizeStr(s):
     return ' '.join(unicodedata.normalize('NFKD', s)\
                     .encode('ascii','ignore').replace('"','\"').strip().split())
 
+def nSigFigs(x, n):
+    return round(x, -int(floor(log10(x))) + (n - 1))
+
 class QueryPrinter:
+
+    # params
+    _sigfigs = 3
 
     def __init__(self,\
                  outFile=sys.stdout,\
@@ -46,13 +53,30 @@ class QueryPrinter:
         else:
             return None
 
-    def printItem(self, item, score=None):
+    def printItem(self, item, score=None, cost=None, ctr=None,\
+                  clicks_score=None, items_score=None, carts_score=None,\
+                  queries_score=None, item_title_score=None):
         line = str(item)
         title = self.getTitle(item)
         if title:
             line += ': ' + title
         if score:
-            line += ' (' + str(score) + ')'
+            line += ' (' + str(nSigFigs(score, self._sigfigs))
+            if cost:
+                line += ' cost:' + str(nSigFigs(cost, self._sigfigs))
+            if ctr:
+                line += ' ctr:' + str(nSigFigs(ctr, self._sigfigs))
+            if clicks_score:
+                line += ' C:' + str(nSigFigs(clicks_score, self._sigfigs))
+            if items_score:
+                line += ' I:' + str(nSigFigs(items_score, self._sigfigs))
+            if carts_score:
+                line += ' A:' + str(nSigFigs(carts_score, self._sigfigs))
+            if queries_score:
+                line += ' Q:' + str(nSigFigs(queries_score, self._sigfigs))
+            if item_title_score:
+                line += ' T:' + str(nSigFigs(item_title_score, self._sigfigs))
+            line += ')'
         self.printLine(line)
 
     def printQuery(self, query):
@@ -69,11 +93,37 @@ class QueryPrinter:
             self.printItem(item)
         if query.reordered_shown_items:
             self.printLine('Reordered Items:')
-            for item in query.reordered_shown_items:
+            for i in range(len(query.reordered_shown_items)):
+                item = query.reordered_shown_items[i]
                 score = None
+                cost = None
+                ctr = None
+                clicks_score = None
+                items_score = None
+                carts_score = None
+                queries_score = None
+                item_title_score = None
                 if self.reRanker:
-                    score = self.reRanker.getItemScore(query, item,\
-                                                       query.shown_items.index(item))
-                self.printItem(item, score)
+                    origPos = query.shown_items.index(item)
+                    score = self.reRanker.getItemScore(query, item, origPos)
+                    if self.reRanker.ctr_by_position and\
+                       i < len(self.reRanker.ctr_by_position):
+                        cost = self.reRanker.ctr_by_position[i]
+                    if self.reRanker.ctr_by_position and\
+                       origPos < len(self.reRanker.ctr_by_position):
+                        ctr = self.reRanker.ctr_by_position[origPos]
+                    clicks_score = 0.0
+                    items_score = 0.0
+                    carts_score = 0.0
+                    queries_score = 0.0
+                    item_title_score = 0.0
+                    for prevItem in query.previously_clicked_items:
+                        clicks_score += self.reRanker.simCalc.clicks_sim(prevItem, item)
+                        items_score += self.reRanker.simCalc.items_sim(prevItem, item)
+                        carts_score += self.reRanker.simCalc.carts_sim(prevItem, item)
+                        queries_score += self.reRanker.simCalc.queries_sim(prevItem, item)
+                        item_title_score += self.reRanker.simCalc.item_title_sim(prevItem, item)
+                self.printItem(item, score, cost, ctr, clicks_score, items_score, carts_score,\
+                               queries_score, item_title_score)
         self.printLine('')
 
