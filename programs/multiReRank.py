@@ -120,6 +120,7 @@ def multiReRank(test_data, paramsList,\
 
         # Instantiate ReRanker (cheap)
         reRanker = ReRanker.ReRanker(simCalc,\
+                          n=params['n'],\
                           k=params['k'],\
                           insert_position=params['insert_position'],\
                           coeff_ctr=params['coeff_ctr'],\
