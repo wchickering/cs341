@@ -10,6 +10,7 @@ from collections import Iterable
 MAX_FRONT_PAGE_ITEMS = 16
 NUM_NDCG_SCORES = 16
 POSITIONS = 32
+MAX_NUM_PAGES = 50
 
 def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -174,6 +175,11 @@ def main():
     reordered_purchases_by_position = [0]*POSITIONS
     click_position_score_orig = 0.0
     click_position_score_reordered = 0.0
+    click_position_score_orig_by_pagelen = [0.0]*MAX_NUM_PAGES
+    click_position_score_reordered_by_pagelen = [0.0]*MAX_NUM_PAGES
+    num_queries_by_pagelen = [0]*MAX_NUM_PAGES
+    num_queries_over_max_pages = 0
+    num_one_page_queries = 0
 
     print "Processing Data..."
     ### PROCESS DATA ###
@@ -192,6 +198,19 @@ def main():
         reordered_shown_items = record['reordered_shown_items']
         clicked_shown_items = set(record['clicked_shown_items'])
         purchased_shown_items = set(record['purchased_shown_items'])
+
+        if len(shown_items) <= MAX_FRONT_PAGE_ITEMS:
+            num_one_page_queries += 1
+
+        if len(shown_items) == 0:
+            print 'THIS SHOULD NOT HAPPEN'
+            continue
+
+        num_pages = (len(shown_items)-1)/MAX_FRONT_PAGE_ITEMS + 1
+        if num_pages > MAX_NUM_PAGES:
+            num_pages = MAX_NUM_PAGES
+            num_queries_over_max_pages += 1
+        num_queries_by_pagelen[num_pages-1] += 1
 
         total_shown_items += len(shown_items)
         clicked_items += len(clicked_shown_items)
@@ -284,8 +303,11 @@ def main():
             total_clicked_positions += shown_index+1
             if shown_index < 1000:
                 click_position_score_orig += ctr_by_position[shown_index]
+                click_position_score_orig_by_pagelen[num_pages-1] += ctr_by_position[shown_index]
             if reordered_index < 1000:
                 click_position_score_reordered += ctr_by_position[reordered_index]
+                click_position_score_reordered_by_pagelen[num_pages-1] += \
+                        ctr_by_position[reordered_index]
             if shown_index < k:
                 clicks_in_topK_orig +=1
             assert(clicks_in_topK_orig <= k)
@@ -590,6 +612,18 @@ def main():
     perc_purchase_ratio_95 = float('inf')
     if front_page_purchase_diff > 0:
         perc_purchase_ratio_95 = 1.96*purchase_diff_std_dev / front_page_purchase_diff
+    
+    # scores by page length
+    click_position_score_increase_by_pagelen = [0.0]*MAX_NUM_PAGES
+    for i in range(MAX_NUM_PAGES):
+        if num_queries_by_pagelen[i] > 0:
+            click_position_score_increase_by_pagelen[i] = \
+                    float(click_position_score_reordered_by_pagelen[i] - \
+                    click_position_score_orig_by_pagelen[i]) / \
+                    click_position_score_orig_by_pagelen[i]
+        else:
+            click_position_score_increase_by_pagelen[i] = 0.0
+
 
 
     ### PRINT STATS ###
@@ -853,6 +887,22 @@ def main():
     print 'conversion_rate_bumped_off_front_items = ', bumped_off_front_conversion
     print 'CTR_promoted_to_front = ', ctr_promoted_to_front
     print 'CTR_bumped_off_front = ', ctr_bumped_off_front
+    print
+
+    print '=== SCORES BY PAGE LENGTH ==='
+    print 'Click position score by pagelength:'
+    print 'pages\tqueries\t\torig_score\treorder_score\tincrease'
+    for i in range(MAX_NUM_PAGES):
+        istr = str(i+1)
+        if i+1 == MAX_NUM_PAGES:
+            istr += "+"
+        print istr, ":\t" , num_queries_by_pagelen[i], "\t\t", \
+                "{0:4f}".format(click_position_score_orig_by_pagelen[i]), "\t", \
+                "{0:4f}".format(click_position_score_reordered_by_pagelen[i]), "\t", \
+                "{0:4f}".format(click_position_score_increase_by_pagelen[i])
+    print 'queries more than ', MAX_NUM_PAGES, 'pages = ', num_queries_over_max_pages
+    print 'num_one_page_queries = ', num_one_page_queries
+    print 'perc_one_page_queries_filtered = ', float(num_one_page_queries)/num_queries
     print
     
     print
