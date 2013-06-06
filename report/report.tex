@@ -9,7 +9,7 @@
 
 \usepackage{tikz}
 
-\title{Session-Informed Product Search \\
+\title{Improving Product Search with Session Re-Rank\\
     \large{a Walmart data mining project}}
 \author{Charles Celerier (cceleri), Bill Chickering (bchick),
         and Jamie Irvine (jirvine)}
@@ -65,6 +65,8 @@ $\Gamma_i$ of the item's original position $i$
 \end{equation*}
 
 where $P$ is the set of previously clicked items. 
+
+\section{Similarity Spaces}
 
 The premise behind {\em click-space} is that two items are similar if they are
 both clicked within the same online shopping session. The dimensions, or
@@ -145,6 +147,10 @@ historic data to demonstrate the consequences of a ranking algorithm is
 intrinsically limited since one cannot be certain how users would have behaved
 if presented with different results. Nonetheless, we have done our best to
 conduct the most fair and informative experiments and analyses.
+
+\section{Experiment 1}
+
+The goal for experiment 1 is to simulate {\em Session Re-Rank} using the provided historical query data, which is limited to what users were actually shown. Since an online implementation of our technique would receive the top $N$ items from the search engine for re-ranking prior to showing any results to a user, the final ranking would be independent of the total number of items actually shown (e.g. the number of page views requested by the user). We therefore limit the test set of experiment 1 to queries where at least $N=100$ were shown to the user. Confining the experiment to this subset of queries allows our algorithm to re-rank the same number of 
 
 
 \end{document}

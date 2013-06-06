@@ -5,6 +5,9 @@ import sys
 # import local modules
 from Query import Query
 
+# global params
+ITEMS_PER_PAGE = 16
+
 def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
 
@@ -39,7 +42,8 @@ def main():
 
     for line in inputFile:
         query = Query(line)
-        if len(query.shown_items) < options.n:
+        if len(query.shown_items) < options.n and\
+           len(query.shown_items) % ITEMS_PER_PAGE == 0:
             continue
     
         print line.rstrip()
