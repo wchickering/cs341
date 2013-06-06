@@ -22,11 +22,12 @@ from Query import Query
 
 class ReRanker:
 
-    def __init__(self, simCalc, k=1, insert_position=0,\
+    def __init__(self, simCalc, n=0, k=1, insert_position=0,\
                  coeff_ctr=0.0, ctr_by_position=None,\
                  coeff_rank=0.0, exp_rank=1.0,\
                  verbose=False):
         self.simCalc = simCalc
+        self.n = n
         self.k = k
         self.insert_position = insert_position
         self.coeff_ctr = coeff_ctr
@@ -37,9 +38,11 @@ class ReRanker:
         self.stats = OrderedDict()
         self.initStats()
 
-    def setParams(self, k=None, insert_position=None,\
+    def setParams(self, n=None, k=None, insert_position=None,\
                   coeff_ctr=None, ctr_by_position=None,\
                   coeff_rank=None, exp_rank=None):
+        if n:
+            self.n = n
         if k:
             self.k = k
         if insert_position:
@@ -81,7 +84,11 @@ class ReRanker:
     # Used for testing and data analysis
     def getRandomTopScoresHeap(self, query):
         top_scores_heap = []
-        for i in range(self.insert_position, len(query.shown_items)):
+        if self.n and self.n > 0 and self.n < len(query.shown_items):
+            n = self.n
+        else:
+            n = len(query.shown_items)
+        for i in range(self.insert_position, n):
             self.stats['num_nonzero_scores'] += 1
             heapq.heappush(top_scores_heap, (random.random(), i))
             if len(top_scores_heap) > self.k:
@@ -100,7 +107,11 @@ class ReRanker:
     # Determine the top k scores 
     def getTopScoresHeap(self, query):
         top_scores_heap = []
-        for i in range(self.insert_position, len(query.shown_items)):
+        if self.n and self.n > 0 and self.n < len(query.shown_items):
+            n = self.n
+        else:
+            n = len(query.shown_items)
+        for i in range(self.insert_position, n):
             score = self.getItemScore(query, query.shown_items[i], i)
             if score > 0:
                 self.stats['num_nonzero_scores'] += 1
