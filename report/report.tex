@@ -142,15 +142,19 @@ Meanwhile, the concept behind the {\em Session Re-Rank} technique calls for a
 search engine to deliver to the algorithm the top $N$ items in response to a
 {\em user-query} {\em independent of the number of items ultimately shown to the
 user}. As a consequence, it is difficult to simulate our technique using shown
-query results that are limited to only one or two pages. Moreover, the use of
-historic data to demonstrate the consequences of a ranking algorithm is
-intrinsically limited since one cannot be certain how users would have behaved
-if presented with different results. Nonetheless, we have done our best to
-conduct the most fair and informative experiments and analyses.
+query results that are truncated because a user only viewed one or two pages. 
+More generally, the use of historic data to demonstrate the consequences of a 
+online ranking algorithm is intrinsically limited since one cannot be certain 
+how users would have behaved if presented with different results. Nonetheless, 
+we have done our best to conduct the most fair and informative experiments and 
+analyses.
 
 \section{Experiment 1}
 
-The goal for experiment 1 is to simulate {\em Session Re-Rank} using the provided historical query data, which is limited to what users were actually shown. Since an online implementation of our technique would receive the top $N$ items from the search engine for re-ranking prior to showing any results to a user, the final ranking would be independent of the total number of items actually shown (e.g. the number of page views requested by the user). We therefore limit the test set of experiment 1 to queries where at least $N=100$ were shown to the user. Confining the experiment to this subset of queries allows our algorithm to re-rank the same number of 
+The goal for experiment 1 is to simulate {\em Session Re-Rank} using the provided historical query data, which is limited to what users were actually shown. Since an online implementation of our technique would receive the top $N$ items from the search engine for re-ranking prior to showing any results to a user, the final ranking would be independent of the total number of items actually shown (e.g. the number of page views requested by a user). We therefore limit the test set of experiment 1 to queries where either at least $N=100$ were shown or the number shown is not divisible by 16. The reason for this is that Walmart.com provides two options for the number of items shown per page: 16 or 32. By performing the experiment on this subset of the data we preclude queries where the top $N$ items are not available to our algorithm. The choice of $N=100$, meanwhile, is somewhat arbitrary and was made by balancing our desire for a large test set with our desire to use a value comparable to what would be appropriate for an online implementation. It is therefore quite possible that a larger value of $N$ (e.g. 1000) would achieve better results in the actual online scenario.
+
+
+Confining the experiment to this subset of queries allows our algorithm to re-rank the same number of 
 
 
 \end{document}
