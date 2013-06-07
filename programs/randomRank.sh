@@ -56,4 +56,4 @@ echo "***********************************************************" >> $RERANK_LO
 echo $(date) >> $RERANK_LOG
 echo >> $RERANK_LOG
 cat $RERANK_PARAMS $EVAL_OUTPUT >> $RERANK_LOG
-tail -n 15 $EVAL_OUTPUT
+tail -n 17 $EVAL_OUTPUT
