@@ -40,7 +40,7 @@ function estimateTimeRemaining() {
 }
 
 ## make multiple multiReRank json files from a skeleton
-multiplotFn=data/tmp/k${regime}.${xmin}-${xmax}.multiplot
+multiplotFn=data/tmp/${RAWDATA}.${INDEX}.k${regime}.${xmin}-${xmax}.multiplot
 if [ ! -f $multiplotFn ] || [ $plotAgain ]
 then
     rm -f $multiplotFn
@@ -58,7 +58,7 @@ then
             | python programs/optimize.py coeff_$param $xmin $xmax $inc \
             > data/$paramsFn
     
-        rcFn=data/multiReRankrc.k${regime}.${xmin}-${xmax}.coeff_${param}
+        rcFn=data/${RAWDATA}.${INDEX}.multiReRankrc.k${regime}.${xmin}-${xmax}.coeff_${param}
         outFn=multiReRank.k${regime}.${xmin}-${xmax}.coeff_${param}.out
         rm -f $rcFn
         cp plot_templates/multiReRankrc $rcFn
@@ -81,5 +81,5 @@ then
     done
 fi
 
-python programs/plot.py --multi --plot $plot $multiplotFn
+python programs/simplePlot.py --smooth --multi --metric $plot $multiplotFn
 

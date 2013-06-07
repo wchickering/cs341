@@ -18,10 +18,12 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
+from pprint import pformat # prints dictionaries nicely
+
 smallFont = matplotlib.font_manager.FontProperties(stretch='condensed',weight='book',size='small',family='monospace')
 middleFont = matplotlib.font_manager.FontProperties(stretch='normal',weight='roman',size='large',family='monospace')
 titleFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='demi',size='x-large',family='monospace')
-kDefaultLegendSettings = dict(prop=smallFont, ncol=2, loc=2, fancybox=True, shadow=True, bbox_to_anchor=(1.05,1), borderaxespad=0)
+kDefaultLegendSettings = dict(prop=middleFont, ncol=2, loc='best', fancybox=True, shadow=True)
 labelpad = 12
 
 class ref:
@@ -29,42 +31,26 @@ class ref:
     def get(self): return self.obj
     def set(self, obj): self.obj=obj
 
-def parameterInfoString(params, free_param):
-    s = "+---------------------------+\n"
-    if str(free_param) == "k":
-       s += "|  k = ??  insert_pos = %2d  |\n" % ( params["insert_position"] )
-    elif str(free_param) == 'insert_position':
-       s += "|  k = %2d  insert_pos = ??  |\n" % ( params["k"] )
-    else:
-       s += "|  k = %2d  insert_pos = %2d  |\n" % ( params["k"], params["insert_position"] )
+# takes a dictionary of defined parameter and a list of parameter name
+# strings defining which ones will vary on the plot
+class ParameterTable:
+    def __init__(self, definedParameters, freeParameters=[]):
+        self.__parameters = dict()
+        for p in freeParameters:
+            self.__parameters[p] = 'free or 0.00'
+        for p in set(definedParameters.keys()).difference(set(self.__parameters)):
+            p = p.encode('ascii', 'xmlcharrefreplace')
+            if p in ['k', 'insert_position']:
+                self.__parameters[p] = '%d' % definedParameters[p]
+            elif p == 'ctr_by_position':
+                self.__parameters[p] = definedParameters[p].encode('ascii', 'xmlcharrefreplace')
+            else:
+                self.__parameters[p] = '%.3f' % definedParameters[p]
 
-    s += "+------------+-------+------+\n"\
-       + "|            | coeff | exp  |\n"\
-       + "+------------+-------+------+\n"\
-       + "| %10s |  %.2f | ---- |\n" % ( 'ctr', params["coeff_ctr"] )
-    if (free_param[1] != 'rank'):
-       s += "| %10s |  %.2f | %.2f |\n" % ( 'rank', params["coeff_"+'rank'], params["exp_"+'rank'] )
-    elif (free_param[0] == 'coeff'):
-       s += "| %10s |  ???? | %.2f |\n" % ( 'rank', params["exp_"+'rank'] )
-    elif (free_param[0] == 'exp'):
-       s += "| %10s |  %.2f | ???? |\n" % ( 'rank', params["coeff_"+'rank'] )
+    def __str__(self):
+        return ('\n'.join(pformat(self.__parameters).split(', ')))[1:-1].replace('\'','')
 
-    s += "+------------+-------+------+\n"\
-       + "|   index    | ----- | ---- |\n"\
-       + "+------------+-------+------+\n"\
-
-    for index in ['items','clicks','queries','carts','item_title']:
-        if (free_param[1] != index):
-           s += "| %10s |  %.2f | %.2f |\n" % ( index, params["coeff_"+index], params["exp_"+index] )
-        elif (free_param[0] == 'coeff'):
-           s += "| %10s |  ???? | %.2f |\n" % ( index, params["exp_"+index] )
-        elif (free_param[0] == 'exp'):
-           s += "| %10s |  %.2f | ???? |\n" % ( index, params["coeff_"+index] )
-    s += "+------------+------+------+\n"
-
-    return s
-
-def plotNDCGCurve(resultsFn):
+def makeNDCGCurvePlot(resultsFn):
     resultsFo = open(resultsFn)
     
     NDCG_figure = plt.figure(figsize=(20,12))
@@ -84,7 +70,7 @@ def plotNDCGCurve(resultsFn):
 
         # plot next reordered data
         reordered = stats['avg_reordered_NDCG_scores']
-        ax.plot(x, reordered, '-', label=parameterInfoString(params, FreeParam()), marker=marker)
+        ax.plot(x, reordered, '-', label=str(ParameterTable(params)), marker=marker)
 
     resultsFo.close()
 
@@ -106,8 +92,7 @@ def plotNDCGCurve(resultsFn):
 
     return ax
 
-def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[],
-                    multi=False):
+def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[], multi=False):
     resultsFo = open(resultsFn)
     
     reordered_scores = []
@@ -145,82 +130,68 @@ def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[],
     reordered_scores.sort(key=lambda a: a[0])
     return reordered_scores, params, dataInfo 
 
-### messy class to deal with free paramters
-class FreeParam:
-    def __init__(self, p=""):
-        if p:
-            if p == 'k' or p == 'insert_position':
-                self._p = p
-            else:
-                self._p = p.split('_',1)
-        else:
-            self._p = p
-
-    def __str__(self):
-        if type(self._p) != str:
-            return '_'.join(self._p)
-        return self._p
-
-    def __getitem__(self, index):
-        if type(self._p) == str:
-            return self._p
-        else:
-            return self._p[index]
-
-    def __repr__(self):
-        return 'FreeParam(%r)' % repr(self._p)
-
-def plotMetric(metric_figure, resultsFn, metric, free_param,
-               multi, publish, orig_scores=[]):
-    
+def plotMetric(ax, resultsFn, metric, free_param, multi, smooth, orig_scores=[]): 
     orig_score_ref = ref(0)
     if multi:
         reordered_scores, params, dataInfo = getMetricScores(resultsFn, metric,
-                                                          free_param, orig_score_ref,
-                                                          orig_scores, True)
+                                                             free_param, orig_score_ref,
+                                                             orig_scores, True)
     else:
-        reordered_scores, params, dataInfo = getMetricScores(resultsFn, metric, free_param, orig_score_ref)
+        reordered_scores, params, dataInfo = getMetricScores(resultsFn, metric,
+                                                             free_param, orig_score_ref)
 
-    ax = metric_figure.gca()
-
-    if publish:
+    if smooth:
         marker = None
         linestyle = '-'
-        label  = free_param
     else:
         marker = 'o'
         linestyle = '-'
-        label  = parameterInfoString(params, free_param)
 
     ax.plot([x[0] for x in reordered_scores],
             [x[1] for x in reordered_scores],
-            marker=marker, label=label, linestyle=linestyle,
+            marker=marker, label=free_param, linestyle=linestyle,
             linewidth=2, markersize=8)
 
-    #######################
-    ### PLOT FORMATTING ###
-    #######################
-    if multi:
-        xlabel = 'free parameter'
-    else:
-        xlabel = str(free_param)
+def makeOtherMetricPlot(resultsFn, options):
+    # initialize figure
+    metric_figure = plt.figure(figsize=(20,12))
+    metric_figure.set_facecolor('w')
+    ax = metric_figure.gca()
 
-    ax.set_xlabel(xlabel, labelpad=labelpad, fontproperties=middleFont)
-    if metric == 'recall':
-        ax.set_ylabel('% increase in recall over original data', labelpad=labelpad, fontproperties=middleFont)
-    elif metric == 'NDCG16':
-        ax.set_ylabel('top page NDCG score', labelpad=labelpad, fontproperties=middleFont)
+    # make a multi plot
+    if options.multi:
+        multiResultsFo = open(resultsFn)
+        for line in multiResultsFo:
+            line = line.rstrip()
+            free_param, fn = line.split()
+            orig_scores=[]
+            plotMetric(ax, fn, options.metric, free_param, True, options.smooth, orig_scores)
+        if orig_scores:
+            if options.smooth:
+                marker = None
+            else:
+                marker = '^'
+            ax.plot([x[0] for x in orig_scores], [x[1] for x in orig_scores],
+                    '-', marker=marker, label='original', linewidth=2, markersize=8)
+
+        multiResultsFo.close()
         
-        if not multi:
-            ax.text(0.4,0.95,'original NDCG score = %.3f' % orig_score_ref.get(),
-                    transform=ax.transAxes, fontproperties=middleFont,
-                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    else:
-        ax.set_ylabel(metric, labelpad=labelpad, fontproperties=middleFont)
+        #metric_figure.subplots_adjust(right=0.50,left=0.08)
+        #legend = ax.legend(prop=smallFont, ncol=2, loc=2,
+        #                   fancybox=True, shadow=True,
+        #                   bbox_to_anchor=(1.05,1), borderaxespad=0)
+        if options.smooth:
+            kDefaultLegendSettings['ncol'] = 1
+        legend = ax.legend(**kDefaultLegendSettings)
 
-    metric_figure.suptitle(metric + ' scores for %s'
-                             % dataInfo['dataFn'].split('/')[-1],
-                            fontproperties=titleFont)
+    # make a plot with one curve
+    else:
+        plotMetric(ax, resultsFn, options.plot, options.free_param, False, options.smooth)
+        #metric_figure.subplots_adjust(right=0.72)
+        legend = ax.legend(**kDefaultLegendSettings)
+
+    ## makes the legend draggable
+    #legend.draggable()
 
     return ax
 
@@ -237,15 +208,15 @@ def parseArgs():
                                   short_first=1)
     
     plotsGroup = OptionGroup(parser, "Plot Settings")
-    plotsGroup.add_option("--plot", dest="plot", \
+    plotsGroup.add_option("--metric", dest="metric", \
                           help="type of plot (can be any key found in Evaluator.stats,\n"+\
                                "recall, NDCG, or NDCG16)",\
                           action="store", type="string", default=None)
     plotsGroup.add_option("--multi", dest="multi", \
                           help="multi output files in results file",\
                           action="store_true", default=False)
-    plotsGroup.add_option("--publish", dest="publish", \
-                          help="make a less crowded publishable plot",\
+    plotsGroup.add_option("--smooth", dest="smooth", \
+                          help="plot a line without markers",\
                           action="store_true", default=False)
     plotsGroup.add_option("--free-param", dest="free_param", \
                           help="free parameter",\
@@ -278,51 +249,14 @@ def parseArgs():
 def main():
     (options, args) = parseArgs()
 
+    ### heavy lifting for making the plots ###
     resultsFn = args[0]
-
-    if options.plot == 'NDCG':
-        ax = plotNDCGCurve(resultsFn)
+    if options.metric == 'NDCG':
+        ax = makeNDCGCurvePlot(resultsFn)
     else:
-        # initialize figure
-        metric_figure = plt.figure(figsize=(20,12))
-        metric_figure.set_facecolor('w')
+        ax = makeOtherMetricPlot(resultsFn, options)
 
-        # make a multi plot
-        if options.multi:
-            multiResultsFo = open(resultsFn)
-            for line in multiResultsFo:
-                line = line.rstrip()
-                free_param, fn = line.split()
-                free_param = FreeParam(free_param)
-                orig_scores=[]
-                ax = plotMetric(metric_figure, fn, options.plot, free_param, True, options.publish, orig_scores)
-            if orig_scores:
-                ax.plot([x[0] for x in orig_scores],
-                        [x[1] for x in orig_scores],
-                        '^-', label='original',
-                        linewidth=2, markersize=8)
-
-            multiResultsFo.close()
-            
-            metric_figure.subplots_adjust(right=0.50,left=0.08)
-            #legend = ax.legend(prop=smallFont, ncol=2, loc=2,
-            #                   fancybox=True, shadow=True,
-            #                   bbox_to_anchor=(1.05,1), borderaxespad=0)
-            if options.publish:
-                kDefaultLegendSettings['ncol'] = 1
-            legend = ax.legend(**kDefaultLegendSettings)
-
-        # make a plot with one curve
-        else:
-            ax = plotMetric(metric_figure, resultsFn, options.plot, FreeParam(options.free_param), False, options.publish)
-            metric_figure.subplots_adjust(right=0.72)
-            legend = ax.legend(prop=middleFont, ncol=2, loc=2,
-                               fancybox=True, shadow=True,
-                               bbox_to_anchor=(1.05,1), borderaxespad=0)
-
-        ## makes the legend draggable
-        #legend.draggable()
-
+    ### formatting details ###
     xlim = list(ax.get_xlim())
     ylim = list(ax.get_ylim())
     if options.xmin:
@@ -336,7 +270,32 @@ def main():
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
 
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.5f'))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.4f'))
+
+    if options.multi:
+        xlabel = 'C'
+    else:
+        xlabel = str(free_param)
+
+    ax.set_xlabel(xlabel, labelpad=labelpad, fontproperties=middleFont)
+    ax.set_ylabel('score', labelpad=labelpad, fontproperties=middleFont)
+        
+    #ax.text(1.2, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+    #        verticalalignment='top', bbox=props)
+
+    title = options.metric + ' scores for '
+    if options.metric == 'recall':
+        title = '% increase in recall over original data for '
+    elif options.metric == 'NDCG16':
+        title = 'top page NDCG score for '
+        if not options.multi:
+            ax.text(0.4,0.95,'original NDCG score = %.3f' % orig_score_ref.get(),
+                    transform=ax.transAxes, fontproperties=middleFont,
+                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+    title += resultsFn.split('.')[0]
+
+    metric_figure.suptitle(title, fontproperties=titleFont)
 
     plt.show()
 
