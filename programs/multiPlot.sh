@@ -1,19 +1,18 @@
 #!/bin/bash
 
-plotAgain=false
 while getopts "c" opt
 do
     case $opt in
         c)
-            plotAgain=true
+            plotAgain=1
             ;;
     esac
 done
 shift $((OPTIND-1))
 
-if [ ! $# -eq 5 ]
+if [ ! $# -eq 7 ]
 then
-    echo "Usage: multiPlot.sh [-c] <plot type> <regime (e.g 3, 15, or 1000)> <xmin> <xmax> <resolution>"
+    echo "Usage: multiPlot.sh [-c] <plot type> <k> <insert_position> <n> <xmin> <xmax> <resolution>"
     exit 1
 fi
 
@@ -23,10 +22,12 @@ export WCODE=`pwd`
 mkdir -p data/tmp
 
 plot=$1
-regime=$2
-xmin=$3
-xmax=$4
-inc=$5
+k=$2
+insert_position=$3
+n=$4
+xmin=$5
+xmax=$6
+inc=$7
 
 totalRuns=5
 paceSoFar=0
@@ -40,7 +41,7 @@ function estimateTimeRemaining() {
 }
 
 ## make multiple multiReRank json files from a skeleton
-multiplotFn=data/tmp/${RAWDATA}.${INDEX}.k${regime}.${xmin}-${xmax}.multiplot
+multiplotFn=data/tmp/${RAWDATA}.${INDEX}.k${k}.i${insert_position}.n${n}.${xmin}-${xmax}.multiplot
 if [ ! -f $multiplotFn ] || [ $plotAgain ]
 then
     rm -f $multiplotFn
@@ -53,13 +54,18 @@ then
         starttime=`date +%s`
     
         # generate necessary files to configure multiReRank.sh
-        paramsFn=tmp/k${regime}.${xmin}-${xmax}.coeff_${param}.json
-        cat plot_templates/k${regime}.optimal.json \
+        templateFn=plot_templates/k${k}.i${insert_position}.n${n}.optimal.json
+        paramsFn=tmp/k${k}.i${insert_position}.n${n}.${xmin}-${xmax}.coeff_${param}.json
+        if [ ! -f $templateFn ]
+        then
+            exit 1
+        fi
+        cat $templateFn \
             | python programs/optimize.py coeff_$param $xmin $xmax $inc \
             > data/$paramsFn
     
-        rcFn=data/${RAWDATA}.${INDEX}.multiReRankrc.k${regime}.${xmin}-${xmax}.coeff_${param}
-        outFn=multiReRank.k${regime}.${xmin}-${xmax}.coeff_${param}.out
+        rcFn=data/${RAWDATA}.${INDEX}.multiReRankrc.k${k}.i${insert_position}.n${n}.${xmin}-${xmax}.coeff_${param}
+        outFn=multiReRank.k${k}.i${insert_position}.n${n}.${xmin}-${xmax}.coeff_${param}.out
         rm -f $rcFn
         cp plot_templates/multiReRankrc $rcFn
         echo PARAMS=$paramsFn >> $rcFn

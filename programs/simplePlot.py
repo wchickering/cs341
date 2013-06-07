@@ -22,9 +22,10 @@ from pprint import pformat # prints dictionaries nicely
 
 smallFont = matplotlib.font_manager.FontProperties(stretch='condensed',weight='book',size='small',family='monospace')
 middleFont = matplotlib.font_manager.FontProperties(stretch='normal',weight='roman',size='large',family='monospace')
-titleFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='demi',size='x-large',family='monospace')
-kDefaultLegendSettings = dict(prop=middleFont, ncol=2, loc='best', fancybox=True, shadow=True)
-labelpad = 12
+axisFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size='xx-large',family='monospace')
+legendFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size='xx-large',family='monospace')
+titleFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='demi',size=35,family='monospace')
+kDefaultLegendSettings = dict(prop=legendFont, ncol=2, loc='best', fancybox=True, shadow=True)
 
 class ref:
     def __init__(self, obj): self.obj=obj
@@ -34,13 +35,15 @@ class ref:
 # takes a dictionary of defined parameter and a list of parameter name
 # strings defining which ones will vary on the plot
 class ParameterTable:
-    def __init__(self, definedParameters, freeParameters=[]):
+    def __init__(self, dataset, index, definedParameters, freeParameters=[]):
+        self.dataset = dataset
+        self.index = index
         self.__parameters = dict()
         for p in freeParameters:
             self.__parameters[p] = 'free or 0.00'
         for p in set(definedParameters.keys()).difference(set(self.__parameters)):
             p = p.encode('ascii', 'xmlcharrefreplace')
-            if p in ['k', 'insert_position']:
+            if p in ['k', 'insert_position', 'n']:
                 self.__parameters[p] = '%d' % definedParameters[p]
             elif p == 'ctr_by_position':
                 self.__parameters[p] = definedParameters[p].encode('ascii', 'xmlcharrefreplace')
@@ -48,7 +51,9 @@ class ParameterTable:
                 self.__parameters[p] = '%.3f' % definedParameters[p]
 
     def __str__(self):
-        return ('\n'.join(pformat(self.__parameters).split(', ')))[1:-1].replace('\'','')
+        return 'Dataset: '+self.dataset+'\nIndex: '+self.index+'\n'\
+                +'Parameters:\n'\
+                +('\n'.join(pformat(self.__parameters).split(',\n ')))[1:-1].replace('\'','')
 
 def makeNDCGCurvePlot(resultsFn):
     resultsFo = open(resultsFn)
@@ -70,15 +75,17 @@ def makeNDCGCurvePlot(resultsFn):
 
         # plot next reordered data
         reordered = stats['avg_reordered_NDCG_scores']
-        ax.plot(x, reordered, '-', label=str(ParameterTable(params)), marker=marker)
+        ax.plot(x, reordered, '-', label=str(ParameterTable(dataInfo['dataFn'].split('/')[-1],
+                                                            resultsFn.split('/')[-1].split('.')[1],
+                                                            params)), marker=marker)
 
     resultsFo.close()
 
     #######################
     ### PLOT FORMATTING ###
     #######################
-    ax.set_xlabel('# of results considered', labelpad=labelpad, fontproperties=middleFont)
-    ax.set_ylabel('NDCG score', labelpad=labelpad, fontproperties=middleFont)
+    ax.set_xlabel('# of results considered', labelpad=labelpad, fontproperties=axisFont)
+    ax.set_ylabel('NDCG score', labelpad=labelpad, fontproperties=axisFont)
 
     legend = ax.legend(prop=smallFont, ncol=4, loc='lower right', fancybox=True, shadow=True)
     legend.get_frame().set_alpha(0.92)
@@ -89,8 +96,6 @@ def makeNDCGCurvePlot(resultsFn):
     legend.draggable()
 
     NDCG_figure.suptitle('NDCG scores for %s' % dataInfo['dataFn'].split('/')[-1], fontproperties=titleFont)
-
-    return ax
 
 def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[], multi=False):
     resultsFo = open(resultsFn)
@@ -147,10 +152,16 @@ def plotMetric(ax, resultsFn, metric, free_param, multi, smooth, orig_scores=[])
         marker = 'o'
         linestyle = '-'
 
+    free_param = free_param.split('_',1)[1]
+    if free_param == 'item_title':
+        free_param = 'titles'
+
     ax.plot([x[0] for x in reordered_scores],
             [x[1] for x in reordered_scores],
             marker=marker, label=free_param, linestyle=linestyle,
             linewidth=2, markersize=8)
+
+    return dataInfo, params
 
 def makeOtherMetricPlot(resultsFn, options):
     # initialize figure
@@ -159,13 +170,15 @@ def makeOtherMetricPlot(resultsFn, options):
     ax = metric_figure.gca()
 
     # make a multi plot
+    free_params = []
     if options.multi:
         multiResultsFo = open(resultsFn)
         for line in multiResultsFo:
             line = line.rstrip()
             free_param, fn = line.split()
+            free_params.append(free_param)
             orig_scores=[]
-            plotMetric(ax, fn, options.metric, free_param, True, options.smooth, orig_scores)
+            dataInfo, params = plotMetric(ax, fn, options.metric, free_param, True, options.smooth, orig_scores)
         if orig_scores:
             if options.smooth:
                 marker = None
@@ -186,14 +199,17 @@ def makeOtherMetricPlot(resultsFn, options):
 
     # make a plot with one curve
     else:
+        free_params.append(options.free_param)
         plotMetric(ax, resultsFn, options.plot, options.free_param, False, options.smooth)
         #metric_figure.subplots_adjust(right=0.72)
         legend = ax.legend(**kDefaultLegendSettings)
 
     ## makes the legend draggable
     #legend.draggable()
+    print ParameterTable(dataInfo['dataFn'].split('/')[-1], resultsFn.split('/')[-1].split('.')[1],
+                         params, free_params)
 
-    return ax
+    return metric_figure
 
 def parseArgs():
     from optparse import OptionParser, OptionGroup, HelpFormatter
@@ -252,9 +268,12 @@ def main():
     ### heavy lifting for making the plots ###
     resultsFn = args[0]
     if options.metric == 'NDCG':
-        ax = makeNDCGCurvePlot(resultsFn)
-    else:
-        ax = makeOtherMetricPlot(resultsFn, options)
+        metric_figure = makeNDCGCurvePlot(resultsFn)
+        return
+
+    metric_figure = makeOtherMetricPlot(resultsFn, options)
+
+    ax = metric_figure.gca()
 
     ### formatting details ###
     xlim = list(ax.get_xlim())
@@ -271,19 +290,45 @@ def main():
     ax.set_ylim(ylim)
 
     ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.4f'))
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16) 
+        tick.set_pad(15)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(16) 
+        tick.set_pad(15)
 
     if options.multi:
         xlabel = 'C'
     else:
         xlabel = str(free_param)
 
-    ax.set_xlabel(xlabel, labelpad=labelpad, fontproperties=middleFont)
-    ax.set_ylabel('score', labelpad=labelpad, fontproperties=middleFont)
-        
-    #ax.text(1.2, 0.5, textstr, transform=ax.transAxes, fontsize=14,
-    #        verticalalignment='top', bbox=props)
+    ax.set_xlabel(xlabel, labelpad=22, fontproperties=axisFont)
 
-    title = options.metric + ' scores for '
+    percentMetric = options.metric.find('percent')
+    if percentMetric >= 0:
+        ax.set_ylabel(r'$\Delta$ score (%)', labelpad=30, fontproperties=axisFont)
+    else:
+        ax.set_ylabel('score', labelpad=30, fontproperties=axisFont)
+
+    title = ' '.join(options.metric
+                     .replace('percent', '%')
+                     .replace('crease', 'crease_of')
+                     .replace('avg','average')
+                     .replace('orig','original')
+                     .replace('f1','F1')
+                     .replace('ctr','CTR')
+                     .replace('topK','top_K')
+                     .replace('clicks_front','clicks_on_front')
+                     .replace('promoted','#_promoted')
+                     .replace('demoted','#_demoted')
+                    .split('_')).title()
+
+    deltaIndex = title.find('Delta')
+    if deltaIndex >= 0:
+        titlePartition = title.partition('Delta')
+        title = titlePartition[0]+r'$\Delta$ '+titlePartition[2]
+
+
     if options.metric == 'recall':
         title = '% increase in recall over original data for '
     elif options.metric == 'NDCG16':
@@ -293,7 +338,7 @@ def main():
                     transform=ax.transAxes, fontproperties=middleFont,
                     bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
 
-    title += resultsFn.split('.')[0]
+    #title += '.'.join(resultsFn.split('.')[0:2]).split('/')[-1]
 
     metric_figure.suptitle(title, fontproperties=titleFont)
 
