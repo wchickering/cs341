@@ -25,7 +25,7 @@ Walmart.com's product search engine does an impressive job in interpretting the
 user-provided query and rapidly returning relevant results. Yet, there remains
 highly significant information that is not fully leveraged. The details of a
 user's online shopping session are indicative of a user's intent and
-compliment--indeed, provide context for--the user-provided query. In this report
+compliment---indeed, provide context for---the user-provided query. In this report
 we describe and analyze a ranking scheme we call {\em Session Re-Rank} that can
 potentially induce a large increase in both click-through-rates and conversions
 on the first page of query results.
@@ -134,7 +134,7 @@ report.
 
 An important distinction should be made between the {\em Session Re-Rank}
 technique and the experiment described in this report. Both the technique and
-the experiment leverage the provided data--however, the experiment is
+the experiment leverage the provided data---however, the experiment is
 a simulation and a limited one at that. A key limitation is that the provided
 query data is confined to what the user was actually shown. That is, the search
 engine may have identified several pages worth of results in response to a {\em
@@ -178,6 +178,25 @@ for a large test set with our desire to use a value comparable to what would be
 appropriate for an online implementation. It is therefore quite possible that a
 larger value of $N$ (e.g. 1000) would achieve better results in the actual
 online scenario.
+
+While we must constrain $\chi$ in this way given the nature of the available 
+data, we stress that this subset is certainly biased with respect to queries 
+in general. For starters, queries with short resultsets are more likely to 
+have all of their resultset seen by a user, and therefore, are more likely to 
+be included in $\chi$. It is not clear, however, if this particular bias
+tends to under- or overestimate the effectiveness of {\em Session Re-Rank}
+since, as we will show, it is more effective on longer query results. Similarly,
+highly qualified queries---e.g. through the use of category or price filters---tend
+to have shorter resultset, and hence, are more likely to be included in $\chi$.
+
+Just as interesting are the ways in which the queries and resultsets of $\chi$
+are not biased. For instance, the quantity and distribution of clicks of
+$\chi$ are essentially representative of those in general.
+
+
+
+Another,
+related biasimportant bias of $\chi$ is that it contains a disproportionate query resultsets that 
 
 \section{Results}
 
