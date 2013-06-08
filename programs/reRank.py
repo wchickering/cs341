@@ -267,17 +267,17 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
 
     ## DEBUGGING
     ## Instantiate QueryScorer (cheap, for debugging only)
-    #queryScorer = QueryScorer.QueryScorer(ctr_by_position)
+    queryScorer = QueryScorer.QueryScorer(ctr_by_position)
 
     ## DEBUGGING
     ## Instantiate QueryPrinter (cheap, for debugging only)
-    #queryPrinter = QueryPrinter.QueryPrinter(\
-    #                  outFile=open(queryPrintFileName, 'w'),\
-    #                  index_item_title_fname=index_item_title_fname,\
-    #                  posting_dict_item_title_fname=posting_dict_item_title_fname,\
-    #                  index_category_name_fname=index_category_name_fname,\
-    #                  posting_dict_category_name_fname=posting_dict_category_name_fname,\
-    #                  reRanker=reRanker)
+    queryPrinter = QueryPrinter.QueryPrinter(\
+                      outFile=open(queryPrintFileName, 'w'),\
+                      index_item_title_fname=index_item_title_fname,\
+                      posting_dict_item_title_fname=posting_dict_item_title_fname,\
+                      index_category_name_fname=index_category_name_fname,\
+                      posting_dict_category_name_fname=posting_dict_category_name_fname,\
+                      reRanker=reRanker)
 
     n = 0
     for line in inputFile:
@@ -296,10 +296,16 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
                                    reRanker.reRankItems(query, top_scores_heap)
 
         ## DEBUGGING
-        #query.reordered_shown_items = reordered_shown_items
+        query.reordered_shown_items = reordered_shown_items
         #if queryScorer.clickPositionIncrease(query) > 100.0 and\
         #   queryScorer.clickPositionIncrease(query) < 400.0:
-        #    queryPrinter.printQuery(query)
+        #if len(reordered_shown_items) % 16 and queryScorer.clickPositionIncrease(query) > 50.0\
+        #    and not set(query.clicked_shown_items).intersection(set(query.previously_clicked_items)):
+        if 'cat_id' in query.searchattributes\
+          and len(query.searchattributes['cat_id'].split('_')) > 2\
+          and queryScorer.clickPositionIncrease(query) > 20.0\
+          and not set(query.clicked_shown_items).intersection(set(query.previously_clicked_items)):
+            queryPrinter.printQuery(query)
 
         # construct and yield reordered_query record
         yield reRanker.makeRecord(query, num_reranks, reordered_shown_items)

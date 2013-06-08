@@ -58,10 +58,13 @@ class QueryPrinter:
         else:
             return None
 
-    def printItem(self, item, score=None, cost=None, ctr=None,\
+    def printItem(self, item, rank=None, score=None, cost=None, ctr=None,\
                   clicks_score=None, items_score=None, carts_score=None,\
                   queries_score=None, item_title_score=None):
-        line = str(item)
+        line = ""
+        if rank:
+            line = str(rank) + ". "
+        line += str(item)
         title = self.getTitle(item)
         if title:
             line += ': ' + title
@@ -84,6 +87,11 @@ class QueryPrinter:
             line += ')'
         self.printLine(line)
 
+    def printClickedItem(self, original_rank, reordered_rank, item):
+        line = 'O-' + str(original_rank) + ' R-' + str(reordered_rank)\
+                + ' ' + str(item) + ': ' + self.getTitle(item)
+        self.printLine(line)
+
     def printCategoryName(self, cat_id):
         line = cat_id + ": "
         if self.index_category_name_fd:
@@ -103,13 +111,18 @@ class QueryPrinter:
                 self.printCategoryName(cat_id)
         self.printLine('Clicked Items:')
         for item in query.clicked_shown_items:
-            self.printItem(item)
+            original_rank = query.shown_items.index(item) + 1
+            reordered_rank = query.reordered_shown_items.index(item) + 1
+            self.printClickedItem(original_rank, reordered_rank, item)
         self.printLine('Previously Clicked Items:')
         for item in query.previously_clicked_items:
             self.printItem(item)
         self.printLine('Original Items:')
+        rank = 1
         for item in query.shown_items:
-            self.printItem(item)
+            self.printItem(item, rank)
+            rank += 1
+        rank = 1
         if query.reordered_shown_items:
             self.printLine('Reordered Items:')
             for i in range(len(query.reordered_shown_items)):
@@ -142,7 +155,8 @@ class QueryPrinter:
                         carts_score += self.reRanker.simCalc.carts_sim(prevItem, item)
                         queries_score += self.reRanker.simCalc.queries_sim(prevItem, item)
                         item_title_score += self.reRanker.simCalc.item_title_sim(prevItem, item)
-                self.printItem(item, score, cost, ctr, clicks_score, items_score, carts_score,\
-                               queries_score, item_title_score)
+                self.printItem(item, rank, score, cost, ctr, clicks_score, items_score,
+                               carts_score, queries_score, item_title_score)
+                rank += 1
         self.printLine('')
 
