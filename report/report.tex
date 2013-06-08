@@ -203,7 +203,15 @@ in general.
 
 We evaluate the effectiveness of {\em Session Re-Rank} using three metrics: the 
 clicks position score $\mathscr{S}$, first page CTR $\mathscr{C}$, and first page 
-purchase rate $\mathscr{P}$. 
+purchase rate $\mathscr{P}$. The clicks position score is defined
+as
+\begin{equation*}
+    \mathscr{S} = \frac{1}{\left\vert{Q}\right\vert}\sum_{q \in Q}\sum_{c \in C_q}\Gamma_c,
+\end{equation*}
+
+where $Q$ is the test set of queries with results, $C_q$ is the set of clicks 
+within the resultset of query $q \in Q$, and $\Gamma_c$ is the CTR of the position 
+where click $c \in C$ occurred.
 
 \section{Results}
 
