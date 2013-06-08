@@ -29,11 +29,11 @@ class QueryPrinter:
     def __init__(self,\
                  outFile=sys.stdout,\
                  index_item_title_fname=None, posting_dict_item_title_fname=None,\
-                 index_categories_fname=None, posting_dict_categories_fname=None,\
+                 index_category_name_fname=None, posting_dict_category_name_fname=None,\
                  reRanker=None):
         self.outFile = outFile
         self.__initializeIndex(index_item_title_fname, posting_dict_item_title_fname, 'item_title')
-        self.__initializeIndex(index_categories_fname, posting_dict_categories_fname, 'categories')
+        self.__initializeIndex(index_category_name_fname, posting_dict_category_name_fname, 'category_name')
         self.reRanker = reRanker
 
     def __initializeIndex(self, index_fname, posting_dict_fname, name):
@@ -86,9 +86,9 @@ class QueryPrinter:
 
     def printCategoryName(self, cat_id):
         line = cat_id + ": "
-        if self.index_categories_fd:
-            categoryName = idx.get_posting_raw(self.index_categories_fd,
-                                               self.posting_dict_categories, cat_id)
+        if self.index_category_name_fd:
+            categoryName = idx.get_posting_raw(self.index_category_name_fd,
+                                               self.posting_dict_category_name, cat_id)
             line += categoryName.rstrip()
         else:
             line += ""
