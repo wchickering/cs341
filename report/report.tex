@@ -7,6 +7,7 @@
 %\usepackage{dcolumn} % Align table columns on decimal point
 %\usepackage{bm} % bold math
 \usepackage{amssymb, amsmath}
+\usepackage[mathscr]{euscript}
 
 \title{Improving Product Search with Session Re-Rank\\
     \large{a Walmart data mining project}}
@@ -189,12 +190,20 @@ since, as we will show, it is more effective on longer query results. Similarly,
 highly qualified queries---e.g. through the use of category or price filters---tend
 to have shorter resultset, and hence, are more likely to be included in $\chi$.
 
+% TODO: Need to comment on small differences in CTR vs position between $\chi$
+% and queries in general (e.g. CTR@1 is significantly higher in $\chi$).
 Just as interesting are the ways in which the queries and resultsets of $\chi$
 are not biased. In Fig. \ref{fig:ctr_vs_position} we show click-through-rate (CTR)
 as a function of position of the original data (i.e. not re-ranked) for both
 $\chi$ and query results in general. As can be seen from the data, the quantity
 and distribution of clicks within $\chi$ are essentially representative of those
 in general.
+
+\section{Metrics}
+
+We evaluate the effectiveness of {\em Session Re-Rank} using three metrics: the 
+clicks position score $\mathscr{S}$, first page CTR $\mathscr{C}$, and first page 
+purchase rate $\mathscr{P}$. 
 
 \section{Results}
 
