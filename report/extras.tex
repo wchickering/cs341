@@ -1,0 +1,752 @@
+% vim: set expandtab tabstop=4 shiftwidth=4 textwidth=80:
+
+\documentclass{article}
+\usepackage[inner=2.5cm,outer=2.5cm,bottom=1.8cm,top=1.8cm]{geometry}
+\usepackage{graphicx}% Include figure files
+\graphicspath{ {./graphics/} }
+%\usepackage{dcolumn} % Align table columns on decimal point
+%\usepackage{bm} % bold math
+\usepackage{amssymb, amsmath}
+
+\title{Improving Product Search with Session Re-Rank\\
+    \large{a Walmart data mining project}}
+\author{Charles Celerier (cceleri), Bill Chickering (bchick),
+        and Jamie Irvine (jirvine)}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+    \begin{tabular}{| l | c |}
+        \hline
+        Dataset & 000050\_0.test\_data.filtered \\ \hline
+        Index & 48chunk \\ \hline
+        \hline
+        \multicolumn{2}{|c|}{Parameters} \\ \hline
+        coeff\_carts & free or 0.00 \\ \hline
+        coeff\_clicks & free or 0.00 \\ \hline
+        coeff\_ctr & 1.000 \\ \hline
+        coeff\_item\_title & free or 0.00 \\ \hline
+        coeff\_items & free or 0.00 \\ \hline
+        coeff\_queries & free or 0.00 \\ \hline
+        coeff\_rank & 0.000 \\ \hline
+        ctr\_by\_position & 16chunk.CTRs.json \\ \hline
+        exp\_carts & 0.400 \\ \hline
+        exp\_clicks & 0.500 \\ \hline
+        exp\_item\_title & 0.800 \\ \hline
+        exp\_items & 0.800 \\ \hline
+        exp\_queries & 0.500 \\ \hline
+        exp\_rank & 1.300 \\ \hline
+        insert\_position & 2 \\ \hline
+        k & 100 \\ \hline
+        n & 100 \\ \hline
+  \end{tabular}
+\end{center}
+
+\begin{figure}[htbp!]
+\centering
+\includegraphics[width=\textwidth]{000050_0.48chunk.k100.i2.n100.total_purchased_front_page.0-0.25.eps}
+\caption{total purchases on the front page}
+\label{fig:total_purchases_on_the_front_page}
+\end{figure}
+
+\section{An Example}
+
+%RawQuery: water
+%SearchAttributes: {u'cat_id': u'976759_976782_1001659', u'search_constraint': u'0'}
+%Category Names: (3)
+%976759: Grocery
+%976782: Beverages
+%1001659: Water
+%Clicked Items:
+%O-90 R-3 14122511: Arrowhead Mountain Spring Water, 3 l
+%Previously Clicked Items:
+%14904250: Primo Ceramic Crock Water Cooler with Stand
+%Original Items:
+%1. 13448854: Great Value Purified Water, 24ct
+%2. 15701574: Nestle Waters Bottled Spring Water, 24ct
+%3. 17199142: Voss Water, 16.9 oz (Pack of 24)
+%4. 20670286: Clear American Black Cherry Sparkling Water, 1 l, 12pk
+%5. 20670287: Clear American Key Lime Sparkling Water, 1 l, 12ct
+%6. 20670289: Clear American Golden Peach Sparkling Water, 1 l, 12ct
+%7. 20670290: Clear American Strawberry Sparkling Water, 1 l, 12pk
+%8. 20670288: Clear American Mandarin Orange Sparkling Water, 1 l, 12pk
+%9. 17197299: Eternal Artesian Naturally Alkaline Water, 20.2 oz (Pack of 24)
+%10. 13448773: Propel Antioxidants Vitamin Enhanced Water, 16.9 oz
+%11. 21091134: Penta Ultra-Purified Water, 33.8 fl oz, (Pack of 12)
+%12. 17197301: Eternal Artesian Naturally Alkaline Water, 50.7 oz (Pack of 12)
+%13. 17199145: Voss Sparkling Water, 12.7 oz (Pack of 24)
+%14. 14711324: Great Value Low Calorie Diet Tonic Water, 6pk
+%15. 17199148: Voss Water, 27.1 fl oz (Pack of 12)
+%16. 17197302: Eternal Artesian Naturally Alkaline Water, 6ct (Pack of 4)
+%17. 15716769: Perrier Sparkling Natural Mineral Water, 6pk
+%18. 17197295: Essentia Enhanced Drinking Water, 50.7 oz (Pack of 12)
+%19. 21091126: Penta Ultra-Purified Water, 16.9 fl oz, (Pack of 24)
+%20. 17248230: Nestle Pure Life Purified Water, .5 l, 35pk
+%21. 17196794: Acqua Panna Natural Spring Water, 6ct (Pack of 4)
+%22. 21090817: Kiwaii Natural Spring Water, 33.8 fl oz, (Pack of 12)
+%23. 17196793: Acqua Panna Natural Spring Water, 33.8 oz (Pack of 12)
+%24. 17197294: Essentia Enhanced Water, 20 oz (Pack of 12)
+%25. 21090812: Kiwaii Natural Spring Water, 16.9 fl oz, (Pack of 24)
+%26. 17199140: Volvic Water, 33.81 oz (Pack of 12)
+%27. 17196792: Acqua Panna Natural Spring Water, 25.36 oz (Pack of 15)
+%28. 17194455: Topo Chico Sparkling Mineral Water, 25.4 oz (Pack of 12)
+%29. 17197298: Essentia Enhanced Drinking Water, 1 l (Pack of 12)
+%30. 17197763: Jana European Artesian Water, 6ct (Pack of 2)
+%31. 17194242: Knudsen Raspberry Sparkling Water, 10.5 oz, 4ct (Pack of 6)
+%32. 17194243: Knudsen Jamaican Lemonade Sparkling Water, 10.5 oz, 4ct (Pack of 6)
+%33. 17670858: Perrier Sparkling Natural Mineral Water, 330 ml, 4pk
+%34. 17199146: Voss Water, 28.7 oz (Pack of 12)
+%35. 17198302: Sport Owater Sport Litre Water, 33.8 oz (Pack of 12)
+%36. 21090120: blk. Fulvic Trace Mineral Infused Water, 16.9 fl oz, (Pack of 24)
+%37. 10315384: Great Value Spring Water, 1 gal
+%38. 15716666: Arrowhead Mountain Spring Water, 2.5gal
+%39. 17198504: Radenska Classic Naturally Sparkling Mineral Water, 16.9 oz (Pack of 12)
+%40. 10319508: Topo Chico: Mineral Water, 6 Pk
+%41. 21091194: Radenska Classic Naturally Sparkling Mineral Water, 50.7 fl oz, (Pack of 6)
+%42. 17197707: Iceland Spring Natural Spring Water, 1 l (Pack of 12)
+%43. 17199141: Volvic Natural Spring Water, 100.8 oz ,6 ct (Pack of 4)
+%44. 17198420: Perrier Natural Sparkling Water, 39 oz (Pack of 4)
+%45. 17199139: Volvic Natural Spring Water, 1.5 l (Pack of 12)
+%46. 17197760: Jana European Artesian Water, 50.7 oz (Pack of 12)
+%47. 17197432: Function Sport Water, 750 ml (Pack of 24)
+%48. 17199143: Voss Artesian Water, 11.16 oz (Pack of 12)
+%49. 17194241: Knudsen Tangerine Sparkling Water, 10.5 oz, 4ct (Pack of 6)
+%50. 17197761: Jana European Artesian Water, 6ct (Pack of 4)
+%51. 21091612: Zevia Ginger Ale, 6 count, (Pack of 4)
+%52. 17197709: Iceland Spring Natural Spring Water, 50.7 oz (Pack of 12)
+%53. 20704081: Aquafina Water, 16.9 fl oz, 32pk
+%54. 21091622: Zevia Cream Soda, 16 fl oz, (Pack of 12)
+%55. 21651862: Nestle Pure Life Purified Water, 8 oz
+%56. 15716805: Deer Park Natural Spring Water, 2.5 gal
+%57. 21836278: Nestle Pure Life Purified Water, 0.5 l, 12 pack
+%58. 22225861: Nestle Pure Life Mandarin Orange Water Beverage, 6pk
+%59. 22142299: Ice Mountain Sparkling Natural Spring Water, 33.8 fl oz
+%60. 19802906: SoBe Lifewater Pacific Coconut Water Beverage, 20 oz
+%61. 22142300: Ice Mountain Mandarin Orange Essence Sparkling Natural Spring Water, 33.8 fl oz
+%62. 20970550: Propel Zero Black Cherry Nutrient Enhanced Water Beverage, 16.9 fl oz, 12 count
+%63. 10315382: Great Value: Distilled Water, 1 Gal
+%64. 21686114: SoBe Lifewater Acai Raspberry Water Beverage, 20 fl oz
+%65. 20854304: Glaceau Smartwater Electrolyte Enhanced Water, 700 ml
+%66. 22705458: Arrowhead Mountain Spring Water with Sport Flip Cap, 700ml, 6 count
+%67. 21096721: SoBe Lifewater Blood Orange Mango Water Beverage, 20 fl oz
+%68. 21096722: SoBe Lifewater Kiwi Cherimoya Water Beverage, 20 fl oz
+%69. 22225966: O.N.E. Coconut Water, 1 l
+%70. 14940709: Dasani Purified Water, .5 L 24pk
+%71. 21943687: Deer Park 100% Natural Spring Water, 24pk
+%72. 21090047: AriZona Sugar Free Peach Iced Tea Stix, 10 count, (Pack of 12)
+%73. 21090036: AriZona Sugar Free Lemon Iced Tea Stix, 10 count, (Pack of 12)
+%74. 21091616: Zevia Grape Soda, 6 count, (Pack of 4)
+%75. 21091614: Zevia Ginger Root Beer, 16 fl oz, (Pack of 12)
+%76. 21091617: Zevia Lemon Lime Twist Soda, 16 fl oz, (Pack of 12)
+%77. 21090303: DRY Rhubarb Soda, 4 count, (Pack of 6)
+%78. 21091618: Zevia Cream Soda, 6 count, (Pack of 4)
+%79. 17352551: Nestle Pure Life Purified Water, .5 l, 28ct
+%80. 21943694: Ice Mountain 100% Natural Spring Water, .5 l, 24ct
+%81. 21950072: ZICO Pure Premium Coconut Water, 1 l
+%82. 22090048: O.N.E. Coconut Water, 11.2 fl oz
+%83. 22282312: Evian Natural Spring Water, 1 l
+%84. 14532616: SoBe Lifewater Fuji Apple Pear 0 Cal Lean Machine Water Beverage, 20 oz
+%85. 20668656: Dasani Purified Water, 12 oz, 8pk
+%86. 11979965: Aquafina Purified Drinking Water, 16.9 fl oz, 24 pack
+%87. 22211069: Naked Juice Coconut Water, 11.2 fl oz
+%88. 22225968: O.N.E. Coconut Water with a Splash of Pineapple, 8.5 fl oz
+%89. 22301289: ZICO Natural Pure Premium Coconut Water, 11.2 fl oz
+%90. 14122511: Arrowhead Mountain Spring Water, 3 l
+%91. 14122510: SPRING WATER, CO2
+%92. 21499576: Chadwick Bay Coconut Water Beverage with Pineapple Flavor, 16 fl oz
+%93. 10315383: Great Value Drinking Water, 1 gal
+%94. 15841136: Clear American Cranberry Grape Water, 33.8 fl oz
+%95. 15673702: Glaceau Electrolyte Enhanced Water Smart Water, 1.5 l
+%96. 20923699: Fruit2O Purified Water Beverage, 6pk
+%97. 15841252: Clear American Raspberry Apple Water, 33.8 fl oz
+%98. 17198614: San J Rice Crackers Tamari Brown, 2.8 oz. (Pack of 12
+%99. 21268881: Sparkling Ice Black Raspberry Sparkling Mountain Spring Water, 17 oz
+%100. 21268882: Sparkling Ice Orange Mango Sparkling Mountain Spring Water, 17 oz
+%101. 22705459: Deer Park Natural Spring Water, 0.5 l, 12 count
+%102. 22142269: Ozarka Sparkling Natural Spring Water, 1 l
+%103. 22225969: O.N.E. Coconut Water with a Splash of Mango, 8.5 oz
+%104. 22142271: Ozarka Lemon Essence Sparkling Natural Spring Water, 33.8 fl oz
+%105. 16940646: Fiji Natural Artesian Water, 1 l, 6pk
+%106. 15556396: Deer Park Sumo Bottle Natural Spring Water, 3l
+%107. 22098554: Naked Juice Pineapple Coconut Water, 11.2 fl oz
+%108. 21950073: ZICO Chocolate Premium Coconut Water, 14 oz
+%109. 22225967: O.N.E. Coconut Water with a Splash of Pink Guava, 8.5 fl oz
+%110. 22057332: Canada Dry Mandarin Orange Sparkling Seltzer Water, 2 l
+%111. 22057329: Canada Dry Cranberry Lime Sparkling Seltzer Water, 2 l
+%112. 22057331: Canada Dry Sparkling Seltzer Water, 12 fl oz, 12 pack
+%113. 21686015: Grace Coconut Water with Pulp, 10.5 fl oz
+%114. 22142270: Ozarka Mandarin Orange Essence Sparkling Natural Spring Water, 33.8 fl oz
+%115. 22098553: Naked Juice Mango Peach Coconut Water, 11.2 oz
+%116. 14869671: Gerber Pure Purified Water, 1 gal
+%117. 22057334: Canada Dry Lemon Lime Sparkling Seltzer Water, 12 fl oz, 12 pack
+%118. 22027220: Minute Maid Fruit Falls Berry Flavored Water Beverage, 200 ml, 10 count
+%119. 15841142: Clear American Pomegranate Blueberry Acai Water, 33.8 fl oz
+%120. 21128417: Seagram's Tonic Water, 1 l
+%121. 21324667: Chadwick Bay Coconut Water Beverage with Passion Fruit, 16 fl oz
+%122. 14532614: SoBe Lifewater Acai Fruit Punch 0 Cal Water Beverage, 20 oz
+%123. 21268884: Sparkling Ice Pink Grapefruit Sparkling Mountain Spring Water, 17 oz
+%124. 21268883: Sparkling Ice Kiwi Strawberry Sparkling Mountain Spring Water, 17 oz
+%125. 21324670: Chadwick Bay Coconut Water Beverage with Peach & Mango, 16 fl oz
+%126. 14944716: Glaceau Electrolyte Enhanced Water Smart Water, 1 l
+%127. 12018846: SoBe Lifewater Strawberry Kiwi Water Beverage, 20 oz
+%128. 20923700: Fruit2O Purified Water Beverage, 6pk
+%129. 15716667: Arrowhead 100% Mountain Spring Water, 8 oz, 12 pack
+%130. 17018212: SoBe Lifewater Strawberry Kiwi Lemonade 0 Cal Water Beverage, 20 oz
+%131. 14532613: SoBe Lifewater Mango Melon 0 Cal C-Boost Water Beverage, 20 oz
+%132. 13448574: Gerber Water: Purified Infant Water, 1 Gal
+%133. 19802909: SoBe Lifewater Strawberry Kiwi Vitamin Enhanced Water Beverage, 1 l
+%134. 10402572: Aquafina Water, 1 l
+%135. 10448494: Schweppes: Tonic Water, 1 L
+%136. 15556397: Deer Park 100% Natural Spring Water, 8 oz, 12 pack
+%137. 11979962: Aquafina Water, 24 oz, 6pk
+%138. 20704282: Sobe Lifewater Yumberry Pomegranate Water Beverage, 20 oz
+%139. 11979961: Aquafina Water, 20 oz
+%140. 19204374: Aquafina Water, 24 oz
+%141. 19204373: Aquafina Water, 1.5 l
+%142. 17787225: Aquafina Water, 12 oz, 8pk
+%143. 11979963: Aquafina Water, 16.9 oz, 12pk
+%144. 19204375: Aquafina Water, 12 oz, 12pk
+%145. 14532481: Aquafina Water, 16.9 oz, 6pk
+%146. 19802796: Propel Kiwi Strawberry Fitness Water, 20 oz
+%147. 19802797: Propel Grape Fitness Water, 20 oz
+%148. 15556261: Arrowhead Mountain Spring Water, 12pk
+%149. 20550944: Acqua Panna Natural Spring Water, 750 ml
+%150. 21128528: SoBe Lifewater Lean Machine Strawberry Dragonfruit Water Beverage, 20 oz
+%151. 17787243: Aquafina FlavorSplash Peach Mango Water Beverage, 20 oz
+%152. 16627511: Schweppes Diet Tonic Water, 15pk
+%153. 20553436: Grace Coconut Water With Pulp, 10.5 fl oz
+%154. 20553437: Grace Coconut Water With Pulp, 16.9 fl oz
+%155. 20469605: TalkingRain Sparkling Ice Pomegranate Berry Sparkling Mountain Spring Water, 17 oz
+%156. 20469607: TalkingRain Sparkling Ice Lemonade Sparkling Mountain Spring Water, 17 oz
+%157. 20469606: TalkingRain Sparkling Ice Coconut Pineapple Sparkling Mountain Spring Water, 17 oz
+%158. 20551388: Deer Park Orange Essence Sparkling Natural Spring Water, 1 l
+%159. 20469604: TalkingRain Sparkling Ice Lemon Lime Sparkling Mountain Spring Water, 17 oz
+%160. 14532617: SoBe Lifewater Yumberry Pomegranate 0 Cal Water Beverage, 20 oz
+%161. 14664877: SoBe Lifewater B-Energy Black Cherry Dragonfruit Water, 20 fl oz
+%162. 14664876: SoBe Lifewater B-Energy Strawberry Apricot 0 Cal Water Beverage, 20 oz
+%163. 15716807: Deer Park Natural Spring Water, 6pk
+%164. 11303923: Clear American Golden Peach Naturally Flavored Sparkling Water, 2 l
+%165. 17670805: Dasani Purified Water, 24 oz
+%166. 17283476: Arrowhead Sparkling Water, 1 l
+%167. 15716483: Ozarka Natural Spring Water, 8 oz, 12 pack
+%168. 17787316: Ozarka Natural Spring Water
+%169. 14532493: Aquafina FlavorSplash Grape Water Beverage, 20 oz
+%170. 14664873: Sobe Lifewater Goji Melon Water Beverage, 20 fl oz
+%171. 14532484: Aquafina FlavorSplash Raspberry Water Beverage, 20 oz
+%172. 17787239: Aquafina FlavorSplash Strawberry Kiwi Water Beverage, 20 oz
+%173. 14532485: Aquafina FlavorSplash Wild Berry Water Beverage, 20 oz
+%174. 17670859: Poland Spring Natural Spring Water, 1 l
+%175. 15529692: Dasani Purified Water, .5 L 6pk
+%176. 11303918: Clear American Black Cherry Naturally Flavored Sparkling Water, 2 l
+%177. 19276189: Sam's Choice Purified Drinking Water, 24pk
+%178. 15716809: Ice Mountain 100% Natural Spring Water, 2.5 gal
+%179. 12018494: Absopure Natural Spring Water, 1 gal
+%180. 12131022: FIJI: Natural Artesian Water, 500 ml
+%181. 10452471: Sam&#39;s Choice: Clear American Raspberry Water, 33.8 Fl Oz
+%182. 15716812: Ice Mountain Natural Spring Water, 3 l
+%183. 12018521: Dasani: Purified Water, 1.5 L
+%184. 14940707: Dasani Purified Water, 1 l
+%185. 14940708: Dasani Purified Water, .5 L 12pk
+%186. 11303917: Clear American Key Lime Naturally Flavored Sparkling Water, 2 l
+%187. 10324684: Sam's Choice Purified Drinking Water, 12pk
+%188. 15724039: La Croix Orange Sparkling Water, 144 fl oz
+%189. 15716581: S. Pellegrino Sparkling Natural Mineral Water, 25.3 oz
+%190. 14664659: Aquafina: Flavor Splash Citrus Mineral/Spring Waters - Ready To Drink, 20 fl oz
+%191. 17787317: Ozarka Natural Spring Water, 6ct
+%192. 11303916: Clear American Lemon Naturally Flavored Sparkling Water, 33.8 fl oz
+%193. 19802799: Propel Black Cherry Water Beverage, 20 oz
+%194. 19802795: Propel Berry Fitness Water, 20 oz
+%195. 19802798: Propel Lemon Fitness Water, 20 oz
+%196. 15716810: Ice Mountain 100% Natural Spring Water, 12pk
+%197. 15716811: Ice Mountain 100% Natural Spring Water, 12pk
+%198. 10452381: Sam&#39;s Choice: Clear American Kiwi Strawberry Water, 33.8 Fl Oz
+%199. 10448546: Sam&#39;s Choice: Mixer Diet Tonic Water, 33.8 Fl Oz
+%200. 15754366: Glaceau Connect Vitamin Water Black Cherry-Lime, 20 oz
+%201. 19276186: Sam&#226;&#128;&#153;s Choice Purified Drinking Water, 12pk
+%202. 17670873: Cumberland Gap Mountain Spring Water, 20 oz
+%203. 17757499: Cumberland Gap Mountain Spring Water, 1 l
+%204. 17670875: Cumberland Gap Mountain Spring Water, .5 l, 24pk
+%205. 16627506: Deja Blue Purified Drinking Water, 20 oz
+%206. 10452470: Sam's Choice Clear American Golden Peach Naturally Flavored Sparkling Water, 2 l
+%207. 10532593: Glaceau-Vitaminwater: Smartwater Electrolyte Enhanced Water, 120 Oz
+%208. 10421158: Gerolsteiner: Mineral Naturally Sparkling Water, 6 pk
+%209. 10291619: Dasani Purified Water Fridge Pack, 12 Oz 12pk
+%210. 10323439: Mineragua: Mineralized Carbonated Water, 1.58 Qt
+%211. 10532592: Glaceau-Vitaminwater: Nutrient Enhanced Water Beverage, 240 Fl Oz
+%212. 10448545: Sam&#39;s Choice: Mixer Tonic Water, 33.8 Fl Oz
+%213. 10532595: Glaceau-Vitaminwater: Focus Kiwi-Strawberry Nutrient Enhanced Water Beverage, 48 Oz
+%214. 10532596: Glaceau-Vitaminwater: Power-C Dragonfruit Nutrient Enhanced Water Beverage, 48 Oz
+%215. 20854305: Glaceau Zero Vitaminwater Variety Pack, 20 oz, 12pk
+%216. 22257794: Vita Coco Coco Cafe Cafe Latte, 11.1 fl oz
+%217. 13448772: Propel Antioxidants Vitamin Enhanced Water, 16.9 oz
+%218. 22257598: Lipton Brisk Fusion White Tea & Pink Lemonade, 128 fl oz
+%219. 22211228: Glaceau Fuji Apple-Watermelon Vitaminwater, 20 fl oz
+%220. 21909811: Happy Squeeze Coco Strawberry Coconut Milk, 3.5 oz
+%221. 21909810: Happy Squeeze Coco Orange Mango Coconut Milk, 3.5 oz
+%222. 22057330: Canada Dry Club Soda, 1 l
+%223. 21048627: Mixer Club Soda, 2 l
+%224. 20854306: Glaceau Energy Tropical Citrus Vitaminwater, 32 oz
+%225. 20854307: Glaceau Revive Fruit Punch Vitaminwater, 32 oz
+%226. 15754369: Glaceau Vitaminwater: Focus Kiwi-Strawberry Vitaminwater, 20 Oz
+%227. 15754368: Glaceau Vitaminwater: Essential Orange-Orange Vitaminwater, 20 Oz
+%228. 17800763: Vita Coco 100% Pure Coconut Water, 34 oz (Pack of 12)
+%229. 17199147: Voss Sparkling Water, 27.1 fl oz (Pack of 12)
+%230. 17198408: Perrier Pink Grapefruit Sparkling Water, 750 ml (Pack of 12)
+%231. 19802910: SoBe Black & Blue Berry Brew Dairy Based Drink, 20 fl oz
+%232. 19802688: Manzanita Sol Soda, 20 fl oz
+%233. 10448145: Vintage Lemon Lime Seltzer, 33.8 fl oz
+%234. 10448144: Vintage Original Seltzer, 33.8 fl oz
+%235. 10448533: Sam&#39;s Choice: Mixer Diet Club Soda, 33.8 Fl Oz
+%236. 10448349: Sam&#39;s Choice: Mixer Sodium Free Seltzer, 33.8 Fl Oz
+%237. 17198617: San Pellegrino Water, Plastic, 1 lt. (Pack of 12)
+%238. 17196848: Herbal Water Ayala's Lavender Mint Water, 16 oz (Pack of 12)
+%239. 17800754: Vita Coco 100% Pure Coconut Water, 17 oz (Pack of 12)
+%240. 17198421: Perrier Sparkling Natural Mineral Water, 6ct (Pack of 4)
+%241. 17198911: Taste Nirvana Coconut Water, 16.2 oz (Pack of 12)
+%242. 17197082: Cap10 Sparkling Mineral Natural Water, 20 oz (Pack of 4)
+%243. 17198414: Perrier Lime Sparkling Water, 25 oz (Pack of 12)
+%244. 17198419: Perrier Sparkling Natural Mineral Water, 4ct (Pack of 6)
+%245. 21091079: O.N.E. Pineapple Coconut Water, 8.5 fl oz, (Pack of 12)
+%246. 21091086: O.N.E. Coconut Water, 1 l, (Pack of 12)
+%247. 17198412: Perrier Sparkling Lemon Water, 33.8 oz (Pack of 12)
+%248. 17198732: Talking Rain Sparkling Ice Pomegranate Berry Water, 17 fl oz (Pack of 12)
+%249. 17198912: Taste Nirvana Coconut Water With Pulp, 16.2 oz (Pack of 12)
+%250. 17056916: Capri Sun Roarin' Waters Fruit Punch Water Beverages, 6 fl oz, 10 count
+%251. 17197668: Hint Unsweetened Essence Blackberry Water, 16 oz (Pack of 12)
+%252. 17352648: Capri Sun Roarin' Waters Grape Water Beverages, 6 fl oz, 10 count
+%253. 17800751: Vita Coco Coconut Water with Pineapple, 11.2 oz (Pack of 12)
+%254. 17800755: Vita Coco Coconut Water with Pineapple, 17 oz (Pack of 12)
+%255. 17197669: Hint Unsweetened Essence Watermelon Water, 16 oz (Pack of 12)
+%256. 17197675: Hint Strawberry Kiwi Water, 16 oz (Pack of 12)
+%257. 13908715: Capri Sun Roarin' Waters Strawberry Kiwi Water Beverages, 6 fl oz, 10 count
+%258. 21090971: Metromint Spearmint Water, 16.9 fl oz, (Pack of 12)
+%259. 17800752: Vita Coco Coconut Water with Peach & Mango, 11.2 oz (Pack of 12)
+%260. 13908714: Capri Sun Roarin' Waters Wild Cherry Water Beverages, 6 fl oz, 10 count
+%261. 17197075: Cap10 Natural Sparkling Mineral Lemon Water, 33.8 oz (Pack of 12)
+%262. 13908713: Capri Sun Roarin' Waters Tropical Fruit Water Beverages, 6 fl oz, 10 count
+%263. 19478017: Vita Coco Coconut Water With Acai & Pomegranate, 17 oz (Pack of 12)
+%264. 17198160: Metroelectro Micronutrient Enhanced Water, 33.8 oz (Pack of 12)
+%265. 17196846: Herbal Water Ginger Lemon Peel Herbal Water, 16 oz (Pack of 12)
+%266. 17196852: Herbal Water Lemongrass Mint Vanilla Herbal Water, 16 oz (Pack of 12)
+%267. 15610962: Capri Sun Roarin' Waters Berry Water Beverages, 6 fl oz, 10 count
+%268. 17198615: San Pellegrino Sparkling Water, 750 ml (Pack of 15)
+%269. 17196845: Herbal Water Cinnamon Orange Peel Herbal Water, 16 oz (Pack of 12)
+%270. 21091610: Zelo Peach Enhanced Water, 20 fl. oz., 4 count, (Pack of 6)
+%271. 17197166: Cocowater Pure Coconut Water Isotonic Beverage, 16 oz (Pack of 6)
+%272. 21090627: Greater Than Orange Mango Coconut Water Sports Drink, 20 fl oz, (Pack of 12)
+%273. 21091611: Zelo Strawberry Enhanced Water, 20 fl. oz., 4 count, (Pack of 6)
+%274. 17198415: Perrier Lemon Sparkling Water, 25 oz (Pack of 12)
+%275. 21090969: Metromint Peppermint Water, 16.9 fl oz, (Pack of 12)
+%276. 21090965: Metromint Cherrymint Water, 16.9 fl oz, (Pack of 12)
+%277. 21090968: Metromint Lemonmint Water, 16.9 fl oz, (Pack of 12)
+%278. 21090970: Metromint Orangemint Water, 16.9 fl oz, (Pack of 12)
+%279. 21090972: Metromint Chocolatemint Water, 16.9 fl oz, (Pack of 12)
+%280. 21090001: ALO Coco Exposed Pure Coconut Aloe Vera Passion Fruit Pineapple Water, 11.8 oz, (Pack of 12)
+%281. 17197671: Hint Mango Grapefruit Water, 16 oz (Pack of 12)
+%282. 21090621: Greater Than Tropical Coconut Water Sports Drink, 20 fl oz, (Pack of 12)
+%283. 21091012: Nateczowianka Lemon & Orange Flavor Sparkling Water Beverage, 50.7 fl oz, (Pack of 6)
+%284. 21090003: ALO Coco Exposed Coconut Aloe Vera Mangosteen Mango Water, 11.8 fl oz, (Pack of 12)
+%285. 17198157: Metroelectro Micronutrient Water, 20 oz (Pack of 12)
+%286. 17197165: CocoWater Coconut Water + Pineapple Isotonic Beverage, 16 oz (Pack of 6)
+%287. 17197076: Cap10 Natural Sparkling Mineral Lime Water, 33.8 oz (Pack of 12)
+%288. 17800756: Vita Coco Coconut Water with Acai & Pomegranate, 11.1 oz (Pack of 12)
+%289. 17197163: CocoWater Coconut Water + Lychee Isotonic Beverage, 16 oz (Pack of 6)
+%290. 17198158: Metroelectro Goodberry Mint Water, 16.9 oz (Pack of 12)
+%291. 17197164: Coco Water Coconut Water + Mango Isotonic Beverage, 16 oz (Pack of 6)
+%292. 17800762: Vita Coco Coconut Water with Peach & Mango, 17.5 oz, 12ct (Pack of 12)
+%293. 17197772: Sea's Gift Roasted Seaweed, .17 oz (Pack of 12)
+%294. 16778146: Clear American Raspberry Blackberry Sparkling Water, 1 l
+%295. 16767877: Clear American Pineapple Coconut Sparkling Water, 1 l
+%296. 17198620: San Pellegrino Chinotto Glass, 6.5 oz. (Pack of 4)
+%297. 13448771: Propel Antioxidants Vitamin Enhanced Water, 16.9 oz
+%298. 16821302: Glaceau Vitaminwater XXX Acai-Blueberry-Pomegranate Vitamin Water, 20 oz
+%299. 19276141: Nestle Pure Life Splash Lemon Water, 16.9 fl oz, 6 count
+%300. 17056961: SoBe Lifewater Agave Lemonade Water Beverage, 1 l
+%301. 17787440: La Croix Cran-Raspberry Sparkling Water, 12pk
+%302. 16767876: Clear American Relax Lavender Fuji Apple Pear Sparkling Water, 1 l
+%303. 17198618: San Pellegrino Lemon 6 pack, 6.5 oz. (Pack of 4)
+%304. 15716872: Glaceau Zero Vitamin Water Squeezed Lemonade, 20 oz
+%305. 15716874: Glaceau Zero Vitamin Water Mega-C Grape Raspberry, 20 oz
+%306. 17787244: Aquafina FlavorSplash Peach Mango Water Beverage, 16.9 oz, 6pk
+%307. 16778145: Clear American White Grape Sparkling Water, 4ct
+%308. 19276302: SoBe Lifewater Yuzu Yumberry Pomegranate Water Beverage, 20 oz
+%309. 17056959: SoBe Lifewater Strawberry Dragonfruit 0 Cal Lean Machine Water Beverage, 20 oz
+%310. 17018210: SoBe Lifewater Black And Blue Berry 0 Cal Water Beverage, 1 l
+%311. 17283478: Arrowhead Sparkling Orange Essence Water, 1 l
+%312. 17283477: Arrowhead Sparkling Lemon Water, 1 l
+%313. 16767872: Clear American Golden Peach Sparkling Water, 4ct
+%314. 17787439: La Croix Natural Lime Sparkling Water, 12pk
+%315. 16777969: Clear American Black Cherry Sparkling Water, 4ct
+%316. 17787241: Aquafina FlavorSplash Lemon Water Beverage, 20 oz
+%317. 16767871: Clear American Mandarin Orange Sparkling Water, 4ct
+%318. 16778144: Clear American Kiwi Strawberry Sparkling Water, 4ct
+%319. 17787240: Aquafina FlavorSplash Strawberry Kiwi Water Beverage, 16.9 oz, 6pk
+%320. 15716873: Glaceau Zero Vitamin Water Rise Orange, 20 oz
+%321. 16767873: Clear American Pom Blue Acai Sparkling Water, 4ct
+%322. 16767870: Clear American Key Lime Sparkling Water, 4ct
+%323. 16767874: Clear American Strawberry Sparkling Water, 4ct
+%324. 15673693: Sobe Lifewater Agave Lemonade Water Beverage, 20 oz
+%325. 15716871: Glaceau Zero Vitamin Water XXX Acai-Blueberry-Pomegranate, 20 oz
+%326. 15716767: Perrier Sparkling Natural Mineral Water, 25 oz
+%327. 19399965: Grace Coconut Water, 33.8 oz
+%328. 15716768: Perrier Sparkling Natural Lime Mineral Water, 25.3 oz
+%329. 17787242: Aquafina FlavorSplash Lemon Water Beverage, 16.9 oz, 6pk
+%330. 21091106: OWATER Unsweetened Lemon & Lime OWATER, 20 fl oz, (Pack of 12)
+%331. 17620297: Glaceau Grape-Blueberry Vitaminwater, 20 oz
+%332. 19276311: Glaceau Zero Go-Go Mixed Berry Vitaminwater, 20 oz
+%333. 19276312: Glaceau Berry-Cherry Vitaminwater, 20 oz
+%334. 16627510: Schweppes Club Soda, 15ct
+%335. 15754367: Glaceau Lemonade Vitaminwater, 20 oz
+%336. 17283607: Glaceau Stur-D Blue Agave-Passion Fruit-Citrus Vitaminwater, 20 oz
+%337. 15716875: Glaceau Power-C Dragonfruit Vitaminwater, 20 oz
+%338. 17670885: Glaceau Zero Glow Strawberry Guanabana Vitaminwater, 20 oz
+%339. 17670884: Glaceau Zero Drive Blood Orange Mixed Berry Vitaminwater, 20 oz
+%340. 17670883: Glaceau Essential Orange-Orange Vitaminwater, 16 oz, 4pk
+%341. 17670886: Glaceau Power-C Dragonfruit Vitaminwater, 32 oz
+%Reordered Items:
+%1. 13448854: Great Value Purified Water, 24ct (0.944 cost:0.0754 ctr:0.0754 C:0.525 I:0.16 Q:0.153 T:0.0294)
+%2. 15701574: Nestle Waters Bottled Spring Water, 24ct (1.2 cost:0.039 ctr:0.039 C:0.686 I:0.21 Q:0.239 T:0.0274)
+%3. 14122511: Arrowhead Mountain Spring Water, 3 l (0.953 cost:0.0254 ctr:0.000226 C:0.657 I:0.223 Q:0.0455 T:0.0274)
+%4. 10315382: Great Value: Distilled Water, 1 Gal (0.95 cost:0.0195 ctr:0.000493 C:0.562 I:0.266 Q:0.0932 T:0.0274)
+%5. 15716666: Arrowhead Mountain Spring Water, 2.5gal (0.938 cost:0.0153 ctr:0.000914 C:0.645 I:0.262 T:0.0294)
+%6. 20670288: Clear American Mandarin Orange Sparkling Water, 1 l, 12pk (0.897 cost:0.0129 ctr:0.01 C:0.656 I:0.208 T:0.0229)
+%7. 10315384: Great Value Spring Water, 1 gal (0.805 cost:0.0112 ctr:0.000983 C:0.445 I:0.29 Q:0.042 T:0.0274)
+%8. 17197302: Eternal Artesian Naturally Alkaline Water, 6ct (Pack of 4) (0.793 cost:0.01 ctr:0.00588 C:0.462 I:0.229 Q:0.0733 T:0.0229)
+%9. 17352551: Nestle Pure Life Purified Water, .5 l, 28ct (0.753 cost:0.00876 ctr:0.000329 C:0.449 I:0.179 Q:0.101 T:0.0242)
+%10. 20670286: Clear American Black Cherry Sparkling Water, 1 l, 12pk (0.753 cost:0.00793 ctr:0.0195 C:0.451 I:0.198 Q:0.0606 T:0.0229)
+%11. 20670287: Clear American Key Lime Sparkling Water, 1 l, 12ct (0.737 cost:0.00721 ctr:0.0153 C:0.458 I:0.147 Q:0.0937 T:0.0229)
+%12. 15716805: Deer Park Natural Spring Water, 2.5 gal (0.729 cost:0.00676 ctr:0.000549 C:0.464 I:0.239 T:0.0257)
+%13. 17197301: Eternal Artesian Naturally Alkaline Water, 50.7 oz (Pack of 12) (0.698 cost:0.00633 ctr:0.00676 C:0.458 I:0.12 Q:0.0918 T:0.0218)
+%14. 20670290: Clear American Strawberry Sparkling Water, 1 l, 12pk (0.669 cost:0.00597 ctr:0.0112 C:0.456 I:0.178 T:0.0242)
+%15. 17197760: Jana European Artesian Water, 50.7 oz (Pack of 12) (0.654 cost:0.00571 ctr:0.000767 C:0.473 I:0.158 T:0.0229)
+%16. 21091134: Penta Ultra-Purified Water, 33.8 fl oz, (Pack of 12) (0.653 cost:0.00588 ctr:0.00721 C:0.468 I:0.155 T:0.0229)
+%17. 17248230: Nestle Pure Life Purified Water, .5 l, 35pk (0.402 cost:0.00349 ctr:0.00237 I:0.247 Q:0.128 T:0.0242)
+%18. 17199142: Voss Water, 16.9 oz (Pack of 24) (0.357 cost:0.00286 ctr:0.0254 I:0.194 Q:0.112 T:0.0257)
+%19. 17197299: Eternal Artesian Naturally Alkaline Water, 20.2 oz (Pack of 24) (0.318 cost:0.00256 ctr:0.00876 I:0.166 Q:0.122 T:0.0218)
+%20. 21943694: Ice Mountain 100% Natural Spring Water, .5 l, 24ct (0.285 cost:0.00237 ctr:0.000354 I:0.187 Q:0.0744 T:0.0229)
+%21. 14940709: Dasani Purified Water, .5 L 24pk (0.247 cost:0.00214 ctr:0.000375 I:0.132 Q:0.0867 T:0.0274)
+%22. 15716769: Perrier Sparkling Natural Mineral Water, 6pk (0.233 cost:0.00198 ctr:0.00349 I:0.106 Q:0.0965 T:0.0274)
+%23. 21651862: Nestle Pure Life Purified Water, 8 oz (0.23 cost:0.00191 ctr:0.000548 I:0.114 Q:0.0904 T:0.0257)
+%24. 21943687: Deer Park 100% Natural Spring Water, 24pk (0.227 cost:0.00184 ctr:0.000364 I:0.14 Q:0.0616 T:0.0257)
+%25. 21090120: blk. Fulvic Trace Mineral Infused Water, 16.9 fl oz, (Pack of 24) (0.227 cost:0.00172 ctr:0.00106 I:0.163 Q:0.0432 T:0.0198)
+%26. 17196793: Acqua Panna Natural Spring Water, 33.8 oz (Pack of 12) (0.226 cost:0.00165 ctr:0.00191 I:0.103 Q:0.0994 T:0.0218)
+%27. 10315383: Great Value Drinking Water, 1 gal (0.218 cost:0.00157 ctr:0.000222 I:0.19 T:0.0274)
+%28. 21836278: Nestle Pure Life Purified Water, 0.5 l, 12 pack (0.201 cost:0.00154 ctr:0.000524 I:0.136 Q:0.0419 T:0.0229)
+%29. 20970550: Propel Zero Black Cherry Nutrient Enhanced Water Beverage, 16.9 fl oz, 12 count (0.194 cost:0.00151 ctr:0.000493 I:0.113 Q:0.0616 T:0.019)
+%30. 17196792: Acqua Panna Natural Spring Water, 25.36 oz (Pack of 15) (0.192 cost:0.00148 ctr:0.00157 I:0.0856 Q:0.0831 T:0.0218)
+%31. 17196794: Acqua Panna Natural Spring Water, 6ct (Pack of 4) (0.188 cost:0.00147 ctr:0.00214 I:0.0797 Q:0.0827 T:0.0229)
+%32. 21091194: Radenska Classic Naturally Sparkling Mineral Water, 50.7 fl oz, (Pack of 6) (0.183 cost:0.00153 ctr:0.000864 I:0.101 Q:0.0611 T:0.0198)
+%33. 20670289: Clear American Golden Peach Sparkling Water, 1 l, 12ct (0.175 cost:0.00134 ctr:0.0129 I:0.0968 Q:0.0422 T:0.0229)
+%34. 21090817: Kiwaii Natural Spring Water, 33.8 fl oz, (Pack of 12) (0.171 cost:0.00119 ctr:0.00198 I:0.104 Q:0.043 T:0.0218)
+%35. 20704081: Aquafina Water, 16.9 fl oz, 32pk (0.167 cost:0.00109 ctr:0.000586 I:0.139 T:0.0274)
+%36. 11979965: Aquafina Purified Drinking Water, 16.9 fl oz, 24 pack (0.164 cost:0.00106 ctr:0.000241 I:0.14 T:0.0229)
+%37. 17197295: Essentia Enhanced Drinking Water, 50.7 oz (Pack of 12) (0.16 cost:0.000983 ctr:0.00286 I:0.0898 Q:0.044 T:0.0229)
+%38. 20854304: Glaceau Smartwater Electrolyte Enhanced Water, 700 ml (0.158 cost:0.000914 ctr:0.000505 I:0.0867 Q:0.0449 T:0.0257)
+%39. 14711324: Great Value Low Calorie Diet Tonic Water, 6pk (0.156 cost:0.00091 ctr:0.00597 I:0.125 T:0.0242)
+%40. 17197707: Iceland Spring Natural Spring Water, 1 l (Pack of 12) (0.152 cost:0.000891 ctr:0.000818 I:0.0845 Q:0.0439 T:0.0229)
+%41. 17199140: Volvic Water, 33.81 oz (Pack of 12) (0.145 cost:0.000864 ctr:0.00165 I:0.118 T:0.0257)
+%42. 21090812: Kiwaii Natural Spring Water, 16.9 fl oz, (Pack of 24) (0.136 cost:0.000818 ctr:0.00172 I:0.0703 Q:0.0425 T:0.0218)
+%43. 22282312: Evian Natural Spring Water, 1 l (0.133 cost:0.000784 ctr:0.000267 I:0.105 T:0.0274)
+%44. 17199148: Voss Water, 27.1 fl oz (Pack of 12) (0.129 cost:0.000789 ctr:0.00571 I:0.0986 T:0.0242)
+%45. 20668656: Dasani Purified Water, 12 oz, 8pk (0.115 cost:0.000788 ctr:0.000247 I:0.0877 T:0.0274)
+%46. 17197298: Essentia Enhanced Drinking Water, 1 l (Pack of 12) (0.112 cost:0.000767 ctr:0.00151 I:0.088 T:0.0229)
+%47. 15841136: Clear American Cranberry Grape Water, 33.8 fl oz (0.111 cost:0.000756 ctr:0.000221 I:0.0866 T:0.0242)
+%48. 22225861: Nestle Pure Life Mandarin Orange Water Beverage, 6pk (0.111 cost:0.000804 ctr:0.000513 I:0.086 T:0.0242)
+%49. 22705458: Arrowhead Mountain Spring Water with Sport Flip Cap, 700ml, 6 count (0.109 cost:0.000733 ctr:0.000462 I:0.0706 T:0.0379)
+%50. 13448773: Propel Antioxidants Vitamin Enhanced Water, 16.9 oz (0.108 cost:0.000684 ctr:0.00793 I:0.0741 T:0.0257)
+%51. 17199139: Volvic Natural Spring Water, 1.5 l (Pack of 12) (0.105 cost:0.000636 ctr:0.000788 I:0.0816 T:0.0229)
+%52. 17198504: Radenska Classic Naturally Sparkling Mineral Water, 16.9 oz (Pack of 12) (0.103 cost:0.000629 ctr:0.00091 I:0.081 T:0.0207)
+%53. 17197763: Jana European Artesian Water, 6ct (Pack of 2) (0.0962 cost:0.000586 ctr:0.00148 I:0.0705 T:0.0242)
+%54. 15841252: Clear American Raspberry Apple Water, 33.8 fl oz (0.0946 cost:0.000569 ctr:0.000218 I:0.0702 T:0.0242)
+%55. 17194455: Topo Chico Sparkling Mineral Water, 25.4 oz (Pack of 12) (0.0918 cost:0.000548 ctr:0.00154 I:0.0685 T:0.0218)
+%56. 22142300: Ice Mountain Mandarin Orange Essence Sparkling Natural Spring Water, 33.8 fl oz (0.0917 cost:0.000549 ctr:0.000493 I:0.0289 Q:0.0425 T:0.0198)
+%57. 14122510: SPRING WATER, CO2 (0.0865 cost:0.000524 ctr:0.000216 I:0.0863)
+%58. 17199145: Voss Sparkling Water, 12.7 oz (Pack of 24) (0.0808 cost:0.000513 ctr:0.00633 I:0.0502 T:0.0242)
+%59. 17199146: Voss Water, 28.7 oz (Pack of 12) (0.0778 cost:0.000497 ctr:0.00119 I:0.0509 T:0.0257)
+%60. 21091126: Penta Ultra-Purified Water, 16.9 fl oz, (Pack of 24) (0.0765 cost:0.000501 ctr:0.00256 I:0.051 T:0.0229)
+%61. 22142299: Ice Mountain Sparkling Natural Spring Water, 33.8 fl oz (0.0751 cost:0.000493 ctr:0.000497 I:0.0517 T:0.0229)
+%62. 17197709: Iceland Spring Natural Spring Water, 50.7 oz (Pack of 12) (0.0739 cost:0.000493 ctr:0.000629 I:0.0504 T:0.0229)
+%63. 21268882: Sparkling Ice Orange Mango Sparkling Mountain Spring Water, 17 oz (0.073 cost:0.000493 ctr:0.000191 I:0.0499 T:0.0229)
+%64. 17199141: Volvic Natural Spring Water, 100.8 oz ,6 ct (Pack of 4) (0.0707 cost:0.000522 ctr:0.000784 I:0.0492 T:0.0207)
+%65. 17198420: Perrier Natural Sparkling Water, 39 oz (Pack of 4) (0.0694 cost:0.000505 ctr:0.000789 I:0.0457 T:0.0229)
+%66. 17197294: Essentia Enhanced Water, 20 oz (Pack of 12) (0.0557 cost:0.000462 ctr:0.00184 I:0.0297 T:0.0242)
+%67. 17670858: Perrier Sparkling Natural Mineral Water, 330 ml, 4pk (0.0549 cost:0.00043 ctr:0.00134 I:0.0293 T:0.0242)
+%68. 17197432: Function Sport Water, 750 ml (Pack of 24) (0.0548 cost:0.000431 ctr:0.000756 I:0.0298 T:0.0242)
+%69. 17199143: Voss Artesian Water, 11.16 oz (Pack of 12) (0.0538 cost:0.000381 ctr:0.000804 I:0.0288 T:0.0242)
+%70. 22211069: Naked Juice Coconut Water, 11.2 fl oz (0.053 cost:0.000375 ctr:0.000237 I:0.0271 T:0.0257)
+%71. 21950072: ZICO Pure Premium Coconut Water, 1 l (0.0524 cost:0.000364 ctr:0.000306 I:0.0264 T:0.0257)
+%72. 17194242: Knudsen Raspberry Sparkling Water, 10.5 oz, 4ct (Pack of 6) (0.0523 cost:0.000357 ctr:0.00147 I:0.0291 T:0.0218)
+%73. 17194241: Knudsen Tangerine Sparkling Water, 10.5 oz, 4ct (Pack of 6) (0.052 cost:0.000358 ctr:0.000733 I:0.0295 T:0.0218)
+%74. 21091612: Zevia Ginger Ale, 6 count, (Pack of 4) (0.0514 cost:0.000334 ctr:0.000636 I:0.0507)
+%75. 21268881: Sparkling Ice Black Raspberry Sparkling Mountain Spring Water, 17 oz (0.0508 cost:0.000339 ctr:0.000188 I:0.0277 T:0.0229)
+%76. 19802906: SoBe Lifewater Pacific Coconut Water Beverage, 20 oz (0.0504 cost:0.000345 ctr:0.000501 I:0.0257 T:0.0242)
+%77. 22225968: O.N.E. Coconut Water with a Splash of Pineapple, 8.5 fl oz (0.0381 cost:0.000336 ctr:0.000234 T:0.0379)
+%78. 21499576: Chadwick Bay Coconut Water Beverage with Pineapple Flavor, 16 fl oz (0.0381 cost:0.000327 ctr:0.000222 T:0.0379)
+%79. 22225966: O.N.E. Coconut Water, 1 l (0.0298 cost:0.000329 ctr:0.000381 T:0.0294)
+%80. 20923699: Fruit2O Purified Water Beverage, 6pk (0.0296 cost:0.000354 ctr:0.000242 T:0.0294)
+%81. 10319508: Topo Chico: Mineral Water, 6 Pk (0.0283 cost:0.000306 ctr:0.000891 T:0.0274)
+%82. 21090036: AriZona Sugar Free Lemon Iced Tea Stix, 10 count, (Pack of 12) (0.0282 cost:0.000279 ctr:0.000358 I:0.0278)
+%83. 22090048: O.N.E. Coconut Water, 11.2 fl oz (0.0277 cost:0.000267 ctr:0.000279 T:0.0274)
+%84. 15673702: Glaceau Electrolyte Enhanced Water Smart Water, 1.5 l (0.0259 cost:0.00027 ctr:0.000219 T:0.0257)
+%85. 17197761: Jana European Artesian Water, 6ct (Pack of 4) (0.0249 cost:0.000247 ctr:0.000684 T:0.0242)
+%86. 17198302: Sport Owater Sport Litre Water, 33.8 oz (Pack of 12) (0.024 cost:0.000241 ctr:0.00109 T:0.0229)
+%87. 21686114: SoBe Lifewater Acai Raspberry Water Beverage, 20 fl oz (0.0234 cost:0.000237 ctr:0.000522 T:0.0229)
+%88. 21096722: SoBe Lifewater Kiwi Cherimoya Water Beverage, 20 fl oz (0.0233 cost:0.000234 ctr:0.000431 T:0.0229)
+%89. 22301289: ZICO Natural Pure Premium Coconut Water, 11.2 fl oz (0.0231 cost:0.000225 ctr:0.000225 T:0.0229)
+%90. 17194243: Knudsen Jamaican Lemonade Sparkling Water, 10.5 oz, 4ct (Pack of 6) (0.0223 cost:0.000226 ctr:0.00153 T:0.0207)
+%91. 21096721: SoBe Lifewater Blood Orange Mango Water Beverage, 20 fl oz (0.0222 cost:0.000216 ctr:0.00043 T:0.0218)
+%92. 14532616: SoBe Lifewater Fuji Apple Pear 0 Cal Lean Machine Water Beverage, 20 oz (0.0192 cost:0.000222 ctr:0.00027 T:0.019)
+%93. 21091622: Zevia Cream Soda, 16 fl oz, (Pack of 12) (0.000569 cost:0.000222 ctr:0.000569)
+%94. 21090047: AriZona Sugar Free Peach Iced Tea Stix, 10 count, (Pack of 12) (0.000357 cost:0.000221 ctr:0.000357)
+%95. 21091617: Zevia Lemon Lime Twist Soda, 16 fl oz, (Pack of 12) (0.000345 cost:0.000219 ctr:0.000345)
+%96. 21091614: Zevia Ginger Root Beer, 16 fl oz, (Pack of 12) (0.000339 cost:0.000242 ctr:0.000339)
+%97. 21090303: DRY Rhubarb Soda, 4 count, (Pack of 6) (0.000336 cost:0.000218 ctr:0.000336)
+%98. 21091616: Zevia Grape Soda, 6 count, (Pack of 4) (0.000334 cost:0.000201 ctr:0.000334)
+%99. 21091618: Zevia Cream Soda, 6 count, (Pack of 4) (0.000327 cost:0.000188 ctr:0.000327)
+%100. 17198614: San J Rice Crackers Tamari Brown, 2.8 oz. (Pack of 12 (0.000201 cost:0.000191 ctr:0.000201)
+%101. 22705459: Deer Park Natural Spring Water, 0.5 l, 12 count (0.112 cost:0.00017 ctr:0.00017 I:0.0891 T:0.0229)
+%102. 22142269: Ozarka Sparkling Natural Spring Water, 1 l (0.0259 cost:0.00017 ctr:0.00017 T:0.0257)
+%103. 22225969: O.N.E. Coconut Water with a Splash of Mango, 8.5 oz (0.0401 cost:0.000167 ctr:0.000167 T:0.0399)
+%104. 22142271: Ozarka Lemon Essence Sparkling Natural Spring Water, 33.8 fl oz (0.0219 cost:0.000177 ctr:0.000177 T:0.0218)
+%105. 16940646: Fiji Natural Artesian Water, 1 l, 6pk (0.148 cost:0.000156 ctr:0.000156 I:0.122 T:0.0257)
+%106. 15556396: Deer Park Sumo Bottle Natural Spring Water, 3l (1.66 cost:0.000157 ctr:0.000157 C:1.11 I:0.355 Q:0.166 T:0.0242)
+%107. 22098554: Naked Juice Pineapple Coconut Water, 11.2 fl oz (0.0244 cost:0.000158 ctr:0.000158 T:0.0242)
+%108. 21950073: ZICO Chocolate Premium Coconut Water, 14 oz (0.0259 cost:0.000155 ctr:0.000155 T:0.0257)
+%109. 22225967: O.N.E. Coconut Water with a Splash of Pink Guava, 8.5 fl oz (0.0363 cost:0.000157 ctr:0.000157 T:0.0361)
+%110. 22057332: Canada Dry Mandarin Orange Sparkling Seltzer Water, 2 l (0.093 cost:0.000156 ctr:0.000156 I:0.0699 T:0.0229)
+%111. 22057329: Canada Dry Cranberry Lime Sparkling Seltzer Water, 2 l (0.0231 cost:0.00015 ctr:0.00015 T:0.0229)
+%112. 22057331: Canada Dry Sparkling Seltzer Water, 12 fl oz, 12 pack (0.0526 cost:0.000164 ctr:0.000164 I:0.0295 T:0.0229)
+%113. 21686015: Grace Coconut Water with Pulp, 10.5 fl oz (0.0449 cost:0.000165 ctr:0.000165 T:0.0447)
+%114. 22142270: Ozarka Mandarin Orange Essence Sparkling Natural Spring Water, 33.8 fl oz (0.0209 cost:0.000144 ctr:0.000144 T:0.0207)
+%115. 22098553: Naked Juice Mango Peach Coconut Water, 11.2 oz (0.0244 cost:0.000141 ctr:0.000141 T:0.0242)
+%116. 14869671: Gerber Pure Purified Water, 1 gal (0.144 cost:0.000136 ctr:0.000136 I:0.117 T:0.0274)
+%117. 22057334: Canada Dry Lemon Lime Sparkling Seltzer Water, 12 fl oz, 12 pack (0.0706 cost:0.000128 ctr:0.000128 I:0.0497 T:0.0207)
+%118. 22027220: Minute Maid Fruit Falls Berry Flavored Water Beverage, 200 ml, 10 count (0.094 cost:0.000124 ctr:0.000124 I:0.0289 Q:0.0452 T:0.0198)
+%119. 15841142: Clear American Pomegranate Blueberry Acai Water, 33.8 fl oz (0.0519 cost:0.000125 ctr:0.000125 I:0.0289 T:0.0229)
+%120. 21128417: Seagram's Tonic Water, 1 l (0.0295 cost:0.000126 ctr:0.000126 T:0.0294)
+%121. 21324667: Chadwick Bay Coconut Water Beverage with Passion Fruit, 16 fl oz (0.038 cost:0.000121 ctr:0.000121 T:0.0379)
+%122. 14532614: SoBe Lifewater Acai Fruit Punch 0 Cal Water Beverage, 20 oz (0.0209 cost:0.000126 ctr:0.000126 T:0.0207)
+%123. 21268884: Sparkling Ice Pink Grapefruit Sparkling Mountain Spring Water, 17 oz (0.0523 cost:0.000122 ctr:0.000122 I:0.0292 T:0.0229)
+%124. 21268883: Sparkling Ice Kiwi Strawberry Sparkling Mountain Spring Water, 17 oz (0.072 cost:0.000123 ctr:0.000123 I:0.049 T:0.0229)
+%125. 21324670: Chadwick Bay Coconut Water Beverage with Peach & Mango, 16 fl oz (0.0362 cost:0.000121 ctr:0.000121 T:0.0361)
+%126. 14944716: Glaceau Electrolyte Enhanced Water Smart Water, 1 l (0.0551 cost:0.000126 ctr:0.000126 I:0.0293 T:0.0257)
+%127. 12018846: SoBe Lifewater Strawberry Kiwi Water Beverage, 20 oz (0.0243 cost:0.000118 ctr:0.000118 T:0.0242)
+%128. 20923700: Fruit2O Purified Water Beverage, 6pk (0.059 cost:0.000134 ctr:0.000134 I:0.0295 T:0.0294)
+%129. 15716667: Arrowhead 100% Mountain Spring Water, 8 oz, 12 pack (0.15 cost:0.00013 ctr:0.00013 I:0.127 T:0.0229)
+%130. 17018212: SoBe Lifewater Strawberry Kiwi Lemonade 0 Cal Water Beverage, 20 oz (0.0208 cost:0.000115 ctr:0.000115 T:0.0207)
+%131. 14532613: SoBe Lifewater Mango Melon 0 Cal C-Boost Water Beverage, 20 oz (0.0208 cost:0.000113 ctr:0.000113 T:0.0207)
+%132. 13448574: Gerber Water: Purified Infant Water, 1 Gal (0.165 cost:0.000117 ctr:0.000117 I:0.139 T:0.0257)
+%133. 19802909: SoBe Lifewater Strawberry Kiwi Vitamin Enhanced Water Beverage, 1 l (0.0219 cost:0.000106 ctr:0.000106 T:0.0218)
+%134. 10402572: Aquafina Water, 1 l (0.136 cost:0.0001 ctr:0.0001 I:0.105 T:0.0317)
+%135. 10448494: Schweppes: Tonic Water, 1 L (0.0295 cost:0.000101 ctr:0.000101 T:0.0294)
+%136. 15556397: Deer Park 100% Natural Spring Water, 8 oz, 12 pack (0.0726 cost:0.000102 ctr:0.000102 I:0.0507 T:0.0218)
+%137. 11979962: Aquafina Water, 24 oz, 6pk (0.118 cost:9.92e-05 ctr:9.92e-05 I:0.0889 T:0.0294)
+%138. 20704282: Sobe Lifewater Yumberry Pomegranate Water Beverage, 20 oz (0.0243 cost:9.35e-05 ctr:9.35e-05 T:0.0242)
+%139. 11979961: Aquafina Water, 20 oz (0.0612 cost:9.71e-05 ctr:9.71e-05 I:0.0294 T:0.0317)
+%140. 19204374: Aquafina Water, 24 oz (0.0612 cost:0.000102 ctr:0.000102 I:0.0294 T:0.0317)
+%141. 19204373: Aquafina Water, 1.5 l (0.0612 cost:9.3e-05 ctr:9.3e-05 I:0.0294 T:0.0317)
+%142. 17787225: Aquafina Water, 12 oz, 8pk (0.0295 cost:9.36e-05 ctr:9.36e-05 T:0.0294)
+%143. 11979963: Aquafina Water, 16.9 oz, 12pk (0.0592 cost:9.56e-05 ctr:9.56e-05 I:0.0297 T:0.0294)
+%144. 19204375: Aquafina Water, 12 oz, 12pk (0.0295 cost:9.98e-05 ctr:9.98e-05 T:0.0294)
+%145. 14532481: Aquafina Water, 16.9 oz, 6pk (0.0295 cost:9.87e-05 ctr:9.87e-05 T:0.0294)
+%146. 19802796: Propel Kiwi Strawberry Fitness Water, 20 oz (0.0258 cost:9.18e-05 ctr:9.18e-05 T:0.0257)
+%147. 19802797: Propel Grape Fitness Water, 20 oz (0.0573 cost:9.23e-05 ctr:9.23e-05 I:0.0298 T:0.0274)
+%148. 15556261: Arrowhead Mountain Spring Water, 12pk (0.0801 cost:9.17e-05 ctr:9.17e-05 I:0.0506 T:0.0294)
+%149. 20550944: Acqua Panna Natural Spring Water, 750 ml (0.0893 cost:8.13e-05 ctr:8.13e-05 Q:0.0635 T:0.0257)
+%150. 21128528: SoBe Lifewater Lean Machine Strawberry Dragonfruit Water Beverage, 20 oz (0.0218 cost:7.7e-05 ctr:7.7e-05 T:0.0218)
+%151. 17787243: Aquafina FlavorSplash Peach Mango Water Beverage, 20 oz (0.0537 cost:8.02e-05 ctr:8.02e-05 I:0.0294 T:0.0242)
+%152. 16627511: Schweppes Diet Tonic Water, 15pk (0.0294 cost:7.85e-05 ctr:7.85e-05 T:0.0294)
+%153. 20553436: Grace Coconut Water With Pulp, 10.5 fl oz (0.0537 cost:7.67e-05 ctr:7.67e-05 I:0.0294 T:0.0242)
+%154. 20553437: Grace Coconut Water With Pulp, 16.9 fl oz (0.0243 cost:7.72e-05 ctr:7.72e-05 T:0.0242)
+%155. 20469605: TalkingRain Sparkling Ice Pomegranate Berry Sparkling Mountain Spring Water, 17 oz (0.0508 cost:7.73e-05 ctr:7.73e-05 I:0.0289 T:0.0218)
+%156. 20469607: TalkingRain Sparkling Ice Lemonade Sparkling Mountain Spring Water, 17 oz (0.0507 cost:8.17e-05 ctr:8.17e-05 I:0.0277 T:0.0229)
+%157. 20469606: TalkingRain Sparkling Ice Coconut Pineapple Sparkling Mountain Spring Water, 17 oz (0.0694 cost:7.92e-05 ctr:7.92e-05 I:0.0476 T:0.0218)
+%158. 20551388: Deer Park Orange Essence Sparkling Natural Spring Water, 1 l (0.0921 cost:8.2e-05 ctr:8.2e-05 I:0.0703 T:0.0218)
+%159. 20469604: TalkingRain Sparkling Ice Lemon Lime Sparkling Mountain Spring Water, 17 oz (0.0727 cost:8.09e-05 ctr:8.09e-05 I:0.0509 T:0.0218)
+%160. 14532617: SoBe Lifewater Yumberry Pomegranate 0 Cal Water Beverage, 20 oz (0.0219 cost:8.82e-05 ctr:8.82e-05 T:0.0218)
+%161. 14664877: SoBe Lifewater B-Energy Black Cherry Dragonfruit Water, 20 fl oz (0.0218 cost:8.04e-05 ctr:8.04e-05 T:0.0218)
+%162. 14664876: SoBe Lifewater B-Energy Strawberry Apricot 0 Cal Water Beverage, 20 oz (0.0208 cost:7.04e-05 ctr:7.04e-05 T:0.0207)
+%163. 15716807: Deer Park Natural Spring Water, 6pk (0.0275 cost:7.2e-05 ctr:7.2e-05 T:0.0274)
+%164. 11303923: Clear American Golden Peach Naturally Flavored Sparkling Water, 2 l (0.0218 cost:7.29e-05 ctr:7.29e-05 T:0.0218)
+%165. 17670805: Dasani Purified Water, 24 oz (0.163 cost:6.33e-05 ctr:6.33e-05 I:0.134 T:0.0294)
+%166. 17283476: Arrowhead Sparkling Water, 1 l (0.081 cost:6.57e-05 ctr:6.57e-05 I:0.0516 T:0.0294)
+%167. 15716483: Ozarka Natural Spring Water, 8 oz, 12 pack (0.0749 cost:6.15e-05 ctr:6.15e-05 I:0.0506 T:0.0242)
+%168. 17787316: Ozarka Natural Spring Water (0.675 cost:6.25e-05 ctr:6.25e-05 C:0.471 I:0.172 T:0.0317)
+%169. 14532493: Aquafina FlavorSplash Grape Water Beverage, 20 oz (0.0258 cost:5.68e-05 ctr:5.68e-05 T:0.0257)
+%170. 14664873: Sobe Lifewater Goji Melon Water Beverage, 20 fl oz (0.023 cost:5.91e-05 ctr:5.91e-05 T:0.0229)
+%171. 14532484: Aquafina FlavorSplash Raspberry Water Beverage, 20 oz (0.0258 cost:5.43e-05 ctr:5.43e-05 T:0.0257)
+%172. 17787239: Aquafina FlavorSplash Strawberry Kiwi Water Beverage, 20 oz (0.0538 cost:5.81e-05 ctr:5.81e-05 I:0.0295 T:0.0242)
+%173. 14532485: Aquafina FlavorSplash Wild Berry Water Beverage, 20 oz (0.0243 cost:5.44e-05 ctr:5.44e-05 T:0.0242)
+%174. 17670859: Poland Spring Natural Spring Water, 1 l (0.225 cost:6.02e-05 ctr:6.02e-05 I:0.153 Q:0.0451 T:0.0274)
+%175. 15529692: Dasani Purified Water, .5 L 6pk (0.596 cost:5.78e-05 ctr:5.78e-05 C:0.472 I:0.052 Q:0.0444 T:0.0274)
+%176. 11303918: Clear American Black Cherry Naturally Flavored Sparkling Water, 2 l (0.0494 cost:6.1e-05 ctr:6.1e-05 I:0.0276 T:0.0218)
+%177. 19276189: Sam's Choice Purified Drinking Water, 24pk (0.186 cost:5.81e-05 ctr:5.81e-05 I:0.115 Q:0.0427 T:0.0274)
+%178. 15716809: Ice Mountain 100% Natural Spring Water, 2.5 gal (0.65 cost:5.58e-05 ctr:5.58e-05 C:0.469 I:0.156 T:0.0242)
+%179. 12018494: Absopure Natural Spring Water, 1 gal (0.182 cost:5.38e-05 ctr:5.38e-05 I:0.155 T:0.0274)
+%180. 12131022: FIJI: Natural Artesian Water, 500 ml (0.0274 cost:5.25e-05 ctr:5.25e-05 T:0.0274)
+%181. 10452471: Sam&#39;s Choice: Clear American Raspberry Water, 33.8 Fl Oz (0.0519 cost:4.77e-05 ctr:4.77e-05 I:0.0289 T:0.0229)
+%182. 15716812: Ice Mountain Natural Spring Water, 3 l (0.165 cost:4.84e-05 ctr:4.84e-05 I:0.139 T:0.0257)
+%183. 12018521: Dasani: Purified Water, 1.5 L (0.0585 cost:5.04e-05 ctr:5.04e-05 I:0.029 T:0.0294)
+%184. 14940707: Dasani Purified Water, 1 l (0.0561 cost:5.2e-05 ctr:5.2e-05 I:0.0267 T:0.0294)
+%185. 14940708: Dasani Purified Water, .5 L 12pk (0.143 cost:4.8e-05 ctr:4.8e-05 I:0.0711 Q:0.0446 T:0.0274)
+%186. 11303917: Clear American Key Lime Naturally Flavored Sparkling Water, 2 l (0.0218 cost:4.67e-05 ctr:4.67e-05 T:0.0218)
+%187. 10324684: Sam's Choice Purified Drinking Water, 12pk (0.132 cost:4.83e-05 ctr:4.83e-05 I:0.105 T:0.0274)
+%188. 15724039: La Croix Orange Sparkling Water, 144 fl oz (0.0751 cost:5.06e-05 ctr:5.06e-05 I:0.0508 T:0.0242)
+%189. 15716581: S. Pellegrino Sparkling Natural Mineral Water, 25.3 oz (0.125 cost:4.78e-05 ctr:4.78e-05 I:0.101 T:0.0242)
+%190. 14664659: Aquafina: Flavor Splash Citrus Mineral/Spring Waters - Ready To Drink, 20 fl oz (4.38e-05 cost:4.38e-05 ctr:4.38e-05)
+%191. 17787317: Ozarka Natural Spring Water, 6ct (0.0294 cost:4.54e-05 ctr:4.54e-05 T:0.0294)
+%192. 11303916: Clear American Lemon Naturally Flavored Sparkling Water, 33.8 fl oz (0.0218 cost:5.4e-05 ctr:5.4e-05 T:0.0218)
+%193. 19802799: Propel Black Cherry Water Beverage, 20 oz (0.0257 cost:4.94e-05 ctr:4.94e-05 T:0.0257)
+%194. 19802795: Propel Berry Fitness Water, 20 oz (0.0274 cost:4.94e-05 ctr:4.94e-05 T:0.0274)
+%195. 19802798: Propel Lemon Fitness Water, 20 oz (0.0274 cost:4.47e-05 ctr:4.47e-05 T:0.0274)
+%196. 15716810: Ice Mountain 100% Natural Spring Water, 12pk (0.0955 cost:4.42e-05 ctr:4.42e-05 I:0.0698 T:0.0257)
+%197. 15716811: Ice Mountain 100% Natural Spring Water, 12pk (0.0257 cost:4.11e-05 ctr:4.11e-05 T:0.0257)
+%198. 10452381: Sam&#39;s Choice: Clear American Kiwi Strawberry Water, 33.8 Fl Oz (0.0514 cost:3.93e-05 ctr:3.93e-05 I:0.0296 T:0.0218)
+%199. 10448546: Sam&#39;s Choice: Mixer Diet Tonic Water, 33.8 Fl Oz (0.023 cost:3.89e-05 ctr:3.89e-05 T:0.0229)
+%200. 15754366: Glaceau Connect Vitamin Water Black Cherry-Lime, 20 oz (0.0243 cost:4.1e-05 ctr:4.1e-05 T:0.0242)
+%201. 19276186: Sam&#226;&#128;&#153;s Choice Purified Drinking Water, 12pk (0.192 cost:3.88e-05 ctr:3.88e-05 I:0.121 Q:0.0442 T:0.0274)
+%202. 17670873: Cumberland Gap Mountain Spring Water, 20 oz (0.0257 cost:3.81e-05 ctr:3.81e-05 T:0.0257)
+%203. 17757499: Cumberland Gap Mountain Spring Water, 1 l (0.0257 cost:3.75e-05 ctr:3.75e-05 T:0.0257)
+%204. 17670875: Cumberland Gap Mountain Spring Water, .5 l, 24pk (0.0243 cost:3.81e-05 ctr:3.81e-05 T:0.0242)
+%205. 16627506: Deja Blue Purified Drinking Water, 20 oz (0.0257 cost:3.98e-05 ctr:3.98e-05 T:0.0257)
+%206. 10452470: Sam's Choice Clear American Golden Peach Naturally Flavored Sparkling Water, 2 l (0.0198 cost:4.05e-05 ctr:4.05e-05 T:0.0198)
+%207. 10532593: Glaceau-Vitaminwater: Smartwater Electrolyte Enhanced Water, 120 Oz (0.0751 cost:4.1e-05 ctr:4.1e-05 I:0.0494 T:0.0257)
+%208. 10421158: Gerolsteiner: Mineral Naturally Sparkling Water, 6 pk (0.128 cost:3.77e-05 ctr:3.77e-05 I:0.103 T:0.0257)
+%209. 10291619: Dasani Purified Water Fridge Pack, 12 Oz 12pk (0.0537 cost:3.74e-05 ctr:3.74e-05 I:0.0295 T:0.0242)
+%210. 10323439: Mineragua: Mineralized Carbonated Water, 1.58 Qt (0.0274 cost:3.56e-05 ctr:3.56e-05 T:0.0274)
+%211. 10532592: Glaceau-Vitaminwater: Nutrient Enhanced Water Beverage, 240 Fl Oz (0.0243 cost:3.69e-05 ctr:3.69e-05 T:0.0242)
+%212. 10448545: Sam&#39;s Choice: Mixer Tonic Water, 33.8 Fl Oz (0.0243 cost:3.79e-05 ctr:3.79e-05 T:0.0242)
+%213. 10532595: Glaceau-Vitaminwater: Focus Kiwi-Strawberry Nutrient Enhanced Water Beverage, 48 Oz (0.023 cost:3.54e-05 ctr:3.54e-05 T:0.0229)
+%214. 10532596: Glaceau-Vitaminwater: Power-C Dragonfruit Nutrient Enhanced Water Beverage, 48 Oz (0.0229 cost:3.26e-05 ctr:3.26e-05 T:0.0229)
+%215. 20854305: Glaceau Zero Vitaminwater Variety Pack, 20 oz, 12pk (0.0273 cost:3.29e-05 ctr:3.29e-05 I:0.0272)
+%216. 22257794: Vita Coco Coco Cafe Cafe Latte, 11.1 fl oz (3.53e-05 cost:3.53e-05 ctr:3.53e-05)
+%217. 13448772: Propel Antioxidants Vitamin Enhanced Water, 16.9 oz (0.119 cost:3.14e-05 ctr:3.14e-05 I:0.0928 T:0.0257)
+%218. 22257598: Lipton Brisk Fusion White Tea & Pink Lemonade, 128 fl oz (3.25e-05 cost:3.25e-05 ctr:3.25e-05)
+%219. 22211228: Glaceau Fuji Apple-Watermelon Vitaminwater, 20 fl oz (0.0496 cost:3.3e-05 ctr:3.3e-05 I:0.0495)
+%220. 21909811: Happy Squeeze Coco Strawberry Coconut Milk, 3.5 oz (3.21e-05 cost:3.21e-05 ctr:3.21e-05)
+%221. 21909810: Happy Squeeze Coco Orange Mango Coconut Milk, 3.5 oz (3.21e-05 cost:3.21e-05 ctr:3.21e-05)
+%222. 22057330: Canada Dry Club Soda, 1 l (3.27e-05 cost:3.27e-05 ctr:3.27e-05)
+%223. 21048627: Mixer Club Soda, 2 l (3.16e-05 cost:3.16e-05 ctr:3.16e-05)
+%224. 20854306: Glaceau Energy Tropical Citrus Vitaminwater, 32 oz (3.57e-05 cost:3.57e-05 ctr:3.57e-05)
+%225. 20854307: Glaceau Revive Fruit Punch Vitaminwater, 32 oz (3.54e-05 cost:3.54e-05 ctr:3.54e-05)
+%226. 15754369: Glaceau Vitaminwater: Focus Kiwi-Strawberry Vitaminwater, 20 Oz (3.45e-05 cost:3.45e-05 ctr:3.45e-05)
+%227. 15754368: Glaceau Vitaminwater: Essential Orange-Orange Vitaminwater, 20 Oz (3.28e-05 cost:3.28e-05 ctr:3.28e-05)
+%228. 17800763: Vita Coco 100% Pure Coconut Water, 34 oz (Pack of 12) (0.0461 cost:3.42e-05 ctr:3.42e-05 I:0.0253 T:0.0207)
+%229. 17199147: Voss Sparkling Water, 27.1 fl oz (Pack of 12) (0.0229 cost:2.81e-05 ctr:2.81e-05 T:0.0229)
+%230. 17198408: Perrier Pink Grapefruit Sparkling Water, 750 ml (Pack of 12) (0.103 cost:2.94e-05 ctr:2.94e-05 I:0.0813 T:0.0218)
+%231. 19802910: SoBe Black & Blue Berry Brew Dairy Based Drink, 20 fl oz (2.94e-05 cost:2.94e-05 ctr:2.94e-05)
+%232. 19802688: Manzanita Sol Soda, 20 fl oz (2.92e-05 cost:2.92e-05 ctr:2.92e-05)
+%233. 10448145: Vintage Lemon Lime Seltzer, 33.8 fl oz (0.0293 cost:2.68e-05 ctr:2.68e-05 I:0.0292)
+%234. 10448144: Vintage Original Seltzer, 33.8 fl oz (2.79e-05 cost:2.79e-05 ctr:2.79e-05)
+%235. 10448533: Sam&#39;s Choice: Mixer Diet Club Soda, 33.8 Fl Oz (2.81e-05 cost:2.81e-05 ctr:2.81e-05)
+%236. 10448349: Sam&#39;s Choice: Mixer Sodium Free Seltzer, 33.8 Fl Oz (3.06e-05 cost:3.06e-05 ctr:3.06e-05)
+%237. 17198617: San Pellegrino Water, Plastic, 1 lt. (Pack of 12) (0.0507 cost:2.61e-05 ctr:2.61e-05 I:0.0277 T:0.0229)
+%238. 17196848: Herbal Water Ayala's Lavender Mint Water, 16 oz (Pack of 12) (0.0218 cost:2.68e-05 ctr:2.68e-05 T:0.0218)
+%239. 17800754: Vita Coco 100% Pure Coconut Water, 17 oz (Pack of 12) (0.0797 cost:2.88e-05 ctr:2.88e-05 I:0.0589 T:0.0207)
+%240. 17198421: Perrier Sparkling Natural Mineral Water, 6ct (Pack of 4) (0.105 cost:2.84e-05 ctr:2.84e-05 I:0.0822 T:0.0229)
+%241. 17198911: Taste Nirvana Coconut Water, 16.2 oz (Pack of 12) (0.0229 cost:2.83e-05 ctr:2.83e-05 T:0.0229)
+%242. 17197082: Cap10 Sparkling Mineral Natural Water, 20 oz (Pack of 4) (0.0914 cost:2.62e-05 ctr:2.62e-05 I:0.0696 T:0.0218)
+%243. 17198414: Perrier Lime Sparkling Water, 25 oz (Pack of 12) (0.0229 cost:2.59e-05 ctr:2.59e-05 T:0.0229)
+%244. 17198419: Perrier Sparkling Natural Mineral Water, 4ct (Pack of 6) (0.117 cost:2.44e-05 ctr:2.44e-05 I:0.0936 T:0.0229)
+%245. 21091079: O.N.E. Pineapple Coconut Water, 8.5 fl oz, (Pack of 12) (0.0218 cost:2.41e-05 ctr:2.41e-05 T:0.0218)
+%246. 21091086: O.N.E. Coconut Water, 1 l, (Pack of 12) (0.0242 cost:2.34e-05 ctr:2.34e-05 T:0.0242)
+%247. 17198412: Perrier Sparkling Lemon Water, 33.8 oz (Pack of 12) (0.0516 cost:2.52e-05 ctr:2.52e-05 I:0.0286 T:0.0229)
+%248. 17198732: Talking Rain Sparkling Ice Pomegranate Berry Water, 17 fl oz (Pack of 12) (0.303 cost:2.45e-05 ctr:2.45e-05 I:0.213 Q:0.0716 T:0.019)
+%249. 17198912: Taste Nirvana Coconut Water With Pulp, 16.2 oz (Pack of 12) (0.0208 cost:2.34e-05 ctr:2.34e-05 T:0.0207)
+%250. 17056916: Capri Sun Roarin' Waters Fruit Punch Water Beverages, 6 fl oz, 10 count (0.0954 cost:2.35e-05 ctr:2.35e-05 I:0.0765 T:0.019)
+%251. 17197668: Hint Unsweetened Essence Blackberry Water, 16 oz (Pack of 12) (0.0218 cost:2.31e-05 ctr:2.31e-05 T:0.0218)
+%252. 17352648: Capri Sun Roarin' Waters Grape Water Beverages, 6 fl oz, 10 count (0.0648 cost:2.34e-05 ctr:2.34e-05 I:0.045 T:0.0198)
+%253. 17800751: Vita Coco Coconut Water with Pineapple, 11.2 oz (Pack of 12) (0.0846 cost:2.33e-05 ctr:2.33e-05 I:0.0467 T:0.0379)
+%254. 17800755: Vita Coco Coconut Water with Pineapple, 17 oz (Pack of 12) (0.0658 cost:2.32e-05 ctr:2.32e-05 I:0.0279 T:0.0379)
+%255. 17197669: Hint Unsweetened Essence Watermelon Water, 16 oz (Pack of 12) (0.0218 cost:2.38e-05 ctr:2.38e-05 T:0.0218)
+%256. 17197675: Hint Strawberry Kiwi Water, 16 oz (Pack of 12) (0.0514 cost:2.74e-05 ctr:2.74e-05 I:0.0284 T:0.0229)
+%257. 13908715: Capri Sun Roarin' Waters Strawberry Kiwi Water Beverages, 6 fl oz, 10 count (0.0961 cost:2.54e-05 ctr:2.54e-05 I:0.0771 T:0.019)
+%258. 21090971: Metromint Spearmint Water, 16.9 fl oz, (Pack of 12) (0.0229 cost:2.16e-05 ctr:2.16e-05 T:0.0229)
+%259. 17800752: Vita Coco Coconut Water with Peach & Mango, 11.2 oz (Pack of 12) (0.0345 cost:2.4e-05 ctr:2.4e-05 T:0.0345)
+%260. 13908714: Capri Sun Roarin' Waters Wild Cherry Water Beverages, 6 fl oz, 10 count (0.0771 cost:2.29e-05 ctr:2.29e-05 I:0.0581 T:0.019)
+%261. 17197075: Cap10 Natural Sparkling Mineral Lemon Water, 33.8 oz (Pack of 12) (0.0888 cost:2.12e-05 ctr:2.12e-05 I:0.0681 T:0.0207)
+%262. 13908713: Capri Sun Roarin' Waters Tropical Fruit Water Beverages, 6 fl oz, 10 count (0.019 cost:2.05e-05 ctr:2.05e-05 T:0.019)
+%263. 19478017: Vita Coco Coconut Water With Acai & Pomegranate, 17 oz (Pack of 12) (0.019 cost:2.04e-05 ctr:2.04e-05 T:0.019)
+%264. 17198160: Metroelectro Micronutrient Enhanced Water, 33.8 oz (Pack of 12) (0.0229 cost:2.01e-05 ctr:2.01e-05 T:0.0229)
+%265. 17196846: Herbal Water Ginger Lemon Peel Herbal Water, 16 oz (Pack of 12) (0.0514 cost:2.19e-05 ctr:2.19e-05 I:0.0296 T:0.0218)
+%266. 17196852: Herbal Water Lemongrass Mint Vanilla Herbal Water, 16 oz (Pack of 12) (0.0505 cost:1.86e-05 ctr:1.86e-05 I:0.0287 T:0.0218)
+%267. 15610962: Capri Sun Roarin' Waters Berry Water Beverages, 6 fl oz, 10 count (0.0644 cost:2.01e-05 ctr:2.01e-05 I:0.0446 T:0.0198)
+%268. 17198615: San Pellegrino Sparkling Water, 750 ml (Pack of 15) (0.13 cost:1.97e-05 ctr:1.97e-05 I:0.0456 Q:0.0614 T:0.0229)
+%269. 17196845: Herbal Water Cinnamon Orange Peel Herbal Water, 16 oz (Pack of 12) (0.0218 cost:2.03e-05 ctr:2.03e-05 T:0.0218)
+%270. 21091610: Zelo Peach Enhanced Water, 20 fl. oz., 4 count, (Pack of 6) (0.0198 cost:1.96e-05 ctr:1.96e-05 T:0.0198)
+%271. 17197166: Cocowater Pure Coconut Water Isotonic Beverage, 16 oz (Pack of 6) (0.107 cost:2.07e-05 ctr:2.07e-05 I:0.0272 Q:0.0589 T:0.0207)
+%272. 21090627: Greater Than Orange Mango Coconut Water Sports Drink, 20 fl oz, (Pack of 12) (0.0182 cost:2.28e-05 ctr:2.28e-05 T:0.0182)
+%273. 21091611: Zelo Strawberry Enhanced Water, 20 fl. oz., 4 count, (Pack of 6) (0.0198 cost:2.04e-05 ctr:2.04e-05 T:0.0198)
+%274. 17198415: Perrier Lemon Sparkling Water, 25 oz (Pack of 12) (0.0514 cost:1.89e-05 ctr:1.89e-05 I:0.0285 T:0.0229)
+%275. 21090969: Metromint Peppermint Water, 16.9 fl oz, (Pack of 12) (0.0518 cost:1.78e-05 ctr:1.78e-05 I:0.0289 T:0.0229)
+%276. 21090965: Metromint Cherrymint Water, 16.9 fl oz, (Pack of 12) (0.0891 cost:2.05e-05 ctr:2.05e-05 I:0.0661 T:0.0229)
+%277. 21090968: Metromint Lemonmint Water, 16.9 fl oz, (Pack of 12) (0.0229 cost:1.82e-05 ctr:1.82e-05 T:0.0229)
+%278. 21090970: Metromint Orangemint Water, 16.9 fl oz, (Pack of 12) (0.0229 cost:1.78e-05 ctr:1.78e-05 T:0.0229)
+%279. 21090972: Metromint Chocolatemint Water, 16.9 fl oz, (Pack of 12) (0.0229 cost:1.79e-05 ctr:1.79e-05 T:0.0229)
+%280. 21090001: ALO Coco Exposed Pure Coconut Aloe Vera Passion Fruit Pineapple Water, 11.8 oz, (Pack of 12) (0.0169 cost:1.75e-05 ctr:1.75e-05 T:0.0169)
+%281. 17197671: Hint Mango Grapefruit Water, 16 oz (Pack of 12) (0.0229 cost:1.66e-05 ctr:1.66e-05 T:0.0229)
+%282. 21090621: Greater Than Tropical Coconut Water Sports Drink, 20 fl oz, (Pack of 12) (0.019 cost:1.81e-05 ctr:1.81e-05 T:0.019)
+%283. 21091012: Nateczowianka Lemon & Orange Flavor Sparkling Water Beverage, 50.7 fl oz, (Pack of 6) (0.0182 cost:1.73e-05 ctr:1.73e-05 T:0.0182)
+%284. 21090003: ALO Coco Exposed Coconut Aloe Vera Mangosteen Mango Water, 11.8 fl oz, (Pack of 12) (0.0175 cost:1.76e-05 ctr:1.76e-05 T:0.0175)
+%285. 17198157: Metroelectro Micronutrient Water, 20 oz (Pack of 12) (0.0242 cost:1.71e-05 ctr:1.71e-05 T:0.0242)
+%286. 17197165: CocoWater Coconut Water + Pineapple Isotonic Beverage, 16 oz (Pack of 6) (0.0198 cost:1.61e-05 ctr:1.61e-05 T:0.0198)
+%287. 17197076: Cap10 Natural Sparkling Mineral Lime Water, 33.8 oz (Pack of 12) (0.105 cost:1.81e-05 ctr:1.81e-05 I:0.0843 T:0.0207)
+%288. 17800756: Vita Coco Coconut Water with Acai & Pomegranate, 11.1 oz (Pack of 12) (0.0631 cost:1.97e-05 ctr:1.97e-05 I:0.0286 T:0.0345)
+%289. 17197163: CocoWater Coconut Water + Lychee Isotonic Beverage, 16 oz (Pack of 6) (0.0633 cost:1.87e-05 ctr:1.87e-05 Q:0.0435 T:0.0198)
+%290. 17198158: Metroelectro Goodberry Mint Water, 16.9 oz (Pack of 12) (0.0229 cost:1.71e-05 ctr:1.71e-05 T:0.0229)
+%291. 17197164: Coco Water Coconut Water + Mango Isotonic Beverage, 16 oz (Pack of 6) (0.0198 cost:1.65e-05 ctr:1.65e-05 T:0.0198)
+%292. 17800762: Vita Coco Coconut Water with Peach & Mango, 17.5 oz, 12ct (Pack of 12) (0.061 cost:1.75e-05 ctr:1.75e-05 I:0.0279 T:0.033)
+%293. 17197772: Sea's Gift Roasted Seaweed, .17 oz (Pack of 12) (0.0553 cost:1.47e-05 ctr:1.47e-05 I:0.0553)
+%294. 16778146: Clear American Raspberry Blackberry Sparkling Water, 1 l (0.0533 cost:1.62e-05 ctr:1.62e-05 I:0.0291 T:0.0242)
+%295. 16767877: Clear American Pineapple Coconut Sparkling Water, 1 l (0.125 cost:1.46e-05 ctr:1.46e-05 I:0.101 T:0.0242)
+%296. 17198620: San Pellegrino Chinotto Glass, 6.5 oz. (Pack of 4) (1.52e-05 cost:1.52e-05 ctr:1.52e-05)
+%297. 13448771: Propel Antioxidants Vitamin Enhanced Water, 16.9 oz (0.0257 cost:1.64e-05 ctr:1.64e-05 T:0.0257)
+%298. 16821302: Glaceau Vitaminwater XXX Acai-Blueberry-Pomegranate Vitamin Water, 20 oz (0.0514 cost:1.5e-05 ctr:1.5e-05 I:0.0272 T:0.0242)
+%299. 19276141: Nestle Pure Life Splash Lemon Water, 16.9 fl oz, 6 count (0.0717 cost:1.57e-05 ctr:1.57e-05 I:0.051 T:0.0207)
+%300. 17056961: SoBe Lifewater Agave Lemonade Water Beverage, 1 l (0.0242 cost:1.5e-05 ctr:1.5e-05 T:0.0242)
+%301. 17787440: La Croix Cran-Raspberry Sparkling Water, 12pk (0.114 cost:1.46e-05 ctr:1.46e-05 I:0.0864 T:0.0274)
+%302. 16767876: Clear American Relax Lavender Fuji Apple Pear Sparkling Water, 1 l (0.0704 cost:1.55e-05 ctr:1.55e-05 I:0.0496 T:0.0207)
+%303. 17198618: San Pellegrino Lemon 6 pack, 6.5 oz. (Pack of 4) (0.0673 cost:1.51e-05 ctr:1.51e-05 I:0.0673)
+%304. 15716872: Glaceau Zero Vitamin Water Squeezed Lemonade, 20 oz (0.0524 cost:1.58e-05 ctr:1.58e-05 I:0.0281 T:0.0242)
+%305. 15716874: Glaceau Zero Vitamin Water Mega-C Grape Raspberry, 20 oz (0.0513 cost:1.57e-05 ctr:1.57e-05 I:0.0284 T:0.0229)
+%306. 17787244: Aquafina FlavorSplash Peach Mango Water Beverage, 16.9 oz, 6pk (0.0229 cost:1.62e-05 ctr:1.62e-05 T:0.0229)
+%307. 16778145: Clear American White Grape Sparkling Water, 4ct (0.0758 cost:1.56e-05 ctr:1.56e-05 I:0.05 T:0.0257)
+%308. 19276302: SoBe Lifewater Yuzu Yumberry Pomegranate Water Beverage, 20 oz (0.0229 cost:1.56e-05 ctr:1.56e-05 T:0.0229)
+%309. 17056959: SoBe Lifewater Strawberry Dragonfruit 0 Cal Lean Machine Water Beverage, 20 oz (0.0198 cost:1.44e-05 ctr:1.44e-05 T:0.0198)
+%310. 17018210: SoBe Lifewater Black And Blue Berry 0 Cal Water Beverage, 1 l (0.0198 cost:1.52e-05 ctr:1.52e-05 T:0.0198)
+%311. 17283478: Arrowhead Sparkling Orange Essence Water, 1 l (0.0761 cost:1.32e-05 ctr:1.32e-05 I:0.0504 T:0.0257)
+%312. 17283477: Arrowhead Sparkling Lemon Water, 1 l (0.0274 cost:1.42e-05 ctr:1.42e-05 T:0.0274)
+%313. 16767872: Clear American Golden Peach Sparkling Water, 4ct (0.0257 cost:1.43e-05 ctr:1.43e-05 T:0.0257)
+%314. 17787439: La Croix Natural Lime Sparkling Water, 12pk (0.0257 cost:1.36e-05 ctr:1.36e-05 T:0.0257)
+%315. 16777969: Clear American Black Cherry Sparkling Water, 4ct (0.0552 cost:1.3e-05 ctr:1.3e-05 I:0.0295 T:0.0257)
+%316. 17787241: Aquafina FlavorSplash Lemon Water Beverage, 20 oz (0.0554 cost:1.33e-05 ctr:1.33e-05 I:0.0297 T:0.0257)
+%317. 16767871: Clear American Mandarin Orange Sparkling Water, 4ct (0.0257 cost:1.48e-05 ctr:1.48e-05 T:0.0257)
+%318. 16778144: Clear American Kiwi Strawberry Sparkling Water, 4ct (0.0552 cost:1.53e-05 ctr:1.53e-05 I:0.0295 T:0.0257)
+%319. 17787240: Aquafina FlavorSplash Strawberry Kiwi Water Beverage, 16.9 oz, 6pk (0.0918 cost:1.58e-05 ctr:1.58e-05 I:0.0689 T:0.0229)
+%320. 15716873: Glaceau Zero Vitamin Water Rise Orange, 20 oz (0.0745 cost:1.67e-05 ctr:1.67e-05 I:0.0503 T:0.0242)
+%321. 16767873: Clear American Pom Blue Acai Sparkling Water, 4ct (0.0537 cost:1.52e-05 ctr:1.52e-05 I:0.0295 T:0.0242)
+%322. 16767870: Clear American Key Lime Sparkling Water, 4ct (0.0257 cost:1.37e-05 ctr:1.37e-05 T:0.0257)
+%323. 16767874: Clear American Strawberry Sparkling Water, 4ct (0.0568 cost:1.32e-05 ctr:1.32e-05 I:0.0294 T:0.0274)
+%324. 15673693: Sobe Lifewater Agave Lemonade Water Beverage, 20 oz (0.0242 cost:1.28e-05 ctr:1.28e-05 T:0.0242)
+%325. 15716871: Glaceau Zero Vitamin Water XXX Acai-Blueberry-Pomegranate, 20 oz (0.0242 cost:1.23e-05 ctr:1.23e-05 T:0.0242)
+%326. 15716767: Perrier Sparkling Natural Mineral Water, 25 oz (0.0257 cost:1.15e-05 ctr:1.15e-05 T:0.0257)
+%327. 19399965: Grace Coconut Water, 33.8 oz (0.0294 cost:1.12e-05 ctr:1.12e-05 T:0.0294)
+%328. 15716768: Perrier Sparkling Natural Lime Mineral Water, 25.3 oz (0.0536 cost:1.05e-05 ctr:1.05e-05 I:0.0293 T:0.0242)
+%329. 17787242: Aquafina FlavorSplash Lemon Water Beverage, 16.9 oz, 6pk (0.0242 cost:1.1e-05 ctr:1.1e-05 T:0.0242)
+%330. 21091106: OWATER Unsweetened Lemon & Lime OWATER, 20 fl oz, (Pack of 12) (1.01e-05 cost:1.01e-05 ctr:1.01e-05)
+%331. 17620297: Glaceau Grape-Blueberry Vitaminwater, 20 oz (1.09e-05 cost:1.09e-05 ctr:1.09e-05)
+%332. 19276311: Glaceau Zero Go-Go Mixed Berry Vitaminwater, 20 oz (1.1e-05 cost:1.1e-05 ctr:1.1e-05)
+%333. 19276312: Glaceau Berry-Cherry Vitaminwater, 20 oz (1.26e-05 cost:1.26e-05 ctr:1.26e-05)
+%334. 16627510: Schweppes Club Soda, 15ct (1.38e-05 cost:1.38e-05 ctr:1.38e-05)
+%335. 15754367: Glaceau Lemonade Vitaminwater, 20 oz (1.1e-05 cost:1.1e-05 ctr:1.1e-05)
+%336. 17283607: Glaceau Stur-D Blue Agave-Passion Fruit-Citrus Vitaminwater, 20 oz (1.13e-05 cost:1.13e-05 ctr:1.13e-05)
+%337. 15716875: Glaceau Power-C Dragonfruit Vitaminwater, 20 oz (1.17e-05 cost:1.17e-05 ctr:1.17e-05)
+%338. 17670885: Glaceau Zero Glow Strawberry Guanabana Vitaminwater, 20 oz (1.13e-05 cost:1.13e-05 ctr:1.13e-05)
+%339. 17670884: Glaceau Zero Drive Blood Orange Mixed Berry Vitaminwater, 20 oz (1.11e-05 cost:1.11e-05 ctr:1.11e-05)
+%340. 17670883: Glaceau Essential Orange-Orange Vitaminwater, 16 oz, 4pk (1.15e-05 cost:1.15e-05 ctr:1.15e-05)
+%341. 17670886: Glaceau Power-C Dragonfruit Vitaminwater, 32 oz (1.01e-05 cost:1.01e-05 ctr:1.01e-05)
+
+\end{document}
