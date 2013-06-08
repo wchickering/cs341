@@ -17,7 +17,7 @@ class QueryScorer:
     def clickPositionOrig(self, query):
         score = 0.0
         for i in range(len(query.shown_items)):
-            if i > len(self.ctr_by_position):
+            if i >= len(self.ctr_by_position):
                 break
             if query.shown_items[i] in query.clicked_shown_items:
                 score += self.ctr_by_position[i]
@@ -26,7 +26,7 @@ class QueryScorer:
     def clickPositionReordered(self, query):
         score = 0.0
         for i in range(len(query.reordered_shown_items)):
-            if i > len(self.ctr_by_position):
+            if i >= len(self.ctr_by_position):
                 break
             if query.reordered_shown_items[i] in query.clicked_shown_items:
                 score += self.ctr_by_position[i]

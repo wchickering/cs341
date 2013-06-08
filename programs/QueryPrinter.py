@@ -29,15 +29,20 @@ class QueryPrinter:
     def __init__(self,\
                  outFile=sys.stdout,\
                  index_item_title_fname=None, posting_dict_item_title_fname=None,\
+                 index_category_name_fname=None, posting_dict_category_name_fname=None,\
                  reRanker=None):
         self.outFile = outFile
-        if index_item_title_fname:
-            self.index_item_title_fd = open(index_item_title_fname)
-            dict_item_title_fd = open(posting_dict_item_title_fname)
-            self.posting_dict_item_title = idx.get_posting_dict(dict_item_title_fd)
-        else:
-            self.index_item_title_fd = None
+        self.__initializeIndex(index_item_title_fname, posting_dict_item_title_fname, 'item_title')
+        self.__initializeIndex(index_category_name_fname, posting_dict_category_name_fname, 'category_name')
         self.reRanker = reRanker
+
+    def __initializeIndex(self, index_fname, posting_dict_fname, name):
+        if index_fname:
+            setattr(self, 'index_%s_fd' % name, open(index_fname))
+            dict_fd = open(posting_dict_fname)
+            setattr(self, 'posting_dict_%s' % name, idx.get_posting_dict(dict_fd))
+        else:
+            setattr(self, 'index_%s_fd' % name, None)
 
     def printLine(self, line):
         try:
@@ -79,9 +84,23 @@ class QueryPrinter:
             line += ')'
         self.printLine(line)
 
+    def printCategoryName(self, cat_id):
+        line = cat_id + ": "
+        if self.index_category_name_fd:
+            categoryName = idx.get_posting_raw(self.index_category_name_fd,
+                                               self.posting_dict_category_name, cat_id)
+            line += categoryName.rstrip()
+        else:
+            line += ""
+        self.printLine(line)
+
     def printQuery(self, query):
         self.printLine('RawQuery: ' + query.rawquery)
         self.printLine('SearchAttributes: ' + str(query.searchattributes))
+        if 'cat_id' in query.searchattributes:
+            self.printLine('Category Names: (%d)' % len(query.searchattributes['cat_id'].split('_')))
+            for cat_id in query.searchattributes['cat_id'].split('_'):
+                self.printCategoryName(cat_id)
         self.printLine('Clicked Items:')
         for item in query.clicked_shown_items:
             self.printItem(item)

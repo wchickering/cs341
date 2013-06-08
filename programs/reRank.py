@@ -59,7 +59,9 @@ def parseArgs():
             + "[--index_carts <carts index filename>] "\
             + "[--dict_carts <carts dictionary filename>] " \
             + "[--index_item_title <item_title index filename>] "\
+            + "[--index_category_name <category_name index filename>] "\
             + "[--dict_item_title <item_title dictionary filename>] " \
+            + "[--dict_category_name <category_name dictionary filename>] " \
             + "[--score_dict_items <items score dictionary upload filename>] " \
             + "[--score_dump_items <items score dictionary dump filename>] " \
             + "[--score_dict_queries <queries score dictionary upload filename>] " \
@@ -137,6 +139,10 @@ def parseArgs():
                          help="item_title index filename")
     fileGroup.add_option("--dict_item_title", dest="posting_dict_item_title_fname",\
                          help="item_title dictionary filename")
+    fileGroup.add_option("--index_category_name", dest="index_category_name_fname",\
+                         help="category_name index filename")
+    fileGroup.add_option("--dict_category_name", dest="posting_dict_category_name_fname",\
+                         help="category_name dictionary filename")
     parser.add_option_group(fileGroup)
 
     scoreGroup = OptionGroup(parser, "Score options")
@@ -185,6 +191,7 @@ def parseArgs():
                         index_clicks_fname=None, posting_dict_clicks_fname=None,\
                         index_carts_fname=None, posting_dict_carts_fname=None,\
                         index_item_title_fname=None, posting_dict_item_title_fname=None,\
+                        index_category_name_fname=None, posting_dict_category_name_fname=None,\
                         items_score_dict_fname=None, items_score_dump_fname=None,\
                         queries_score_dict_fname=None, queries_score_dump_fname=None,\
                         clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
@@ -211,6 +218,7 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
            index_clicks_fname=None, posting_dict_clicks_fname=None,\
            index_carts_fname=None, posting_dict_carts_fname=None,\
            index_item_title_fname=None, posting_dict_item_title_fname=None,\
+           index_category_name_fname=None, posting_dict_category_name_fname=None,\
            items_score_dict_fname=None, items_score_dump_fname=None,\
            queries_score_dict_fname=None, queries_score_dump_fname=None,\
            clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
@@ -267,6 +275,8 @@ def singleReRank_iter(inputFile, numLines=float('inf'),\
     #                  outFile=open(queryPrintFileName, 'w'),\
     #                  index_item_title_fname=index_item_title_fname,\
     #                  posting_dict_item_title_fname=posting_dict_item_title_fname,\
+    #                  index_category_name_fname=index_category_name_fname,\
+    #                  posting_dict_category_name_fname=posting_dict_category_name_fname,\
     #                  reRanker=reRanker)
 
     n = 0
@@ -308,6 +318,7 @@ def singleReRankAndDump(inputFileName, startLine, numLines,\
            index_clicks_fname=None, posting_dict_clicks_fname=None,\
            index_carts_fname=None, posting_dict_carts_fname=None,\
            index_item_title_fname=None, posting_dict_item_title_fname=None,\
+           index_category_name_fname=None, posting_dict_category_name_fname=None,\
            items_score_dict_fname=None, items_score_dump_fname=None,\
            queries_score_dict_fname=None, queries_score_dump_fname=None,\
            clicks_score_dict_fname=None, clicks_score_dump_fname=None,\
@@ -348,6 +359,8 @@ def singleReRankAndDump(inputFileName, startLine, numLines,\
                        posting_dict_carts_fname=posting_dict_carts_fname,\
                        index_item_title_fname=index_item_title_fname,\
                        posting_dict_item_title_fname=posting_dict_item_title_fname,\
+                       index_category_name_fname=index_category_name_fname,\
+                       posting_dict_category_name_fname=posting_dict_category_name_fname,\
                        items_score_dict_fname=items_score_dict_fname,\
                        items_score_dump_fname=items_score_dump_fname,\
                        queries_score_dict_fname=queries_score_dict_fname,\
@@ -381,6 +394,9 @@ def main():
 
     if options.workers == 1: #### single process ####
 
+        # construct workerNum-dependent queryPrintFileName
+        queryPrintFileName = 'data/queryPrintout.out'
+
         for record in singleReRank_iter(\
                        inputFile, n=options.n, k=options.k,\
                        insert_position=options.insert_position,\
@@ -408,6 +424,8 @@ def main():
                        posting_dict_carts_fname=options.posting_dict_carts_fname,\
                        index_item_title_fname=options.index_item_title_fname,\
                        posting_dict_item_title_fname=options.posting_dict_item_title_fname,\
+                       index_category_name_fname=options.index_category_name_fname,\
+                       posting_dict_category_name_fname=options.posting_dict_category_name_fname,\
                        items_score_dict_fname=options.items_score_dict_fname,\
                        items_score_dump_fname=options.items_score_dump_fname,\
                        queries_score_dict_fname=options.queries_score_dict_fname,\
@@ -419,7 +437,8 @@ def main():
                        item_title_score_dict_fname=options.item_title_score_dict_fname,\
                        item_title_score_dump_fname=options.item_title_score_dump_fname,\
                        random=options.random,\
-                       verbose=options.verbose):
+                       verbose=options.verbose,\
+                       queryPrintFileName=queryPrintFileName):
             print json.dumps(record)
 
     else: #### multi-process ####
@@ -529,6 +548,8 @@ def main():
                                 options.posting_dict_carts_fname,\
                                 options.index_item_title_fname,\
                                 options.posting_dict_item_title_fname,\
+                                options.index_category_name_fname,\
+                                options.posting_dict_category_name_fname,\
                                 items_score_dict_fname,\
                                 items_score_dump_fname,\
                                 queries_score_dict_fname,\
