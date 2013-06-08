@@ -121,53 +121,63 @@ addition, they have provided detailed item information including title,
 description, category, and other details. The query data was randomized with
 respect to search time and then segregated into three disjoint sets. The first
 set, which consists of about half of the data, was re-structured into indexes
-that we use to identify relationships between items in realtime. The second set,
-which consists of less than 5\% of the data, was used for testing and optimization
-allowing us to refine our technique and tune its parameters. And the third set,
-which includes about 10\% of the data, was used in the experiments described
-and analyzed in this report.
+that form four of the similarity spaces ({\em click-space}, {\em cart-space}, 
+{\em query-space}, and {\em item-space}) we use to identify relationships between 
+items in realtime (the remaining similarity space, {\em title-space}, was compiled
+separately using the provided item data). The second set, which consists of less 
+than 5\% of the data, was used for testing and optimization allowing us to refine 
+our technique and tune its parameters. And the third set, which includes about 
+10\% of the data, was used in the experiments described and analyzed in this 
+report.
 
-\section{Our Technique vs Our Experiments}
+\section{The Technique vs The Experiment}
 
 An important distinction should be made between the {\em Session Re-Rank}
-technique and the experiments described in this report. Both the technique and
-the experiments leverage the provided data--however, the experiments are
-simulations and limited ones at that. A key limitation is that the provided
+technique and the experiment described in this report. Both the technique and
+the experiment leverage the provided data--however, the experiment is
+a simulation and a limited one at that. A key limitation is that the provided
 query data is confined to what the user was actually shown. That is, the search
 engine may have identified several pages worth of results in response to a {\em
-user-query}, but the dataset consists only of those pages rendered to the user.
+user-query}, but our dataset consists only of those pages actually seen by the user.
 Meanwhile, the concept behind the {\em Session Re-Rank} technique calls for a
 search engine to deliver to the algorithm the top $N$ items in response to a
 {\em user-query} {\em independent of the number of items ultimately shown to the
-user}. As a consequence, it is difficult to simulate our technique using shown
+user}. As a consequence, it is difficult, if not impossible, to simulate our technique using shown
 query results that are truncated because a user only viewed one or two pages. 
-More generally, the use of historic data to demonstrate the consequences of a 
-online ranking algorithm is intrinsically limited since one cannot be certain 
+Even more generally, the use of historic data to demonstrate the consequences of a 
+online ranking algorithm is intrinsically limited by the fact that one cannot be certain 
 how users would have behaved if presented with different results. Nonetheless, 
-we have done our best to conduct the most fair and informative experiments and 
-analyses.
+we have done our best to conduct the most fair and informative experiment and 
+analysis.
 
-\section{Experiment 1}
+\section{The Experiment}
 
-The goal for experiment 1 is to simulate {\em Session Re-Rank} using the
+The goal for the experiment is to simulate {\em Session Re-Rank} using the
 provided historical query data, which is limited to what users were actually
 shown. Since an online implementation of our technique would receive the top $N$
 items from the search engine for re-ranking prior to showing any results to a
 user, the final ranking would be independent of the total number of items
-actually shown (e.g. the number of page views requested by a user). We therefore
-limit the test set of experiment 1 to queries where either at least $N=100$ were
-shown or the number shown is not divisible by 16. The reason for this is that
-Walmart.com provides two options for the number of items shown per page: 16 or
-32. By performing the experiment on this subset of the data we preclude queries
-where the top $N$ items are not available to our algorithm. The choice of
-$N=100$, meanwhile, is somewhat arbitrary and was made by balancing our desire
+actually shown (e.g. the number of page views requested by a user). Our test 
+set $\chi$ therefore consists solely of queries where either all items in the
+query resultset or at least $N=100$ were shown to the user. For example, if
+the search engine found only 13 items in response to a query, all of these
+items were shown to the user on a single page. In this case, we have the
+complete query resultset and can therefore determine how {\em Session Re-Rank}
+would have reordered the shown items. At the same time, if more than $N=100$
+were shown to the user, we can determine the reordering regardless of whether
+the query resultset is truncated since {\em Session Re-Rank} only considers
+and re-ranks the first $N=100$ items.
+
+To construct $\chi$ we therefore must discard all queries with a number of
+shown results less than $N=100$ that are also divisible by 16. The reason for 
+this is that Walmart.com provides two options for the number of items shown per
+page: 16 or 32. Thus, by performing the experiment on this subset of the data we
+precluded queries where the top $N$ items are not available to our algorithm.
+The choice of $N=100$, meanwhile, is somewhat arbitrary and was made by balancing our desire
 for a large test set with our desire to use a value comparable to what would be
 appropriate for an online implementation. It is therefore quite possible that a
 larger value of $N$ (e.g. 1000) would achieve better results in the actual
 online scenario.
-
-Confining the experiment to this subset of queries allows our algorithm to
-re-rank the same number of 
 
 \section{Results}
 
