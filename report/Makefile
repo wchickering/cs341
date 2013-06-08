@@ -8,7 +8,7 @@ ps: dvi
 
 dvi: ${filename}.tex
 	latex $^
-	bibtex $^||true
+	bibtex $(basename $^).aux || true
 	latex $^
 	latex $^
 

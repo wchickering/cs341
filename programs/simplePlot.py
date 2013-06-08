@@ -25,7 +25,7 @@ middleFont = matplotlib.font_manager.FontProperties(stretch='normal',weight='rom
 axisFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size='xx-large',family='monospace')
 legendFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size='xx-large',family='monospace')
 titleFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='demi',size=35,family='monospace')
-kDefaultLegendSettings = dict(prop=legendFont, ncol=2, loc='best', fancybox=True, shadow=True)
+kDefaultLegendSettings = dict(prop=legendFont, ncol=2, loc='best', fancybox=True)#, shadow=True)
 
 class ref:
     def __init__(self, obj): self.obj=obj
@@ -252,6 +252,12 @@ def parseArgs():
     plotSettingsGroup.add_option("--ymax", dest="ymax", \
                           help="maximum value on y axis",\
                           action="store", type="float", default=None)
+    plotSettingsGroup.add_option("--xlabel", dest="xlabel", \
+                          help="x axis label",\
+                          action="store", type="str", default=None)
+    plotSettingsGroup.add_option("--ylabel", dest="ylabel", \
+                          help="y axis label",\
+                          action="store", type="str", default=None)
     parser.add_option_group(plotSettingsGroup)
 
     (options, args) = parser.parse_args()
@@ -302,13 +308,19 @@ def main():
     else:
         xlabel = str(free_param)
 
-    ax.set_xlabel(xlabel, labelpad=22, fontproperties=axisFont)
+    if options.xlabel:
+        ax.set_xlabel(options.xlabel, labelpad=22, fontproperties=axisFont)
+    else:
+        ax.set_xlabel(xlabel, labelpad=22, fontproperties=axisFont)
 
     percentMetric = options.metric.find('percent')
     if percentMetric >= 0:
         ax.set_ylabel(r'$\Delta$ score (%)', labelpad=30, fontproperties=axisFont)
+    elif options.ylabel:
+        ax.set_ylabel(options.ylabel, labelpad=30, fontproperties=axisFont)
     else:
         ax.set_ylabel('score', labelpad=30, fontproperties=axisFont)
+
 
     title = ' '.join(options.metric
                      .replace('percent', '%')
@@ -340,7 +352,7 @@ def main():
 
     #title += '.'.join(resultsFn.split('.')[0:2]).split('/')[-1]
 
-    metric_figure.suptitle(title, fontproperties=titleFont)
+    #metric_figure.suptitle(title, fontproperties=titleFont)
 
     plt.show()
 

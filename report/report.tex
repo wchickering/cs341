@@ -3,11 +3,10 @@
 \documentclass{article}
 \usepackage[inner=2.5cm,outer=2.5cm,bottom=1.8cm,top=1.8cm]{geometry}
 \usepackage{graphicx}% Include figure files
-\usepackage{dcolumn} % Align table columns on decimal point
-\usepackage{bm} % bold math
+\graphicspath{ {./graphics/} }
+%\usepackage{dcolumn} % Align table columns on decimal point
+%\usepackage{bm} % bold math
 \usepackage{amssymb, amsmath}
-
-\usepackage{tikz}
 
 \title{Improving Product Search with Session Re-Rank\\
     \large{a Walmart data mining project}}
@@ -151,10 +150,67 @@ analyses.
 
 \section{Experiment 1}
 
-The goal for experiment 1 is to simulate {\em Session Re-Rank} using the provided historical query data, which is limited to what users were actually shown. Since an online implementation of our technique would receive the top $N$ items from the search engine for re-ranking prior to showing any results to a user, the final ranking would be independent of the total number of items actually shown (e.g. the number of page views requested by a user). We therefore limit the test set of experiment 1 to queries where either at least $N=100$ were shown or the number shown is not divisible by 16. The reason for this is that Walmart.com provides two options for the number of items shown per page: 16 or 32. By performing the experiment on this subset of the data we preclude queries where the top $N$ items are not available to our algorithm. The choice of $N=100$, meanwhile, is somewhat arbitrary and was made by balancing our desire for a large test set with our desire to use a value comparable to what would be appropriate for an online implementation. It is therefore quite possible that a larger value of $N$ (e.g. 1000) would achieve better results in the actual online scenario.
+The goal for experiment 1 is to simulate {\em Session Re-Rank} using the
+provided historical query data, which is limited to what users were actually
+shown. Since an online implementation of our technique would receive the top $N$
+items from the search engine for re-ranking prior to showing any results to a
+user, the final ranking would be independent of the total number of items
+actually shown (e.g. the number of page views requested by a user). We therefore
+limit the test set of experiment 1 to queries where either at least $N=100$ were
+shown or the number shown is not divisible by 16. The reason for this is that
+Walmart.com provides two options for the number of items shown per page: 16 or
+32. By performing the experiment on this subset of the data we preclude queries
+where the top $N$ items are not available to our algorithm. The choice of
+$N=100$, meanwhile, is somewhat arbitrary and was made by balancing our desire
+for a large test set with our desire to use a value comparable to what would be
+appropriate for an online implementation. It is therefore quite possible that a
+larger value of $N$ (e.g. 1000) would achieve better results in the actual
+online scenario.
 
+Confining the experiment to this subset of queries allows our algorithm to
+re-rank the same number of 
 
-Confining the experiment to this subset of queries allows our algorithm to re-rank the same number of 
+\section{Results}
 
+\begin{center}
+    \begin{tabular}{| l | c |}
+        \hline
+        Dataset & 000050\_0.test\_data.filtered \\ \hline
+        Index & 48chunk \\ \hline
+        \hline
+        \multicolumn{2}{|c|}{Parameters} \\ \hline
+        coeff\_carts & free or 0.00 \\ \hline
+        coeff\_clicks & free or 0.00 \\ \hline
+        coeff\_ctr & 1.000 \\ \hline
+        coeff\_item\_title & free or 0.00 \\ \hline
+        coeff\_items & free or 0.00 \\ \hline
+        coeff\_queries & free or 0.00 \\ \hline
+        coeff\_rank & 0.000 \\ \hline
+        ctr\_by\_position & 16chunk.CTRs.json \\ \hline
+        exp\_carts & 0.400 \\ \hline
+        exp\_clicks & 0.500 \\ \hline
+        exp\_item\_title & 0.800 \\ \hline
+        exp\_items & 0.800 \\ \hline
+        exp\_queries & 0.500 \\ \hline
+        exp\_rank & 1.300 \\ \hline
+        insert\_position & 2 \\ \hline
+        k & 100 \\ \hline
+        n & 100 \\ \hline
+  \end{tabular}
+\end{center}
+
+\begin{figure}[htbp!]
+\centering
+\includegraphics[width=\textwidth]{000050_0.48chunk.k100.i2.n100.percent_increase_position_score.0-0.25.eps}
+\caption{\% increase of position score}
+    \label{fig:percent_increase_of_position_score}
+\end{figure}
+
+\begin{figure}[htbp!]
+\centering
+\includegraphics[width=\textwidth]{000050_0.48chunk.k100.i2.n100.total_purchased_front_page.0-0.25.eps}
+\caption{total purchases on the front page}
+\label{fig:total_purchases_on_the_front_page}
+\end{figure}
 
 \end{document}
