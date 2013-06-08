@@ -72,6 +72,8 @@ class Evaluator:
         self.stats['click_position_score_orig'] = 0.0
         self.stats['click_position_score_reordered'] = 0.0
         self.stats['precent_increase_position_score'] = 0.0
+        self.stats['avg_click_position_score_orig'] = 0.0
+        self.stats['avg_click_position_score_reordered'] = 0.0
 
     def mergeStats(self, stats):
         for key, value in stats.items():
@@ -109,6 +111,10 @@ class Evaluator:
             self.stats['percent_increase_position_score'] =\
                  (self.stats['click_position_score_reordered'] - \
                   self.stats['click_position_score_orig'])/self.stats['click_position_score_orig']
+            self.stats['avg_click_position_score_orig'] =\
+                 self.stats['click_position_score_orig']/self.stats['num_queries']
+            self.stats['avg_click_position_score_reordered'] =\
+                 self.stats['click_position_score_reordered']/self.stats['num_queries']
 
     def printStats(self, outFile=sys.stdout):
         for key, value in self.stats.items():
