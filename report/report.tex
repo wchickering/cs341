@@ -115,17 +115,17 @@ not in {\em item-space}.
 Walmart.com has generously supplied us with a large dataset consisting of about
 250M pageviews comprising about 120M query results which occurred over about 30
 days. The data includes the user-provided rawqueries together with search
-attributes, visitorids and sessionids, shown items, clicked items, which items
+attributes, visitorIds and sessionIds, shown items, clicked items, which items
 were placed in a shopping cart, and which items were ultimately purchased. In
-addition, they have provided detailed item information including item title,
-description, category, and other details. We leverage this data in three ways.
-First, we re-structure the data into indexes that allow us to identify
-relationships between items in realtime. Second, we isolate subsets of the data
-in order to conduct experiments and perform measurements, which enable us to
-refine our technique and optimize, or tune, the associated parameters. And
-third, once developed and optimized, we conduct experiments on previously
-withheld data and analyze the results in an effort to determine the efficacy, or
-lack thereof, of our technique. 
+addition, they have provided detailed item information including title,
+description, category, and other details. The query data was randomized with
+respect to search time and then segregated into three disjoint sets. The first
+set, which consists of about half of the data, was re-structured into indexes
+that we use to identify relationships between items in realtime. The second set,
+which consists of less than 5\% of the data, was used for testing and optimization
+allowing us to refine our technique and tune its parameters. And the third set,
+which includes about 10\% of the data, was used in the experiments described
+and analyzed in this report.
 
 \section{Our Technique vs Our Experiments}
 
