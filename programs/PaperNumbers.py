@@ -10,7 +10,6 @@ from collections import Iterable
 MAX_FRONT_PAGE_ITEMS = 16
 NUM_NDCG_SCORES = 16
 POSITIONS = 32
-MAX_LENGTH = 50
 MAX_LENGTH = 100
 
 def parseArgs():
@@ -566,14 +565,17 @@ def main():
     front_page_diff = total_reordered_clicks_front_page - total_shown_clicks_front_page
     front_page_purchase_diff = total_purchased_front_page_reordered - \
         total_purchased_front_page_orig
-    # for extrapolation
-    factor_to_extrap_clicks = float(rankable_data_clicks/clicked_items)
-    factor_to_extrap_purchases = float(rankable_data_purchases/purchased_items)
     percent_increase_front_page = float(front_page_diff)/total_shown_clicks_front_page
-    percent_increase_total_clicks = float(front_page_diff*factor_to_extrap_clicks)/\
-            test_data_clicks
-    percent_increase_total_purchases = float(purch_front_reordered-purch_front_orig) \
-            *factor_to_extrap_purchases/test_data_purchases
+    
+    # for extrapolation
+    percent_increase_clicks = float(front_page_diff)/total_shown_clicks_front_page
+    percent_increase_purchases = float(purch_front_reordered-purch_front_orig)/purch_front_orig
+    extrap_front_page_diff_clicks = percent_increase_clicks*rankable_data_front_page_clicks
+    extrap_front_page_diff_purchases = percent_increase_purchases*rankable_data_front_page_purchases
+    percent_increase_total_clicks = float(extrap_front_page_diff_clicks)/\
+            test_data_front_page_clicks
+    percent_increase_total_purchases = float(extrap_front_page_diff_purchases)/\
+            test_data_front_page_purchases
     front_page_CTR_orig = float(total_shown_clicks_front_page)/total_items_on_front_page
 
     # convertsion rates
@@ -928,7 +930,6 @@ def main():
     print 'clicks:'
     print 'front_page_difference = \t\t', front_page_diff, " / ", total_shown_clicks_front_page
     #print 'click_diff_std_dev = \t\t\t', click_diff_std_dev
-    percent_increase_clicks = float(front_page_diff)/total_shown_clicks_front_page
     print 'percent_increase_front_page = \t\t', \
         "{0:.4f}".format(float(front_page_diff)/total_shown_clicks_front_page)
     print '95_perc_confidence_interval = \t\t[', \
@@ -944,7 +945,6 @@ def main():
     print 'front_page_purchase_diff = \t\t', \
         purch_front_reordered - purch_front_orig, ' / ', purch_front_orig
     #print 'purchase_diff_std_dev = \t\t', math.sqrt(purchase_diff_variance)
-    percent_increase_purchases = float(purch_front_reordered-purch_front_orig)/purch_front_orig
     print 'percent_increase_purchases = \t\t', \
         "{0:.4f}".format(float(purch_front_reordered-purch_front_orig)/purch_front_orig)
     print '95_perc_confidence_interval = \t\t[', \
