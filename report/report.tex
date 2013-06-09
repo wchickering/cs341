@@ -349,7 +349,7 @@ search engine found only 13 items in response to a query,  we have the complete
 query resultset and can therefore determine how {\em SRR} would have reordered
 the shown items. Similarly, if more than $N=100$ were shown to the user, we can
 determine the reordering regardless of whether the query resultset is truncated
-since {\em SRR} only considers and reorders the first $N=100$ items. $\Chi$
+since {\em SRR} only considers and reorders the first $N=100$ items. This dataset $\Chi$
 makes up 30\% of $\zeta$, accounting for a total of 7.5\% of all queries.
 
 \begin{figure}[htbp!]
@@ -357,9 +357,7 @@ makes up 30\% of $\zeta$, accounting for a total of 7.5\% of all queries.
     \includegraphics[width=\textwidth]{CTRcompare.png}
     \protect\caption{CTR as a function of position from the original data (i.e.
     not reordered) for the test set \protect\raisebox{2pt}{$\chi$} (blue) and
-    all queries (red). {\em SRR} outperforms the original ordering in all
-    metrics: $\Delta$ $\mathscr{C}$ = 16.9\%, $\Delta$ $\mathscr{P}$ = 8.8\%, and $\Delta$
-$\mathscr{C}$ = 7.9\%}
+    all queries (red).    
     \label{fig:ctr_vs_position}
 \end{figure}
 
@@ -519,7 +517,10 @@ confidence interval of [16.4\%, 17.4\%] for $\mathscr{C}$.
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{moneyshot.png}
-    \caption{Comparison of the original ordering (blue) to that of random reordering (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and click-position score $\mathscr{S}$.}
+    \caption{Comparison of the original ordering (blue) to that of random reordering (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and click-position score $\mathscr{S}$. {\em SRR} outperforms the original ordering in all
+    metrics: $\Delta$ $\mathscr{C}$ = 16.9\%, $\Delta$ $\mathscr{P}$ = 8.8\%, and $\Delta$
+$\mathscr{C}$ = 7.9\%}
+}
     \label{fig:compare_metric_performance}
 \end{figure}
 
