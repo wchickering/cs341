@@ -349,15 +349,13 @@ search engine found only 13 items in response to a query,  we have the complete
 query resultset and can therefore determine how {\em SRR} would have reordered
 the shown items. Similarly, if more than $N=100$ were shown to the user, we can
 determine the reordering regardless of whether the query resultset is truncated
-since {\em SRR} only considers and reorders the first $N=100$ items. $\Chi$
+since {\em SRR} only considers and reorders the first $N=100$ items. This dataset $\Chi$
 makes up 30\% of $\zeta$, accounting for a total of 7.5\% of all queries.
 
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{CTRcompare.png}
-    \protect\caption{CTR as a function of position from the original data (i.e.
-    not reordered) for the test set \protect\raisebox{2pt}{$\chi$} (blue) and
-    all queries (red).}
+    \protect\caption{CTR as a function of position from the original data (i.e. not reordered) for the test set \protect\raisebox{2pt}{$\chi$} (blue) and all queries (red).}
     \label{fig:ctr_vs_position}
 \end{figure}
 
