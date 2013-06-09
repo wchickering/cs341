@@ -1,16 +1,16 @@
 filename=report
 
-pdf: ps
-	ps2pdf ${filename}.ps
+#pdf: ps
+#	ps2pdf ${filename}.ps
+#
+#ps: dvi
+#	dvips ${filename}.dvi
 
-ps: dvi
-	dvips ${filename}.dvi
-
-dvi: ${filename}.tex
-	latex $^
+pdf: ${filename}.tex
+	pdflatex $^
 	bibtex $(basename $^).aux || true
-	latex $^
-	latex $^
+	pdflatex $^
+	pdflatex $^
 
 clean:
 	rm -f $(addprefix ${filename}, .ps .pdf .log .aux .out .dvi .bbl .blg)
