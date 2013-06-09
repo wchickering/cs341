@@ -460,7 +460,7 @@ as we believe it is the simplest and has the clearest impact to overall CTRs.
 
 \section{Results}
 
-Figure \ref{fig:avg_clicks_position_score} shows the clicks-position score
+Figure \ref{fig:avg_clicks_position_score} shows the {\em click-position score}
 $\mathscr{S}$ as a function of each of the coefficients $C_s$ discussed in
 sections \ref{sec:technique} and \ref{sec:similarity_spaces}. Here, we vary a
 single coefficient, corresponding to one of the five similarity spaces---{\em
@@ -519,7 +519,7 @@ confidence interval of [16.4\%, 17.4\%] for $\mathscr{C}$.
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{moneyshot.png}
-    \caption{Comparison of the original ordering (blue) to that of random reordering (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and click-position score $\mathscr{S}$.}
+    \caption{Comparison of the original ordering (blue) to that of random reordering (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and {\em click-position score} $\mathscr{S}$.}
     \label{fig:compare_metric_performance}
 \end{figure}
 
@@ -589,7 +589,7 @@ unclear to us.
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{scorebylen.png}
-    \caption{Change in click-position score $\mathscr{S}$ as a function of query length $L_q$.}
+    \caption{Change in {\em click-position score} $\mathscr{S}$ as a function of query length $L_q$.}
     \label{fig:click_position_score_vs_query_length}
 \end{figure}
 
@@ -661,7 +661,7 @@ Using historical query data with resultsets confined to what was actually shown
 to a user, we carefully constructed and qualified an experiment with the goal
 of demonstrating the effectiveness (or lack thereof) of {\em SRR}. Using the
 three well defined metrics of first-page CTR $\mathscr{C}$, first-page
-purchasing rate $\mathscr{P}$, and {\em clicks-position score} $\mathscr{S}$,
+purchasing rate $\mathscr{P}$, and {\em click-position score} $\mathscr{S}$,
 we have clearly shown that {\em SRR} indeed induces a significant improvement
 in the ordering of search results for a subset of queries ($\Chi$). Moreover,
 by comparing {\em SRR} to a similar re-ranking algorithm that assigns scores
