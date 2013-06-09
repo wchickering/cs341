@@ -304,7 +304,7 @@ def main():
         tick.set_pad(15)
 
     if options.multi:
-        xlabel = 'C'
+        xlabel = r'$C$'
     else:
         xlabel = str(free_param)
 
