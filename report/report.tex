@@ -78,9 +78,9 @@ where $C_s$ and $\alpha_s$ are tuning parameters. The score $\sigma$ attributed
 to an item to be shown is then the summation of composite similarities between
 itself and all previously clicked items plus the click-through-rate (CTR)
 $\Gamma_i$ of the item's original position $i$
-\begin{equation*}\label{eqn:rerank_score}
+\begin{equation}\label{eqn:rerank_score}
     \sigma(A) = \sum_{B \in P}{S(A, B)} + \Gamma_i,
-\end{equation*}
+\end{equation}
 where $P$ is the set of previously clicked items. 
 
 Another important parameter of {\em SRR} is the insert position $I_0$, which
@@ -422,9 +422,9 @@ are only one page long. This shows the importance of bringing desirable items to
 first page and it motivates our focus on $\mathscr{C}$. We calculate this metric by 
 counting the number of items in first-page positions that were clicked and dividing 
 by the number of total items in first-page positions. More formally
-\begin{equation*}
+\begin{equation}
     \mathscr{C} = \frac{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i \wedge i \leq 16\right\}}{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{i \leq 16\right\}},
-\end{equation*}
+\end{equation}
 where $Q$ is a set of query results, $L_q$ is the number of results for query $q$, and
 the number 16 is due to the fact that 16 items are shown on a page.
 
@@ -435,9 +435,9 @@ were purchased divided by the total number of items in first-page positions. The
 importance of position for purchases is even stronger than that for clicks. While 70\% of 
 all clicks were presented on the first page, that number is 85\% for purchases. Formally,
 we have
-\begin{equation*}
+\begin{equation}
     \mathscr{P} = \frac{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{purchase\; @\; i \wedge i \leq 16\right\}}{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{i \leq 16\right\}}.
-\end{equation*}
+\end{equation}
 
 The first two metrics focus on whether or not a desirable item was presented on the 
 first page. To obtain a more granular picture of where desirable items are positioned, 
@@ -448,9 +448,9 @@ giving higher weights to items closer to the top. For $\mathscr{S}$, the weight 
 a click in position $i$ is the CTR at position i $\Gamma_i$. In this way, we equate how 
 often users click on a certain position to how valuable it is to put a desirable 
 item there. Formally, we define {\em click-position score} as
-\begin{equation*}
+\begin{equation}
     \mathscr{S} = \frac{1}{\left\vert{Q}\right\vert}\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i\right\}\Gamma_i.
-\end{equation*}
+\end{equation}
 
 These metrics give a sense of how successful a ranking scheme is. Each one looks at a slightly 
 different aspect of the ordering. Indeed, optimizing for one metric does not necessarily 
@@ -467,9 +467,9 @@ click-space}, {\em cart-space}, {\em query-space}, {\em title-space}, or {\em
 item-space}---while setting the others to zero. The ranking score for each of
 the top $N=100$ items is then determined by only two terms, as per Eqs.
 \ref{eqn:similarity_metric} and \ref{eqn:rerank_score}, as
-\begin{equation*}\label{eqn:single_coeff_score} 
+\begin{equation}\label{eqn:single_coeff_score} 
     \sigma(A) = \sum_{B \in P}{C_s\cdot(J_s(A,B))^{\alpha_s}} + \Gamma_i, 
-\end{equation*}
+\end{equation}
 where, as before, $P$ is the set of previously clicked items and $\Gamma_i$ is
 the CTR of the original position of item $A$. (Note that the exponents
 $\alpha_s$ are held fixed during these measurements.) Thus, since $\Gamma_i$ is
