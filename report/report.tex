@@ -501,11 +501,16 @@ confidence interval of [15.8\%, 16.2\%] for $\mathscr{C}$.
 
 Notably, we see these results despite the benefit the original ranking receives
 from “position bias”, the well-established phenomenon that users tend to click
-on items presented at the top of a list. The average CTR of this data broken
-down by position (Fig. \ref{fig:ctr_vs_position}) suggests that Walmart’s search 
-is no exception to this phenomenon. Antoher obstacle overcome by {\em SRR} is
-that there is little room for improvement in first-page CTR, since the vast majority 
-of clicks in {\chi} (80\%) are already on the first page.
+on items presented at the top of a list. Figure \ref{fig:ctr_vs_position} shows
+how dramatically more likely Walmart.com users are to click on items positioned
+near the top. It seems reasonable to suppose that "position bias" contributes
+to this distribution of CTRs. We compensate for the large CTR of the first two
+positions by setting the insert position $I_0 = 2$ such that the top two items
+remained fixed. While this does improve the metrics for {\em SRR}, we emphasize
+that choosing $I_0 = 0$ would not qualitatively change our results. Another
+obstacle overcome by {\em SRR} is that there is little room for improvement in
+first-page CTR, since the vast majority of clicks in {\chi} (80\%) are already
+on the first page.
 
 To ensure that these results are not due to an underlying structure of the
 data, we constructed a Random Re-Ranker {\em RRR}. {\em RRR} operates exactly
