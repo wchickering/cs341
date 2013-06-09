@@ -38,7 +38,7 @@ we describe and analyze a ranking scheme we call {\em Session Re-Rank} ({\em SRR
 potentially induce a large increase in both click-through-rates and conversions
 on the first page of query results.
 
-\section{The Technique}
+\section{The Technique}\label{sec:technique}
 
 {\em SRR} works by comparing previously clicked items with the top
 $N$ items returned by the search engine in reponse to a query. Items to be shown
@@ -72,7 +72,7 @@ $\Gamma_i$ of the item's original position $i$
 
 where $P$ is the set of previously clicked items. 
 
-\section{Similarity Spaces}
+\section{Similarity Spaces}\label{sec:similarity_spaces}
 
 The premise behind {\em click-space} is that two items are similar if they are
 both clicked within the same online shopping session. The dimensions, or
@@ -98,8 +98,8 @@ stemmed (we use the Python stemming.porter2 module), forced to lower-case terms
 from each of their rawqueries are equal. We point out that while we achieved
 better results with this policy compared to simply using {\em user-queries}, we
 have no reason to believe that this is the ideal way to cluster queries for use
-within {\em SRR}. Indeed, we believe one way to improve {\em Session
-Re-Rank} is to optimize the query clustering policy.
+within {\em SRR}. Indeed, we believe one way to improve {\em SRR} is to optimize 
+the query clustering policy.
 
 {\em Title-space} is straightfoward: each item is associated with a set of terms
 from its title. We ignore case, but at present do not stem, discard stop words,
@@ -336,8 +336,6 @@ highly qualified queries---e.g. through the use of category or price
 filters---tend to have shorter resultset, and hence, are more likely to be
 included in $\chi$.
 
-% TODO: Need to comment on small differences in CTR vs position between $\chi$
-% and queries in general (e.g. CTR@1 is significantly higher in $\chi$).
 Just as interesting are the ways in which the queries and resultsets of $\chi$
 are not biased. In Fig. \ref{fig:ctr_vs_position} we show click-through-rate (CTR)
 as a function of position of the original data (i.e. not re-ranked) for both
@@ -429,6 +427,19 @@ optimize for the others. We focus our optimizations and primary analysis on $\ma
 as we believe it is the simplest and has the clearest impact to overall CTRs.
 
 \section{Results}
+
+Figure \ref{fig:avg_clicks_position_score} shows the clicks-position score $\mathscr{S}$ 
+as a function of each of the coefficients $C_s$ discussed in sections \ref{sec:technique} 
+and \ref{sec:similarity_spaces}. Here, we vary a single coefficient, corresponding to
+to one of the five similarity spaces---{\em click-space}, {\em cart-space}, {\em 
+query-space}, {\em title-space}, or {\em item-space}---while setting the others to zero.
+In each case, as $C_s$ is increased from zero, the degree of reordering is enhanced.
+And for each coefficient, this reordering is accompanied by an increase in $\mathscr{S}$
+indicating a greater concentration of clicked items, on average, near the top positions 
+of query results. Moreover, with the exception of {\em title-space}, the score increases 
+monotonically with each coefficient.
+
+
 
 \begin{figure}[htbp!]
     \centering
