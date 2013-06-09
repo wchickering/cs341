@@ -973,7 +973,8 @@ def main():
     print '% clicks on first page in CH = ', float(total_shown_clicks_front_page)/clicked_items
     T_first_page_clicks = rankable_data_front_page_clicks - total_shown_clicks_front_page
     T_clicks = rankable_data_clicks - clicked_items
-    rint '% clicks on first page in T = ', float(T_first_page_clicks)/T_clicks
+    if T_clicks > 0:
+        print '% clicks on first page in T = ', float(T_first_page_clicks)/T_clicks
     T_queries_with_clicks = rankable_data_queries_with_clicks - num_queries
     # since only queries with clicks in rankable not in T are in CHI with clicks = this dataset
     print 'T_queries_with_clicks = ', T_queries_with_clicks
