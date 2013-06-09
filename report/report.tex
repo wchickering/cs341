@@ -225,8 +225,11 @@ first page and it motivates our focus on $\mathscr{C}$. We calculate this metric
 counting the number of items in first-page positions that were clicked and dividing 
 by the number of total items in first-page positions. More formally
 \begin{equation*}
-    \mathscr{C} = \frac{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click @ i \wedge i \leq 16\right\}}{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{i \leq 16\right\}}.
+    \mathscr{C} = \frac{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i \wedge i \leq 16\right\}}{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{i \leq 16\right\}},
 \end{equation*}
+
+where $Q$ is a set of query results, $L_q$ is the number of results for query $q$, and
+the number 16 is due to the fact that 16 items are shown on a page.
 
 Our second metric is the purchasing rate of items on the first page $\mathscr{P}$. This is 
 similar to $\mathscr{C}$, except here we consider purchases per first-page item 
@@ -236,7 +239,7 @@ importance of position for purchases is even stronger than that for clicks. Whil
 all clicks were presented on the first page, that number is 85\% for purchases. Formally,
 we have
 \begin{equation*}
-    \mathscr{P} = \frac{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{purchase @ i \wedge i \leq 16\right\}}{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{i \leq 16\right\}}.
+    \mathscr{P} = \frac{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{purchase\; @\; i \wedge i \leq 16\right\}}{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{i \leq 16\right\}}.
 \end{equation*}
 
 The first two metrics focus on whether or not a desirable item was presented on the 
@@ -249,7 +252,7 @@ a click in position $i$ is the CTR at position i $\Gamma_i$. In this way, we equ
 often users click on a certain position to with how valuable it is to put a desirable 
 item there. Formally, we define {\em click-position score} as
 \begin{equation*}
-    \mathscr{S} = \frac{1}{\left\vert{Q}\right\vert}\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click @ i\right\}\Gamma_i
+    \mathscr{S} = \frac{1}{\left\vert{Q}\right\vert}\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i\right\}\Gamma_i
 \end{equation*}.
 
 These metrics give a sense of how successful a ranking scheme is. Each one looks at a slightly 
