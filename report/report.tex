@@ -72,7 +72,7 @@ $A$ and $B$, within a particular space $s$ is determined using Jaccard
 similarity. Similarities within particular spaces are then weighted and summed
 to determine the composite similarity
 \begin{equation}\label{eqn:similarity_metric}
-    S(A, B) = \sum_s{C_s(J_s(A, B))^{\alpha_s}},
+    S(A, B) = \sum_s{C_s\cdot(J_s(A, B))^{\alpha_s}},
 \end{equation}
 where $C_s$ and $\alpha_s$ are tuning parameters. The score $\sigma$ attributed
 to an item to be shown is then the summation of composite similarities between
@@ -468,7 +468,7 @@ item-space}---while setting the others to zero. The ranking score for each of
 the top $N=100$ items is then determined by only two terms, as per Eqs.
 \ref{eqn:similarity_metric} and \ref{eqn:rerank_score}, as
 \begin{equation*}\label{eqn:single_coeff_score} 
-    \sigma(A) = \sum_{B \in P}{C_s(J_s(A,B))^{\alpha_s}} + \Gamma_i, 
+    \sigma(A) = \sum_{B \in P}{C_s\cdot(J_s(A,B))^{\alpha_s}} + \Gamma_i, 
 \end{equation*}
 where, as before, $P$ is the set of previously clicked items and $\Gamma_i$ is
 the CTR of the original position of item $A$. (Note that the exponents
