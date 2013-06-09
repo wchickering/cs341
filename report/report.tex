@@ -4,7 +4,12 @@
 \usepackage[inner=2.5cm,outer=2.5cm,bottom=1.8cm,top=1.8cm]{geometry}
 \usepackage{graphicx}% Include figure files
 \graphicspath{ {./graphics/} }
-\usepackage{sidecap}
+%\usepackage{sidecap} % can be used for figures with side caption
+\usepackage{caption}
+\usepackage{numprint} % rounds numbers in tables
+\npdecimalsign{.}
+\nprounddigits{5}
+\captionsetup{justification=centering}
 \usepackage{wrapfig}
 %\usepackage{dcolumn} % Align table columns on decimal point
 %\usepackage{bm} % bold math
@@ -25,8 +30,7 @@ enabling users to quickly find products that conform to their specific needs and
 tastes is especially challenging. Given the difficulty of its task,
 Walmart.com's product search engine does an impressive job in interpretting the
 user-provided query and rapidly returning relevant results. Yet, there remains
-highly significant information that is not fully leveraged. The details of a
-user's online shopping session are indicative of a user's intent and
+highly significant information that is not fully leveraged. The details of a user's online shopping session are indicative of a user's intent and
 compliment---indeed, provide context for---the user-provided query. In this report
 we describe and analyze a ranking scheme we call {\em Session Re-Rank} that can
 potentially induce a large increase in both click-through-rates and conversions
@@ -53,9 +57,9 @@ intersection or union in linear time.) The similarity $J_s(A, B)$ of two items,
 $A$ and $B$, within a particular space $s$ is determined using Jaccard
 similarity. Similarities within particular spaces are then weighted and summed
 to determine the composite similarity
-\begin{equation*}
+\begin{equation}\label{eqn:similarity_metric}
     S(A, B) = \sum_s{C_s(J_s(A, B))^{\alpha_s}},
-\end{equation*}
+\end{equation}
 where $C_s$ and $\alpha_s$ are tuning parameters. The score $\sigma$ attributed
 to an item to be shown is then the summation of composite similarities between
 itself and all previously clicked items plus the click-through-rate (CTR)
@@ -249,13 +253,13 @@ The only fictitious part of the example will be our shopper's name, David.
 %\end{wrapfigure}
 
 David is interested in the ``Primo Ceramic Crock Water Cooler with Stand'' and
-clicks on this item during his session. Sometime later he begins another query
-by narrowing his search to the ``Grocery$\rightarrow$Beverages$\rightarrow$Water''
-category and making a query for ``water''. Walmart has 300+ results to show
-David. We compare the top six Walmart results to our Session Re-Rank results in
-Figure \ref{fig:compare_orderings} where the first and third column represent
-the original ranking in the Walmart search results presented to David.
-\begin{figure}[htbp!]
+clicks on this item during his session. Sometime later he makes another query
+by navigating to the ``Grocery $\rightarrow $Beverages $\rightarrow $Water''
+category and searching for ``water''. Walmart has 300+ results to show David. We
+compare the top six Walmart results to our Session Re-Rank results in Table
+\ref{tab:compare_orderings} where the first and third column represent the
+original ranking in the Walmart search results presented to David.
+\begin{table}[htbp!]
     \centering
     \begin{tabular}{| c | p{7cm} | c | p{7cm} |}
         \hline
@@ -268,42 +272,77 @@ the original ranking in the Walmart search results presented to David.
 6  &   Clear American Peach Sparkling Water, 1 l, 12ct  & 8  & Clear American Mandarin Orange Sparkling Water, 1 l, 12pk \\ \hline
     \end{tabular}
     \caption{Original Ordering vs. Session Re-Ranked Ordering for ``water'' query}
-    \label{fig:compare_orderings}
-\end{figure}
-Note the difference between sizes of the individual water bottles presenting in
-each of the results. In Walmart's ordering, the top six items are all cases of
-water with less than 1 liter in each bottle. In the Session Re-Rank ordereding,
-there is a mix of large and small sizes of water bottles. In fact, both of the
-Arrowhead brands would be the perfect size for the water cooler David is
-interested in.
+    \label{tab:compare_orderings}
+\end{table}
+Tables \ref{tab:walmart_sim_scores} and \ref{tab:rerank_sim_scores} show the
+similarity scores from each index for each item in the two orderings compared to
+David's lone previously clicked item. In each of these tables, the first column
+correponds to Table \ref{tab:walmart_sim_scores} and the second column is the
+similarity metric from Equation (\ref{eqn:similarity_metric}) using our
+optimized tuning parameters.
+\begin{table}[htbp!]
+    \centering
+    \begin{tabular}{| c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
+        \hline
+          & {S} & {CTR} & {Clicks} & {Items} & {Carts} & {Queries} & {Titles}  \\ \hline
+        1 & 0.943746587049 & 0.0754 & 0.00227790432802 &  0.017955801105   &  0.0 &  0.0104712041885   &  0.0909090909091 \\ \hline
+        2 & 1.20210752946  & 0.0390 & 0.00389105058366 &  0.0251450676983  &  0.0 &  0.0254833040422   &  0.0833333333333 \\ \hline
+        3 & 0.357056025563 & 0.0254 & 0.0              &  0.0227882037534  &  0.0 & 0.00555212831585   &  0.0769230769231 \\ \hline
+        4 & 0.75268102742  & 0.0195 & 0.0016835016835  &  0.0233918128655  &  0.0 &  0.0016339869281   &  0.0666666666667 \\ \hline
+        5 & 0.736731785955 & 0.0153 & 0.00173310225303 &  0.016077170418   &  0.0 &  0.00390015600624  &  0.0666666666667 \\ \hline
+        6 & 0.174834647629 & 0.0129 & 0.0              &  0.00954198473282 &  0.0 &  0.000793021411578 &  0.0666666666667 \\ \hline
+    \end{tabular}
+    \caption{Index similarity scores of the top six Walmart results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
+    \label{tab:walmart_sim_scores}
+\end{table}
+\begin{table}[htbp!]
+    \centering
+    \begin{tabular}{| c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
+        \hline
+           & {S} & {CTR} & {Clicks} & {Items} & {Carts} & {Queries} & {Titles}  \\ \hline
+        1  & 0.943746587049 & 0.0754     & 0.00227790432802 &  0.017955801105 &  0.0 &  0.0104712041885 &  0.0909090909091  \\ \hline
+        2  & 1.20210752946  & 0.0390     & 0.00389105058366 &  0.0251450676983 &  0.0 &  0.0254833040422 &  0.0833333333333 \\ \hline
+        90 & 0.95310150677  & 0.00022623 & 0.00357142857143 &  0.027027027027 &  0.0 &  0.000920810313076 &  0.0833333333333\\ \hline
+        63 & 0.949541641831 & 0.00049366 & 0.00261096605744 &  0.0338345864662 &  0.0 &  0.00385802469136 &  0.0833333333333\\ \hline
+        38 & 0.93768536446  & 0.000914   & 0.00344234079174 &  0.0331384015595 &  0.0 &  0.0 &  0.0909090909091             \\ \hline
+        8  & 0.896706599209 & 0.01       & 0.00355239786856 &  0.0248565965583 &  0.0 &  0.0 &  0.0666666666667             \\ \hline
+    \end{tabular}
+    \caption{Index similarity scores of the top six Session Re-Rank results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
+    \label{tab:rerank_sim_scores}
+\end{table} 
+
+The scores from the {\em title-space} index are easily calculated by hand. We
+will show the calculation for the {\em items-space} index for the 90th item in
+the originl ranking here. By referring to the {\em items-space} index, we can
+recall that the 90th item was clicked in the same query with 39 different items
+and the previously clicked item was clicked in the same query with 455 different
+items.
+
+Great Value: Distilled Water, 1 Gal
+Nestle Waters Bottled Spring Water, 24ct
+Primo Mineral Water, 5 gal
+Deer Park Sumo Bottle Natural Spring Water, 3l
+Arrowhead Mountain Spring Water, 3 l
+PUR Advanced Faucet Water Filter Vertical - Chrome
+Ozarka Natural Spring Water
+Formula 409 All Purpose Lemon Scented Cleaner, 32 fl oz
+Great Value Spring Water, 1 gal
+Nestle Pure Life Purified Water, .5 l, 35pk
+Arrowhead Mountain Spring Water, 2.5gal
+Primo Ceramic Crock Water Cooler with Stand
+Augason Farms Emergency Water Storage Kit
+
+
+             
+\end{document}
+
+
 
 In the original query results, David ended up clicking on the 90th item
 presented by Walmart -- a ``3 liter Arrowhead Mountain Spring Water''. Our
 technique moved this item from its original position to the 3rd position in the
 query results!
 
-The similarity scores from each index for ``Arrowhead Mountain Spring Water, 3
-l'' and ``Primo Ceramic Crock Water Cooler with Stand'':
 
 
-\begin{figure}[htbp!]
-    \centering
-    \begin{tabular}{| c | c | c | c | c | c | c |}
-        \hline
-           & Clicks & Items  & Queries & Titles \\ \hline
-        1  & 0.525  & 0.16   & 0.153   & 0.0294 \\ \hline
-        2  & 0.686  & 0.21   & 0.239   & 0.0274 \\ \hline
-        3  & 0.000  & 0.194  & 0.112   & 0.0257 \\ \hline
-        4  & 0.451  & 0.198  & 0.0606  & 0.0229 \\ \hline
-        5  & 0.458  & 0.147  & 0.0937  & 0.0229 \\ \hline
-        6  & 0.000  & 0.0968 & 0.0422  & 0.0229 \\ \hline
-    \end{tabular}
-    \caption{Index similarity scores of the top six Walmart results to ``Primo
-    Ceramic Crock Water Cooler with Stand''}
-    \label{fig:walmart_sim_scores}
-\end{figure}
-
-
-
-
-\end{document}
+             
