@@ -204,9 +204,38 @@ included in $\chi$.
 Just as interesting are the ways in which the queries and resultsets of $\chi$
 are not biased. In Fig. \ref{fig:ctr_vs_position} we show click-through-rate (CTR)
 as a function of position of the original data (i.e. not re-ranked) for both
-$\chi$ and query results in general. As can be seen from the data, the quantity
-and distribution of clicks within $\chi$ are essentially representative of those
-in general.
+$\chi$ and query results in general. The two curves shown in the figure are
+quite similar indicating that the quantity and distribution of clicks within $\chi$ 
+are essentially representative of those in general. A few other features of
+this figure warrant brief comment. First, we see that $\chi$ has a larger CTR
+for the top two positions. This is likely due to the fact that highly qualified
+queries, which have shorter results and higher CTRs,  make up a higher proportion 
+of $\chi$ than queries in general. In the red curve a discontinuity appears at
+position 17 as a result of the pagebreak. This discontinuity is absent from the
+blue curve due to the omission truncated results. In its place, we find local 
+maximum at position 17 that we ascribe to users' tendency to disproportionately
+click on the topmost item shown on a page. Indeed, an additional, though smaller, 
+maximum exists at position 33 corresponding to the topmost position of the third
+page also exists (not shown).
+
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=\textwidth]{V=CTRcompare.png}
+    \caption{CTR as a function of position from the original data (i.e. not re-ranked) for the test set $\chi$ (blue) and all queries (red).}
+    \label{fig:ctr_vs_position}
+\end{figure}
+
+A key feature of {\em SRR} is that it can only re-rank the results of a query if 
+user has previously clicked on an item during their an online session.
+Consequently, {\em SRR} can only affect the subset of queries that occur in a 
+session with previous clicks. We denote this subset of queries as $\zeta$. It turns 
+out that 25\% of all queries are in $\zeta$. Moreover, 28\% of all clicks and 
+33\% of all purchases occur within the query resultsets of $\zeta$, since
+there is a correlation between previous clicks and clicks/purchases in a query. 
+Thus an impact to this subset can have a significant impact overall.
+
+Within the dataset $\zeta$, we call the subset of queries restricted in this way 
+$\chi$. $\chi$ makes up 25\% of $\zeta$, accounting for a total of 6\% of all queries.
 
 \section{Metrics}
 
@@ -252,8 +281,8 @@ a click in position $i$ is the CTR at position i $\Gamma_i$. In this way, we equ
 often users click on a certain position to with how valuable it is to put a desirable 
 item there. Formally, we define {\em click-position score} as
 \begin{equation*}
-    \mathscr{S} = \frac{1}{\left\vert{Q}\right\vert}\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i\right\}\Gamma_i
-\end{equation*}.
+    \mathscr{S} = \frac{1}{\left\vert{Q}\right\vert}\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i\right\}\Gamma_i.
+\end{equation*}
 
 These metrics give a sense of how successful a ranking scheme is. Each one looks at a slightly 
 different aspect of the ordering. Indeed, optimizing for one metric does not necessarily 
