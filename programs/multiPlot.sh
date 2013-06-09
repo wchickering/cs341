@@ -46,7 +46,7 @@ if [ ! -f $multiplotFn ] || [ $plotAgain ]
 then
     rm -f $multiplotFn
     i=0
-    for param in {clicks,item_title,carts,items,queries}
+    for param in {clicks,items,queries,titles,carts}
     do
         echo "Getting data for $param curve..."
 

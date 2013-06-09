@@ -23,6 +23,7 @@ from pprint import pformat # prints dictionaries nicely
 smallFont = matplotlib.font_manager.FontProperties(stretch='condensed',weight='book',size='small',family='monospace')
 middleFont = matplotlib.font_manager.FontProperties(stretch='normal',weight='roman',size='large',family='monospace')
 axisFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size=35,family='monospace')
+tickFontSize = 22
 legendFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size='xx-large',family='monospace')
 titleFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='demi',size=35,family='monospace')
 kDefaultLegendSettings = dict(prop=legendFont, ncol=2, loc='best', fancybox=True)#, shadow=True)
@@ -205,8 +206,8 @@ def makeOtherMetricPlot(resultsFn, options):
         #metric_figure.subplots_adjust(right=0.72)
         legend = ax.legend(**kDefaultLegendSettings)
 
-    ## makes the legend draggable
-    #legend.draggable()
+    # makes the legend draggable
+    legend.draggable()
     print ParameterTable(dataInfo['dataFn'].split('/')[-1], resultsFn.split('/')[-1].split('.')[1],
                          params, free_params)
 
@@ -301,10 +302,10 @@ def main():
 
     ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.4f'))
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(20) 
+        tick.label.set_fontsize(tickFontSize) 
         tick.set_pad(15)
     for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize(20) 
+        tick.label.set_fontsize(tickFontSize) 
         tick.set_pad(15)
 
     if options.multi:
