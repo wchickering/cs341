@@ -16,7 +16,6 @@
 \author{Charles Celerier (cceleri), Bill Chickering (bchick),
         and Jamie Irvine (jirvine)}
 
-
 \begin{document}
 
 \maketitle
@@ -145,13 +144,13 @@ user-query}, but our dataset consists only of those pages actually seen by the u
 Meanwhile, the concept behind the {\em Session Re-Rank} technique calls for a
 search engine to deliver to the algorithm the top $N$ items in response to a
 {\em user-query} {\em independent of the number of items ultimately shown to the
-user}. As a consequence, it is difficult, if not impossible, to simulate our technique using shown
-query results that are truncated because a user only viewed one or two pages. 
-Even more generally, the use of historic data to demonstrate the consequences of a 
-online ranking algorithm is intrinsically limited by the fact that one cannot be certain 
-how users would have behaved if presented with different results. Nonetheless, 
-we have done our best to conduct the most fair and informative experiment and 
-analysis.
+user}. As a consequence, it is difficult, if not impossible, to simulate our
+technique using shown query results that are truncated because a user only
+viewed one or two pages.  Even more generally, the use of historic data to
+demonstrate the consequences of a online ranking algorithm is intrinsically
+limited by the fact that one cannot be certain how users would have behaved if
+presented with different results. Nonetheless, we have done our best to conduct
+the most fair and informative experiment and analysis.
 
 \section{The Experiment}
 
@@ -176,9 +175,10 @@ shown results less than $N=100$ that are also divisible by 16. The reason for
 this is that Walmart.com provides two options for the number of items shown per
 page: 16 or 32. Thus, by performing the experiment on this subset of the data we
 precluded queries where the top $N$ items are not available to our algorithm.
-The choice of $N=100$, meanwhile, is somewhat arbitrary and was made by balancing our desire
-for a large test set with our desire to use a value comparable to what would be
-appropriate for an online implementation. It is therefore quite possible that a
+The choice of $N=100$, meanwhile, is somewhat arbitrary and was made by
+balancing our desire for a large test set with our desire to use a value
+comparable to what would be appropriate for an online implementation. It is
+therefore quite possible that a
 larger value of $N$ (e.g. 1000) would achieve better results in the actual
 online scenario.
 
@@ -189,8 +189,9 @@ have all of their resultset seen by a user, and therefore, are more likely to
 be included in $\chi$. It is not clear, however, if this particular bias
 tends to under- or overestimate the effectiveness of {\em Session Re-Rank}
 since, as we will show, it is more effective on longer query results. Similarly,
-highly qualified queries---e.g. through the use of category or price filters---tend
-to have shorter resultset, and hence, are more likely to be included in $\chi$.
+highly qualified queries---e.g. through the use of category or price
+filters---tend to have shorter resultset, and hence, are more likely to be
+included in $\chi$.
 
 % TODO: Need to comment on small differences in CTR vs position between $\chi$
 % and queries in general (e.g. CTR@1 is significantly higher in $\chi$).
@@ -218,10 +219,10 @@ where click $c \in C$ occurred.
 \section{Results}
 
 \begin{figure}[htbp!]
-\centering
-\includegraphics[width=\textwidth]{000050_0_48chunk_k100_i2_n100_percent_increase_position_score_0-0_25.eps}
-\caption{\% increase of position score}
-    \label{fig:percent_increase_of_position_score}
+    \centering
+    \includegraphics[width=\textwidth]{000050_0_48chunk_k100_i2_n100_avg_click_position_score_0-0_25.eps}
+    \caption{average clicks position score}
+    \label{fig:avg_clicks_position_score}
 \end{figure}
 
 \section{An Example}
@@ -229,53 +230,69 @@ where click $c \in C$ occurred.
 To illustrate the efficacy of our technique, we present a real query example.
 The only fictitious part of the example will be our shopper's name, David.
 
-\begin{wrapfigure}[4]{r}{0.1\textwidth}
-    \vspace{-10pt}
-    \centering
-    \includegraphics[width=0.1\textwidth]{bottled_water.eps}
-\end{wrapfigure}
+%\begin{wrapfigure}[4]{r}{0.1\textwidth}
+%    \vspace{-10pt}
+%    \centering
+%    \includegraphics[width=0.1\textwidth]{bottled_water.eps}
+%\end{wrapfigure}
 
 David begins by narrowing his search space by selecting the category
 ``Grocery$\rightarrow$Beverages$\rightarrow$Water''. He then makes a query for
 ``water''. Walmart has 300+ results to show David. Every page of results is
-filled with a variety of different brands and sizes of cases of
-bottled water. These appear to be reasonable results for any shopper making such
-a general query. Unfortunately, packs of bottled water were not what David
-wanted to find.
+filled with a variety of different brands and sizes of cases of bottled water.
+These appear to be reasonable results for any shopper making such a general
+query. Unfortunately, packs of bottled water were not what David wanted to find.
 
-\begin{wrapfigure}[5]{l}{0.08\textwidth}
-    \vspace{-11pt}
-    \centering
-    \includegraphics[width=0.1\textwidth]{water_cooler.eps}
-\end{wrapfigure}
+%\begin{wrapfigure}[5]{l}{0.08\textwidth}
+%    \vspace{-11pt}
+%    \centering
+%    \includegraphics[width=0.1\textwidth]{water_cooler.eps}
+%\end{wrapfigure}
 
 It turns out that before making his query, David had clicked on the item ``Primo
 Ceramic Crock Water Cooler with Stand''.  Our technique recognized this previous
 click as a signal that David would be interested in water products that are
-similar to his interest in the water cooler stand.
-
-\begin{wrapfigure}[5]{r}{0.1\textwidth}
-    \vspace{-10pt}
-    \centering
-    \includegraphics[width=0.1\textwidth]{arrowhead_water.eps}
-\end{wrapfigure}
-
-The Session-ReRank ordering in this examples is dramatically different from the
-original ordering. In Figure \ref{fig:compare_orderings}, we compare the top six
-results of each ordering.
+similar to his interest in the water cooler stand. The Session-ReRank ordering
+in this example is dramatically different from the original ordering. In Figure
+\ref{fig:compare_orderings}, we compare the top six results of each ordering.
+The unlabeled columns are the original rankings of the items in the original
+ordering.
 
 \begin{figure}
     \centering
-    \begin{tabular}{| c || c |}
+    \begin{tabular}{| c | p{7cm} | c | p{7cm} |}
         \hline
-        Walmart's Ordering & Session Re-Ranked Ordering \\ \hline
-        \hline
+& Walmart's Ordering & & Session Re-Ranked Ordering \\ \hline
+1  &   Great Value Purified Water, 24ct                 & 1  & Great Value Purified Water, 24ct \\ \hline
+2  &   Nestle Waters Bottled Spring Water, 24ct         & 2  & Nestle Waters Bottled Spring Water, 24ct \\ \hline
+3  &   Voss Water, 16.9 oz (Pack of 24)                 & 90 & Arrowhead Mountain Spring Water, 3 l \\ \hline
+4  &   Clear American Cherry Sparkling Water, 1 l, 12pk & 63 & Great Value: Distilled Water, 1 Gal \\ \hline
+5  &   Clear American Water, 1 l, 12ct                  & 38 & Arrowhead Mountain Spring Water, 2.5gal \\ \hline
+6  &   Clear American Peach Sparkling Water, 1 l, 12ct  & 8  & Clear American Mandarin Orange Sparkling Water, 1 l, 12pk \\ \hline
+
     \end{tabular}
+    \caption{Original Ordering vs. Session Re-Ranked Ordering for ``water'' query}
+    \label{fig:compare_orderings}
 \end{figure}
 
-In the original query results, David David ended up clicking on the 90th item
+%\begin{wrapfigure}[5]{r}{0.1\textwidth}
+%    \vspace{-10pt}
+%    \centering
+%    \includegraphics[width=0.1\textwidth]{arrowhead_water.eps}
+%\end{wrapfigure}
+
+In the original query results, David ended up clicking on the 90th item
 presented by Walmart -- a ``3 liter Arrowhead Mountain Spring Water''. Our
-technique move this item from its original position to the 3rd position in the
-query results! In fact, w
+technique moved this item from its original position to the 3rd position in the
+query results!
+
+It is instructive to look at which indexes were key to this promotion. Here are
+the similarity scores from each index for ``Arrowhead Mountain Spring Water, 3
+l'' and ``Primo Ceramic Crock Water Cooler with Stand'':
+
+
+
+cost:0.0254 ctr:0.000226 C:0.657 I:0.223 Q:0.0455 T:0.0274
+
 
 \end{document}
