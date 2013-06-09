@@ -442,7 +442,6 @@ of query results. Moreover, with the exception of {\em title-space}, the score i
 monotonically with each coefficient.
 
 
-
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{000050_0_48chunk_k100_i2_n100_avg_click_position_score_0-0_16.png}
@@ -450,12 +449,73 @@ monotonically with each coefficient.
     \label{fig:avg_clicks_position_score}
 \end{figure}
 
+With a locally optimized combination of coefficients we find that {\em SRR} significantly 
+outperforms Walmart’s original ordering on queries in {\chi}. As shown in Figure
+\ref{fig:compare_metric_performance}, the re-ranking achieves a 16\% increase
+in $\mathscr{C}$ compared to Walmart’s original ordering. The implication is
+that items on the first page of the re-ranking are 16\% more likely to be clicked than those
+in the original ranking. With 1M queries in our test set {\chi}, these results are
+statistically significant, producing a 95\% confidence interval of [15.8\%,
+16.2\%] for $\mathscr{C}$.
+
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{moneyshot.png}
     \caption{Comparison of the original ranking (blue) to that of randomly re-ranking (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and click-position score $\mathscr{S}$.}
     \label{fig:compare_metric_performance}
 \end{figure}
+
+Notably, we see these results despite the benefit the original ranking receives
+from “position bias”, the well-established phenomenon that users tend to click
+on items presented at the top of a list. The average CTR of this data broken
+down by position (Fig. \ref{fig:ctr_vs_position}) suggests that Walmart’s search 
+is no exception to this phenomenon. Antoher obstacle overcome by {\em SRR} is
+that there is little room for improvement in first-page CTR, since the vast majority 
+of clicks in {\chi} (80\%) are already on the first page.
+
+To ensure that these results are not due to an underlying structure of the
+data, we constructed a Random Re-Ranker {\em RRR}. {\em RRR} operates exactly
+as {\em SRR} does, except instead of calculating various similarity
+scores, it generates a random number. This randomized algorithm significantly
+hurts the results in all three metrics, suggesting that {\em SRR}
+achieves its success by intelligently deciding which items are more likely to be
+clicked. 
+
+Indeed, Table \ref{tab:promote_demote_table} compares the average
+CTR of items {\em SRR} moves on or off the first page to those chosen randomly. 
+By accurately determining a user’s preference for certain items, {\em SRR} promotes items with a
+significantly higher CTR than it would by blindly picking items from other pages. 
+Similarly, it demotes first-page items with a lower CTR than an average item on
+the first page. With these successful decisions, {\em SRR} manages to outperform the original
+ordering in the face of a number of disadvantages.
+
+\begin{table}[htbp!]
+    \centering
+    \begin{tabu}{ c | n{1}{5} | n{1}{5} |}
+        \cline{2-8}
+        \rowfont{\bfseries} & \multicolumn{1}{c|}{CTR of promoted items} &
+        \multicolumn{1}{c|}{CTR of demoted items} & \multicolumn{1}{c|}{CTR of
+        promoted items}  \\ \hline
+        \multicolumn{1}{|c|}{{\em SRR}} & 6.24\% & 1.79\% \\ \hline
+        \multicolumn{1}{|c|}{{\em RRR}} & 2.42\% & 3.67\% \\ \hline
+    \end{tabu}
+    \caption{CTR of items promoted to the first page and demoted off the first
+    page. {\em SRR} siginificantly outperforms random re-ranking in both categories.
+    \label{tab:promote_demote_table}
+\end{table} 
+
+Taking a closer look, we see that the performance of {\em SRR} is correlated to
+query length $L_q$. Figure \ref{fig:click_position_score_vs_query_length} shows the percent
+increase in $\mathscr{S}$ over $L_q$. While it on average outperforms the original ordering
+for queries of any length, it gains greater improvements the longer a query is.
+This general trend makes sense; with more items to work with, {\em SRR} has a
+higher likelihood of finding an item very similar to a previously clicked one.
+The specifics of the scatter plot are little less clear. There is a distinct
+jump in performance after moving to the second page ($L_q$ \gt 16). This
+could be due to behavioral bias, as all these queries were seen by users who
+chose to search past the first page. We also see the rate of increase drop off
+after that jump. We speculate that this is due to diminshing returns for
+exposure to more items.
 
 \begin{figure}[htbp!]
     \centering
@@ -465,4 +525,5 @@ monotonically with each coefficient.
 \end{figure}
 
 \end{document}
+
 
