@@ -453,20 +453,19 @@ $\alpha_s$ are held fixed during these measurements.) Thus, since $\Gamma_i$ is
 a monotonically decreasing function of position $i$, when $C_s = 0$, {\em SRR}
 returns the original ordering.
 
-In each case, as $C_s$ is increased from zero, the degree of reordering is enhanced.
-And for each coefficient, this reordering is accompanied by an increase in
-$\mathscr{S}$ indicating a greater concentration of clicked items, on average,
-in the top positions of query results as compared to the original ordering.
-Moreover, with the exception of {\em title-space}, the score increases
-monotonically with each coefficient. In the case of {\em title-space}, a
-broad maximum can be seen around $C_s = 0.05$. This indicates that an
-optimal combination between the contributions from {\em title-space} 
+In each case, as $C_s$ is increased from zero, the degree of reordering is
+enhanced.  And for each coefficient, this reordering is accompanied by an
+increase in $\mathscr{S}$ indicating a greater concentration of clicked items,
+on average, in the top positions of query results as compared to the original
+ordering.  Moreover, with the exception of {\em title-space}, the score
+increases monotonically with each coefficient. In the case of {\em
+title-space}, a broad maximum can be seen around $C_s = 0.05$. This indicates
+that an optimal combination between the contributions from {\em title-space}
 and CTRs exists, which maximizes $\mathscr{S}$. For all other coefficients,
 however, a maximum cannot be found. Rather, the value of $\mathscr{S}$
-asymptotically increases with value of $C_s$, which demonstrates that
-the optimal average ordering, according to the metric $\mathscr{S}$, is
-determined solely by the similarity space irrespective of the original
-ordering.
+asymptotically increases with value of $C_s$, which demonstrates that the
+optimal average ordering, according to the metric $\mathscr{S}$, is determined
+solely by the similarity space irrespective of the original ordering.
 
 \begin{figure}[htbp!]
     \centering
@@ -474,6 +473,15 @@ ordering.
     \caption{Clicks-position score $\mathsrc{S}$ as a function of individual similarity space coefficients $C_s$. For each curve, a single coefficient is varied with all other set to zero.}
     \label{fig:avg_clicks_position_score}
 \end{figure}
+
+We employ hueristics to manually optimize the coefficients $C_s$ and exponents
+$\apha_s$, which are outside the scope of this report. We do want to emphasize
+two important points regarding this optimization, however. First, as previously
+mentioned, we conduct this optimization on a set of data that is both disjoint
+with that used to construct the similarity spaces indexes and with that used to
+conduct the experiment whose results are shared below. Second, we find that the
+optimal configuration includes nonzero values for all five coefficients showing
+that their contributions are not fully redundant.
 
 With an optimized combination of coefficients we find that {\em SRR} significantly 
 outperforms Walmart’s original ordering on queries in {\chi}. As shown in Figure
