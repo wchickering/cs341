@@ -205,8 +205,8 @@ def makeOtherMetricPlot(resultsFn, options):
         #metric_figure.subplots_adjust(right=0.72)
         legend = ax.legend(**kDefaultLegendSettings)
 
-    ## makes the legend draggable
-    #legend.draggable()
+    # makes the legend draggable
+    legend.draggable()
     print ParameterTable(dataInfo['dataFn'].split('/')[-1], resultsFn.split('/')[-1].split('.')[1],
                          params, free_params)
 

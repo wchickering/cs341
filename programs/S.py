@@ -21,8 +21,18 @@ if len(sys.argv) != 7:
     sys.exit(1)
 
 CTR = float(sys.argv[1])
-print str(CTR + (  coeff_clicks *     float(sys.argv[2]) ** exp_clicks\
-                 + coeff_items *      float(sys.argv[3]) ** exp_items\
-                 + coeff_carts *      float(sys.argv[4]) ** exp_carts\
-                 + coeff_queries *    float(sys.argv[5]) ** exp_queries\
-                 + coeff_item_title * float(sys.argv[6]) ** exp_item_title))
+clicks_score = coeff_clicks   * float(sys.argv[2]) ** exp_clicks
+items_score = coeff_items     * float(sys.argv[3]) ** exp_items
+carts_score = coeff_carts     * float(sys.argv[4]) ** exp_carts
+queries_score = coeff_queries * float(sys.argv[5]) ** exp_queries
+item_title_score = coeff_item_title * float(sys.argv[6]) ** exp_item_title
+final_score = CTR + clicks_score + items_score + carts_score + queries_score + item_title_score
+
+#print "clicks score: " + str(clicks_score)
+#print "items score: " + str(items_score)
+#print "carts score: " + str(carts_score)
+#print "queries score: " + str(queries_score)
+#print "item_title score: " + str(item_title_score)
+#print "final score: " + str(final_score)
+
+print " & ".join(map(str, [final_score,CTR,clicks_score,items_score,carts_score,queries_score,item_title_score]))
