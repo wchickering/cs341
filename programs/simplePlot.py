@@ -301,10 +301,10 @@ def main():
 
     ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.4f'))
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16) 
+        tick.label.set_fontsize(20) 
         tick.set_pad(15)
     for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize(16) 
+        tick.label.set_fontsize(20) 
         tick.set_pad(15)
 
     if options.multi:

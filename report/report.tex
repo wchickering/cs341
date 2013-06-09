@@ -11,6 +11,7 @@
 \nprounddigits{5}
 \captionsetup{justification=centering}
 \usepackage{wrapfig}
+\usepackage{tabu} % for changing individual row fonts
 %\usepackage{dcolumn} % Align table columns on decimal point
 %\usepackage{bm} % bold math
 \usepackage{amssymb, amsmath}
@@ -289,96 +290,100 @@ The only fictitious part of the example will be our shopper's name, David.
 %\end{wrapfigure}
 
 David is interested in the ``Primo Ceramic Crock Water Cooler with Stand'' and
-clicks on this item during his session. Sometime later he makes another query
-by navigating to the ``Grocery $\rightarrow $Beverages $\rightarrow $Water''
-category and searching for ``water''. Walmart has 300+ results to show David. We
-compare the top six Walmart results to our {\em SRR} results in Table
+clicks on this item during his session. Sometime later he navigates to the
+``Grocery $\rightarrow $Beverages $\rightarrow $Water'' category and searches
+for ``water''. He is presented with 300+ results and clicks 90th item, a 3 liter
+jug of water.
+
+The top six original results are compared to the {\em SRR} results in Table
 \ref{tab:compare_orderings} where the first and third column represent the
-original ranking in the Walmart search results presented to David.
+original ranking presented to David. Note that we rerank the 90th item from the
+original results to be the 3rd item in the {\em SRR} results.
 \begin{table}[htbp!]
     \centering
-    \begin{tabular}{| c | p{7cm} | c | p{7cm} |}
+    \begin{tabu}{| c | p{7cm} | c | p{7cm} |}
         \hline
-& Walmart's Ordering & & {\em SRR} Ordering \\ \hline
+\rowfont{\bfseries} \multicolumn{2}{|c|}{Original Ordering} & \multicolumn{2}{c|}{{\em SRR} Ordering} \\ \hline
+        \hline
 1  &   Great Value Purified Water, 24ct                 & 1  & Great Value Purified Water, 24ct \\ \hline
 2  &   Nestle Waters Bottled Spring Water, 24ct         & 2  & Nestle Waters Bottled Spring Water, 24ct \\ \hline
 3  &   Voss Water, 16.9 oz (Pack of 24)                 & 90 & Arrowhead Mountain Spring Water, 3 l \\ \hline
 4  &   Clear American Cherry Sparkling Water, 1 l, 12pk & 63 & Great Value: Distilled Water, 1 Gal \\ \hline
 5  &   Clear American Water, 1 l, 12ct                  & 38 & Arrowhead Mountain Spring Water, 2.5gal \\ \hline
 6  &   Clear American Peach Sparkling Water, 1 l, 12ct  & 8  & Clear American Mandarin Orange Sparkling Water, 1 l, 12pk \\ \hline
-    \end{tabular}
+    \end{tabu}
     \caption{Original Ordering vs. {\em SRR} Ordering for ``water'' query}
     \label{tab:compare_orderings}
 \end{table}
-Tables \ref{tab:walmart_sim_scores} and \ref{tab:rerank_sim_scores} show the
+Tables \ref{tab:original_sim_scores} and \ref{tab:rerank_sim_scores} show the
 similarity scores from each index for each item in the two orderings compared to
 David's lone previously clicked item. In each of these tables, the first column
-correponds to Table \ref{tab:walmart_sim_scores} and the second column is the
+correponds to Table \ref{tab:original_sim_scores} and the second column is the
 similarity metric from Equation (\ref{eqn:similarity_metric}) using our
 optimized tuning parameters.
 \begin{table}[htbp!]
     \centering
-    \begin{tabular}{| c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
-        \hline
-          & {S} & {CTR} & {Clicks} & {Items} & {Carts} & {Queries} & {Titles}  \\ \hline
-        1 & 0.943746587049 & 0.0754 & 0.00227790432802 &  0.017955801105   &  0.0 &  0.0104712041885   &  0.0909090909091 \\ \hline
-        2 & 1.20210752946  & 0.0390 & 0.00389105058366 &  0.0251450676983  &  0.0 &  0.0254833040422   &  0.0833333333333 \\ \hline
-        3 & 0.357056025563 & 0.0254 & 0.0              &  0.0227882037534  &  0.0 & 0.00555212831585   &  0.0769230769231 \\ \hline
-        4 & 0.75268102742  & 0.0195 & 0.0016835016835  &  0.0233918128655  &  0.0 &  0.0016339869281   &  0.0666666666667 \\ \hline
-        5 & 0.736731785955 & 0.0153 & 0.00173310225303 &  0.016077170418   &  0.0 &  0.00390015600624  &  0.0666666666667 \\ \hline
-        6 & 0.174834647629 & 0.0129 & 0.0              &  0.00954198473282 &  0.0 &  0.000793021411578 &  0.0666666666667 \\ \hline
-    \end{tabular}
-    \caption{Index similarity scores of the top six Walmart results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
-    \label{tab:walmart_sim_scores}
+    \begin{tabu}{ c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
+        \cline{2-8}
+        \rowfont{\bfseries} & \multicolumn{1}{c|}{S} & \multicolumn{1}{c|}{CTR} & \multicolumn{1}{c|}{Clicks} & \multicolumn{1}{c|}{Items} & \multicolumn{1}{c|}{Carts} & \multicolumn{1}{c|}{Queries} & \multicolumn{1}{c|}{Titles}  \\ \hline
+        \multicolumn{1}{|c|}{1} & 0.943746587049 & 0.0754 & 0.00227790432802 &  0.017955801105   &  0.0 &  0.0104712041885   &  0.0909090909091 \\ \hline
+        \multicolumn{1}{|c|}{2} & 1.20210752946  & 0.0390 & 0.00389105058366 &  0.0251450676983  &  0.0 &  0.0254833040422   &  0.0833333333333 \\ \hline
+        \multicolumn{1}{|c|}{3} & 0.357056025563 & 0.0254 & 0.0              &  0.0227882037534  &  0.0 & 0.00555212831585   &  0.0769230769231 \\ \hline
+        \multicolumn{1}{|c|}{4} & 0.75268102742  & 0.0195 & 0.0016835016835  &  0.0233918128655  &  0.0 &  0.0016339869281   &  0.0666666666667 \\ \hline
+        \multicolumn{1}{|c|}{5} & 0.736731785955 & 0.0153 & 0.00173310225303 &  0.016077170418   &  0.0 &  0.00390015600624  &  0.0666666666667 \\ \hline
+        \multicolumn{1}{|c|}{6} & 0.174834647629 & 0.0129 & 0.0              &  0.00954198473282 &  0.0 &  0.000793021411578 &  0.0666666666667 \\ \hline
+    \end{tabu}
+    \caption{Index similarity scores of the top six original results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
+    \label{tab:original_sim_scores}
 \end{table}
 \begin{table}[htbp!]
     \centering
-    \begin{tabular}{| c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
-        \hline
-           & {S} & {CTR} & {Clicks} & {Items} & {Carts} & {Queries} & {Titles}  \\ \hline
-        1  & 0.943746587049 & 0.0754     & 0.00227790432802 &  0.017955801105 &  0.0 &  0.0104712041885 &  0.0909090909091  \\ \hline
-        2  & 1.20210752946  & 0.0390     & 0.00389105058366 &  0.0251450676983 &  0.0 &  0.0254833040422 &  0.0833333333333 \\ \hline
-        90 & 0.95310150677  & 0.00022623 & 0.00357142857143 &  0.027027027027 &  0.0 &  0.000920810313076 &  0.0833333333333\\ \hline
-        63 & 0.949541641831 & 0.00049366 & 0.00261096605744 &  0.0338345864662 &  0.0 &  0.00385802469136 &  0.0833333333333\\ \hline
-        38 & 0.93768536446  & 0.000914   & 0.00344234079174 &  0.0331384015595 &  0.0 &  0.0 &  0.0909090909091             \\ \hline
-        8  & 0.896706599209 & 0.01       & 0.00355239786856 &  0.0248565965583 &  0.0 &  0.0 &  0.0666666666667             \\ \hline
-    \end{tabular}
+    \begin{tabu}{ c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
+        \cline{2-8}
+        \rowfont{\bfseries} & \multicolumn{1}{c|}{S} & \multicolumn{1}{c|}{CTR} & \multicolumn{1}{c|}{Clicks} & \multicolumn{1}{c|}{Items} & \multicolumn{1}{c|}{Carts} & \multicolumn{1}{c|}{Queries} & \multicolumn{1}{c|}{Titles}  \\ \hline
+        \multicolumn{1}{|c|}{1 } & 0.943746587049 & 0.0754     & 0.00227790432802 &  0.017955801105 &  0.0 &  0.0104712041885 &  0.0909090909091  \\ \hline
+        \multicolumn{1}{|c|}{2 } & 1.20210752946  & 0.0390     & 0.00389105058366 &  0.0251450676983 &  0.0 &  0.0254833040422 &  0.0833333333333 \\ \hline
+        \multicolumn{1}{|c|}{90} & 0.95310150677  & 0.00022623 & 0.00357142857143 &  0.027027027027 &  0.0 &  0.000920810313076 &  0.0833333333333\\ \hline
+        \multicolumn{1}{|c|}{63} & 0.949541641831 & 0.00049366 & 0.00261096605744 &  0.0338345864662 &  0.0 &  0.00385802469136 &  0.0833333333333\\ \hline
+        \multicolumn{1}{|c|}{38} & 0.93768536446  & 0.000914   & 0.00344234079174 &  0.0331384015595 &  0.0 &  0.0 &  0.0909090909091             \\ \hline
+        \multicolumn{1}{|c|}{8 } & 0.896706599209 & 0.01       & 0.00355239786856 &  0.0248565965583 &  0.0 &  0.0 &  0.0666666666667             \\ \hline
+    \end{tabu}
     \caption{Index similarity scores of the top six {\em SRR} results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
     \label{tab:rerank_sim_scores}
 \end{table} 
 
-The scores from the {\em title-space} index are easily calculated by hand. We
-will show the calculation for the {\em items-space} index for the 90th item in
-the originl ranking here. By referring to the {\em items-space} index, we can
-recall that the 90th item was clicked in the same query with 39 different items
-and the previously clicked item was clicked in the same query with 455 different
-items.
+The similarity scores from {\em title-space} are easily calculated by hand. We
+will show the calculation for the {\em item-space} similarity for the 90th item in
+the original ranking. By referring to the corresponding index for {\em
+item-space}, we can recall that the 90th item was clicked in the same query with
+39 different items and the previously clicked item was clicked in the same query
+with 455 different items. The titles of the 13 items found in common are:
+\begin{itemize}
+    \item[] Great Value: Distilled Water, 1 Gal
+    \item[] Nestle Waters Bottled Spring Water, 24ct
+    \item[] Primo Mineral Water, 5 gal
+    \item[] Deer Park Sumo Bottle Natural Spring Water, 3l
+    \item[] Arrowhead Mountain Spring Water, 3l
+    \item[] PUR Advanced Faucet Water Filter Vertical - Chrome
+    \item[] Ozarka Natural Spring Water
+    \item[] Formula 409 All Purpose Lemon Scented Cleaner, 32 fl oz
+    \item[] Great Value Spring Water, 1 gal
+    \item[] Nestle Pure Life Purified Water, .5l, 35pk
+    \item[] Arrowhead Mountain Spring Water, 2.5gal
+    \item[] Primo Ceramic Crock Water Cooler with Stand
+    \item[] Augason Farms Emergency Water Storage Kit
+\end{itemize}
+We then calculate the similarity of the 90th item and the previously clicked
+item in {\em item-space} to be $13/(455+39-13)=0.0270$.
 
-Great Value: Distilled Water, 1 Gal
-Nestle Waters Bottled Spring Water, 24ct
-Primo Mineral Water, 5 gal
-Deer Park Sumo Bottle Natural Spring Water, 3l
-Arrowhead Mountain Spring Water, 3 l
-PUR Advanced Faucet Water Filter Vertical - Chrome
-Ozarka Natural Spring Water
-Formula 409 All Purpose Lemon Scented Cleaner, 32 fl oz
-Great Value Spring Water, 1 gal
-Nestle Pure Life Purified Water, .5 l, 35pk
-Arrowhead Mountain Spring Water, 2.5gal
-Primo Ceramic Crock Water Cooler with Stand
-Augason Farms Emergency Water Storage Kit
+We believe this example illustrates how our technique can form subtle
+relationships between items based on historical user session data. In this case,
+we have a shopper who had an interest in a water cooler and subsequently made a
+query for ``water''. If the shopper had been in a brick-and-mortar store, he
+likely would have been directed to the section of the store selling water jugs
+to use with the cooler he had picked up. In this case, {\em SRR}
+recognized David's previously click, related the water cooler to large water
+jugs, and showed David the water jug he was looking for all along.
 
-
-             
 \end{document}
 
-
-
-In the original query results, David ended up clicking on the 90th item
-presented by Walmart -- a ``3 liter Arrowhead Mountain Spring Water''. Our
-technique moved this item from its original position to the 3rd position in the
-query results!
-
-
-
-             
