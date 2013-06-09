@@ -616,7 +616,12 @@ of search results by all three metrics on the dataset $\Chi$. Note that $\Chi$
 represents 30\% of $\zeta$ while the remaining 70\% of queries were truncated
 short. We call this set of truncated queries, $\tau$. As discussed in Section 6, 
 we cannot accurately test {\em SRR} on $\tau$ since it would have performed 
-differently on this set of queries (FOOTNOTE).
+differently on this set of queries. \footnote{We ran {\em SRR} on all of
+$\zeta$, treating truncated queries as complete ones of the length shown to the
+user.  The results were similar to those of $\Chi$ and in some cases better:
+$\Delta$ $\mathscr{C}$ = 12.5\%, $\Delta$ $\mathscr{P}$ = 8.7\%, and $\Delta$
+$\mathscr{C}$ = 8.2\%. We omitted these results from the main paper because we
+feel that testing on all queries in $\zeta$ is not a representative experiment.}
 
 Extrapolating from $\Chi$ to $\tau$ is difficult since, the characteristics of
 the two sets are inherently different, potentially introducing biases that
