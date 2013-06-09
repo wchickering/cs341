@@ -22,7 +22,7 @@ from pprint import pformat # prints dictionaries nicely
 
 smallFont = matplotlib.font_manager.FontProperties(stretch='condensed',weight='book',size='small',family='monospace')
 middleFont = matplotlib.font_manager.FontProperties(stretch='normal',weight='roman',size='large',family='monospace')
-axisFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size='xx-large',family='monospace')
+axisFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size=35,family='monospace')
 legendFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='roman',size='xx-large',family='monospace')
 titleFont = matplotlib.font_manager.FontProperties(stretch='expanded',weight='demi',size=35,family='monospace')
 kDefaultLegendSettings = dict(prop=legendFont, ncol=2, loc='best', fancybox=True)#, shadow=True)
@@ -97,7 +97,7 @@ def makeNDCGCurvePlot(resultsFn):
 
     NDCG_figure.suptitle('NDCG scores for %s' % dataInfo['dataFn'].split('/')[-1], fontproperties=titleFont)
 
-def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[], multi=False):
+def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[], multi=False, noOriginal=False):
     resultsFo = open(resultsFn)
     
     reordered_scores = []
@@ -120,12 +120,13 @@ def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[], m
             reordered_scores.append((params[str(free_param)],
                 stats[metric]))
             if multi:
-                orig_metric='_'.join(metric.split('_')[0:-1])+"_orig"
-                try:
-                    orig_scores.append((params[str(free_param)],
-                        stats[orig_metric]))
-                except KeyError:
-                    orig_scores = []
+                if not noOriginal:
+                    orig_metric='_'.join(metric.split('_')[0:-1])+"_orig"
+                    try:
+                        orig_scores.append((params[str(free_param)],
+                            stats[orig_metric]))
+                    except KeyError:
+                        orig_scores = []
 
     if (metric == 'NDCG16'):
         orig_score.set(stats['avg_orig_NDCG_scores'][15])
@@ -135,12 +136,12 @@ def getMetricScores(resultsFn, metric, free_param, orig_score, orig_scores=[], m
     reordered_scores.sort(key=lambda a: a[0])
     return reordered_scores, params, dataInfo 
 
-def plotMetric(ax, resultsFn, metric, free_param, multi, smooth, orig_scores=[]): 
+def plotMetric(ax, resultsFn, metric, free_param, multi, smooth, orig_scores=[], noOriginal=False): 
     orig_score_ref = ref(0)
     if multi:
         reordered_scores, params, dataInfo = getMetricScores(resultsFn, metric,
                                                              free_param, orig_score_ref,
-                                                             orig_scores, True)
+                                                             orig_scores, True, noOriginal)
     else:
         reordered_scores, params, dataInfo = getMetricScores(resultsFn, metric,
                                                              free_param, orig_score_ref)
@@ -178,7 +179,7 @@ def makeOtherMetricPlot(resultsFn, options):
             free_param, fn = line.split()
             free_params.append(free_param)
             orig_scores=[]
-            dataInfo, params = plotMetric(ax, fn, options.metric, free_param, True, options.smooth, orig_scores)
+            dataInfo, params = plotMetric(ax, fn, options.metric, free_param, True, options.smooth, orig_scores, options.noOriginal)
         if orig_scores:
             if options.smooth:
                 marker = None
@@ -200,7 +201,7 @@ def makeOtherMetricPlot(resultsFn, options):
     # make a plot with one curve
     else:
         free_params.append(options.free_param)
-        plotMetric(ax, resultsFn, options.plot, options.free_param, False, options.smooth)
+        plotMetric(ax, resultsFn, options.plot, options.free_param, False, options.smooth, options.noOriginal)
         #metric_figure.subplots_adjust(right=0.72)
         legend = ax.legend(**kDefaultLegendSettings)
 
@@ -233,6 +234,9 @@ def parseArgs():
                           action="store_true", default=False)
     plotsGroup.add_option("--smooth", dest="smooth", \
                           help="plot a line without markers",\
+                          action="store_true", default=False)
+    plotsGroup.add_option("--no-original", dest="noOriginal", \
+                          help="do not show original results",\
                           action="store_true", default=False)
     plotsGroup.add_option("--free-param", dest="free_param", \
                           help="free parameter",\
@@ -304,7 +308,7 @@ def main():
         tick.set_pad(15)
 
     if options.multi:
-        xlabel = r'$C$'
+        xlabel = r'$C_s$'
     else:
         xlabel = str(free_param)
 
