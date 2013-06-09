@@ -643,6 +643,20 @@ is quite substantial given the scale of Walmart.com.
 
 \section{Conclusion and Future Work}
 
+We have reported on a novel technique of leveraging existing session
+information in order to improve the ranking of product search results. The
+approach taken by {\em Session Re-Rank} is to compare items previously clicked
+during a user session to the top $N$ items returned by an existing search
+engine and to assign and rank by scores based upon their similarity. {\em SRR}
+utilizes historical data of queries, their results, and user actions to
+construct several indexes, each representing similarity space in which items
+can be compared via the Jaccard similarity of sets of objects. The similarity
+spaces we have used ({\em click-space}, {\em cart-space}, {\em query-space}, 
+{\em title-space}, {\em item-space}) are not exhaustive---certainly others
+can be realized. We have provided compelling evidence using these 5 spaces,
+however, that {\em SRR} can significant improve the quality of Walmart.com's
+existing query result rankings. 
+
 {\em SRR} has a statistically significant positive effect on the original
 ordering of query results when we measure query results using first-page CTR
 $\mathscr{C}$, first-page purchase rate $\mathscr{P}$, and {\em click-position
