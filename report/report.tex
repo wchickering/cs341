@@ -102,7 +102,7 @@ the provided data, or about 60M queries (about 120M page views).
 {\em Cart-space} is based on the notion that two items are similar if they ever
 appear in a shopping cart together. The objects of this space are therefore
 shopping carts. The {\em clicks-index} for the data presented in this report was
-contructed using approximately half of the provided data.
+also contructed using approximately half of the provided data.
 
 Items are also considered similar if they appear in a query together. The
 objects of {\em query-space} are therefore queries. We make a distinction,
@@ -110,19 +110,19 @@ however, between {\em user-queries} and {\em unique-queries}. The former are the
 well-defined entities within the raw Walmart data. The latter is an abstraction
 based on the notion that multiple {\em user-queries} can correspond to a single
 {\em unique-query}. To derive {\em unique-queries} from our data, we cluster
-{\em user-queries} as follows: two {\em user-queries} with the same search
+{\em user-queries} according to following policy: two {\em user-queries} with the same search
 attributes (e.g. category or price filters) are considered the same {\em
 unique-query} if the strings constructed by concatenating the space-seperated,
-stemmed (we use the Python stemming.porter2 module), forced to lower-case terms
+stemmed (we use the Python stemming.porter2 module), and forced to lower-case terms
 from each of their rawqueries are equal. We point out that while we achieved
 better results with this policy compared to simply using {\em user-queries}, we
 have no reason to believe that this is the ideal way to cluster queries for use
 within {\em SRR}. Indeed, we believe one way to improve {\em SRR} is to optimize 
 the query clustering policy.
 
-{\em Title-space} is straightfoward: each item is associated with a set of terms
+{\em Title-space} is straightfoward. Each item is associated with a set of terms
 from its title. We ignore case, but at present do not stem, discard stop words,
-or weight terms in any way. 
+or weigh terms in any way. 
 
 Finally, the structure of {\em item-space} is unique because it involves a level
 of indirection. The premise here is that if items A and B are clicked in a
@@ -476,20 +476,19 @@ $\alpha_s$ are held fixed during these measurements.) Thus, since $\Gamma_i$ is
 a monotonically decreasing function of position $i$, when $C_s = 0$, {\em SRR}
 returns the original ordering.
 
-In each case, as $C_s$ is increased from zero, the degree of reordering is enhanced.
-And for each coefficient, this reordering is accompanied by an increase in
-$\mathscr{S}$ indicating a greater concentration of clicked items, on average,
-in the top positions of query results as compared to the original ordering.
-Moreover, with the exception of {\em title-space}, the score increases
-monotonically with each coefficient. In the case of {\em title-space}, a
-broad maximum can be seen around $C_s = 0.05$. This indicates that an
-optimal combination between the contributions from {\em title-space} 
+In each case, as $C_s$ is increased from zero, the degree of reordering is
+enhanced.  And for each coefficient, this reordering is accompanied by an
+increase in $\mathscr{S}$ indicating a greater concentration of clicked items,
+on average, in the top positions of query results as compared to the original
+ordering.  Moreover, with the exception of {\em title-space}, the score
+increases monotonically with each coefficient. In the case of {\em
+title-space}, a broad maximum can be seen around $C_s = 0.05$. This indicates
+that an optimal combination between the contributions from {\em title-space}
 and CTRs exists, which maximizes $\mathscr{S}$. For all other coefficients,
 however, a maximum cannot be found. Rather, the value of $\mathscr{S}$
-asymptotically increases with value of $C_s$, which demonstrates that
-the optimal average ordering, according to the metric $\mathscr{S}$, is
-determined solely by the similarity space irrespective of the original
-ordering.
+asymptotically increases with value of $C_s$, which demonstrates that the
+optimal average ordering, according to the metric $\mathscr{S}$, is determined
+solely by the similarity space irrespective of the original ordering.
 
 \begin{figure}[htbp!]
     \centering
@@ -498,14 +497,23 @@ ordering.
     \label{fig:avg_clicks_position_score}
 \end{figure}
 
-With a locally optimized combination of coefficients we find that {\em SRR} significantly 
-outperforms Walmart’s original ordering on queries in $\chi$. As shown in Figure
-\ref{fig:compare_metric_performance}, the re-ranking achieves a 16\% increase
-in $\mathscr{C}$ compared to Walmart’s original ordering. The implication is
-that items on the first page of the re-ranking are 16\% more likely to be clicked than those
-in the original ranking. With 1M queries in our test set $\chi$, these results are
-statistically significant, producing a 95\% confidence interval of $[15.8\%,
-16.2\%]$ for $\mathscr{C}$.
+We employ hueristics to manually optimize the coefficients $C_s$ and exponents
+$\alpha_s$, which are outside the scope of this report. We do want to emphasize
+two important points regarding this optimization, however. First, as previously
+mentioned, we conduct this optimization on a set of data that is both disjoint
+with that used to construct the similarity spaces indexes and with that used to
+conduct the experiment whose results are shared below. Second, we find that the
+optimal configuration includes nonzero values for all five coefficients showing
+that their contributions are not fully redundant.
+
+With our optimized combination of coefficients we find that {\em SRR}
+significantly outperforms the original ordering on queries in $\chi$. As shown
+in Fig.  \ref{fig:compare_metric_performance}, the re-ranking achieves a 16\%
+increase in $\mathscr{C}$ compared to the original ordering. The implication is
+that items on the first page of the re-ranking are 16\% more likely to be
+clicked than those in the original ordering. With 1M queries in our test set
+$\chi$, these results are statistically significant, producing a 95\%
+confidence interval of [15.8\%, 16.2\%] for $\mathscr{C}$.
 
 \begin{figure}[htbp!]
     \centering
@@ -516,11 +524,16 @@ statistically significant, producing a 95\% confidence interval of $[15.8\%,
 
 Notably, we see these results despite the benefit the original ranking receives
 from “position bias”, the well-established phenomenon that users tend to click
-on items presented at the top of a list. The average CTR of this data broken
-down by position (Fig. \ref{fig:ctr_vs_position}) suggests that Walmart’s search 
-is no exception to this phenomenon. Antoher obstacle overcome by {\em SRR} is
-that there is little room for improvement in first-page CTR, since the vast majority 
-of clicks in $\chi$ (80\%) are already on the first page.
+on items presented at the top of a list. Figure \ref{fig:ctr_vs_position} shows
+how dramatically more likely Walmart.com users are to click on items positioned
+near the top. It seems reasonable to suppose that "position bias" contributes
+to this distribution of CTRs. We compensate for the large CTR of the first two
+positions by setting the insert position $I_0 = 2$ such that the top two items
+remained fixed. While this does improve the metrics for {\em SRR}, we emphasize
+that choosing $I_0 = 0$ would not qualitatively change our results. Another
+obstacle overcome by {\em SRR} is that there is little room for improvement in
+first-page CTR, since the vast majority of clicks in $\chi$ (80\%) are already
+on the first page.
 
 To ensure that these results are not due to an underlying structure of the
 data, we constructed a Random Re-Ranker {\em RRR}. {\em RRR} operates exactly
@@ -577,4 +590,43 @@ exposure to more items.
 
 \end{document}
 
+\section{Discussion}
 
+We have established that {\em SRR} significantly improves the ordering
+of search results by all three metrics on the dataset $\chi$. Note that $\chi$
+represents 25\% of $\zeta$ while the remaining 75\% of queries were truncated
+short. We call this set of truncated queries, $\tao$. As discussed in Section 6, 
+we cannot accurately test {\em SRR} on $\tao$ since it would have performed 
+differently on this set of queries (FOOTNOTE).
+
+Extrapolating from $\chi$ to $\tao$ is difficult since, the characteristics of
+the two sets are inherently different, potentially introducing biases that
+affect {\em SRR}'s performance. For instance, queries in $\chi$ are ones in
+which the user search to the end or through at least $N=100$ itesm, potentially
+indicating disinterest in the first page results and favoring any reordering. On
+the other hand, queries in $\chi$ are on average shorter than those in $\tao$
+and, as suggested by Figure \ref{fig:click_position_score_vs_query_length}, {\em SRR}
+performs better on longer queries. 
+
+While it is unclear whether {\em SRR} would do better or worse on $\tao$, we can
+infer a very loose lower bound on $\mathscr{C}$ over all of $\zeta$ by assuming
+that {\em SRR} performs as badly as it reasonably coult on $\tao$. When run on
+$\chi$, {\em SRR} on average demotes 8\% of all first-page clicks, but replaces
+them with even more clicks from other pages. In the worst case, we assume that
+when run $\tao$, it would demote 8\% of first-page clicks but replace them with
+0 clicks from other pages. Assuming this pessimistic lower bound for the 75\% of 
+queries in $\zeta$ that make up $\tao$, {\em SRR} would still sligthly
+outperform the original ordering across all queries (+0.01\%).
+
+If instead we assume that {\em SRR} would perform similarly on $\tao$
+as it does on $\chi$, we can get a more realistic estimate of the impact that the
+algorithm would have overall. Broadening the scope of our results to all
+queries (even those outside of $\zeta$ which re-ranker could not impact), 
+we get an overall increase in $\mathscr{C}$ by 2\%, an overall increase in $\mathscr{P}$
+by 1\% and an overall increas in $\mathscr{S}$ by 0.5\%. To get a better sense of what
+this impact means, consider the pool of purchases that occur in the
+first page. Increasing the purchasing rate by 1\% for these items would
+increase the absolute size of this pool by 1\%. Since this pool
+comprises 85\% of all purchases, increasing it by 1\% would increase
+the total number of purchases on the website overall by 0.85\%, which
+is a significant increase for a search engine on the scale of Walmart’s.
