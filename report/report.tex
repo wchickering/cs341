@@ -570,17 +570,21 @@ ordering in the face of a number of disadvantages.
 \end{table} 
 
 Taking a closer look, we see that the performance of {\em SRR} is correlated to
-query length $L_q$. Figure \ref{fig:click_position_score_vs_query_length} shows the percent
-increase in $\mathscr{S}$ over $L_q$. While it on average outperforms the original ordering
-for queries of any length, it gains greater improvements the longer a query is.
-This general trend makes sense; with more items to work with, {\em SRR} has a
-higher likelihood of finding an items more similar to a previously clicked one.
-The specifics of the scatter plot are a little less clear. There is a distinct
-jump in performance after moving to the second page ($L_q > 16$). This
-could be due to behavioral bias, as all these queries were seen by users who
-chose to search past the first page. We also see the rate of increase drop off
-after that jump. We speculate that this is due to diminshing returns for
-exposure to more items.
+query length $L_q$. Figure \ref{fig:click_position_score_vs_query_length} shows
+the percent increase in $\mathscr{S}$ as a function of $L_q$. While it on
+average outperforms the original ordering for query results of any length, it
+gains greater improvement as $L_q$ increases.  This is an impressive feature of
+{\em SRR}, since as $L_q$ increases the density of clicked items decreases
+making them more difficult to select. At the same time, longer results provide
+greater opportunity for improved ranking, which {\em SRR} successfully exploits
+as shown by the data.
+
+The specific trends within the data are more difficult to understand. Clearly,
+there exist linear trends for $L_q \in [1,16]$ and $L_q \in [17,32]$, which
+correspond to single and double page results, respectively. Meanwhile, the
+trend for $L_q > 32$, while generally increasing, is less clear. We speculate
+that these trends are due to idiosyncrasies in user behavior but details remain
+unclear to us.
 
 \begin{figure}[htbp!]
     \centering
