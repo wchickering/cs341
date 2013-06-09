@@ -309,7 +309,7 @@ a user has previously clicked on an item during an online session.
 Consequently, {\em SRR} can only affect the subset of queries that occur in a
 session with previous clicks. We denote this subset of queries as $\zeta$ and
 limit our experiment and analysis to this set. It turns out that 25\% of all
-queries are in $\zeta$. Moreover, 28\% of all clicks and 33\% of all purchases
+queries are in $\zeta$. Moreover, 28\% of all clicks and 36\% of all purchases
 occur within the query resultsets of $\zeta$, since there is a correlation
 between previous clicks and clicks/purchases in a query.  Thus an impact to this
 subset can have a significant impact overall.
@@ -331,7 +331,7 @@ query resultset and can therefore determine how {\em SRR} would have reordered
 the shown items. Similarly, if more than $N=100$ were shown to the user, we can
 determine the reordering regardless of whether the query resultset is truncated
 since {\em SRR} only considers and re-ranks the first $N=100$ items. $\chi$
-makes up 25\% of $\zeta$, accounting for a total of 6\% of all queries.
+makes up 9\% of $\zeta$, accounting for a total of 2.3\% of all queries.
 
 To construct $\chi$ we  must discard all queries with a number of shown results
 less than $N=100$ that are also divisible by 16. The reason for this is that
@@ -394,7 +394,8 @@ by {\em SRR}.
 
 To compare two rankings of shown items, we focus on three key metrics. Our primary 
 metric is the first-page CTR $\mathscr{C}$, defined as the likelihood that an item 
-presented on the first page receives a click. As noted above, 75\% of all queries 
+presented on the first page receives a click. Special attention to the first page is
+reasonable, since 77\% of all queries 
 are only one page long. This shows the importance of bringing desirable items to the 
 first page and it motivates our focus on $\mathscr{C}$. We calculate this metric by 
 counting the number of items in first-page positions that were clicked and dividing 
@@ -409,8 +410,8 @@ Our second metric is the purchasing rate of items on the first page $\mathscr{P}
 similar to $\mathscr{C}$, except here we consider purchases per first-page item 
 instead of clicks. It is calculated as the number of items in first-page positions that 
 were purchased divided by the total number of items in first-page positions. The 
-importance of position for purchases is even stronger than that for clicks. While 70\% of 
-all clicks were presented on the first page, that number is 85\% for purchases. Formally,
+importance of position for purchases is even stronger than that for clicks. While 76\% of 
+all clicks were presented on the first page, that number is 88\% for purchases. Formally,
 we have
 \begin{equation*}
     \mathscr{P} = \frac{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{purchase\; @\; i \wedge i \leq 16\right\}}{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{i \leq 16\right\}}.
