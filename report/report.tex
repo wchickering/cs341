@@ -514,11 +514,11 @@ on the first page.
 
 To ensure that these results are not due to an underlying structure of the
 data, we constructed a Random Re-Ranker {\em RRR}. {\em RRR} operates exactly
-as {\em SRR} does, except instead of calculating various similarity
-scores, it generates a random number. This randomized algorithm significantly
-hurts the results in all three metrics, suggesting that {\em SRR}
-achieves its success by intelligently deciding which items are more likely to be
-clicked. 
+as {\em SRR} does, except instead of calculating various similarity scores, it
+uniformly chooses at random a number between 0 and 1. This randomized algorithm
+significantly hurts the results in all three metrics, suggesting that {\em SRR}
+achieves its success by intelligently deciding which items are more likely to
+be clicked. 
 
 Indeed, Table \ref{tab:promote_demote_table} compares the average
 CTR of items {\em SRR} moves on or off the first page to those chosen randomly. 
