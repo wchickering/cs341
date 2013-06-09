@@ -18,6 +18,9 @@
 \usepackage[mathscr]{euscript}
 \usepackage{dsfont}
 
+% nicely written chi
+\def\Chi{\raisebox{2pt}{$\chi$}}
+
 %% new column table for tabu to center paragraph cells
 % http://tug.org/mail-archives/texhax/2007-March/008042.html
 \usepackage{array}
@@ -241,12 +244,12 @@ optimized tuning parameters.
         %8. & 0.896706599209 & 0.01       & 0.00355239786856 &  0.0248565965583 &  0.0 &  0.0 &  0.0666666666667             \\ \midrule
 
         % tuned scores
-        1. & 0.943746587049 & 0.0754 & 0.525001355894 & 0.160481073286 & 0.0 & 0.153493353029 & 0.02937080484        \\ \midrule
-        2. & 1.20210752946 & 0.039 & 0.686161147707 & 0.210098155039 & 0.0 & 0.239452362893 & 0.0273958638253        \\ \midrule
-        3. & 0.95310150677 & 0.00022623 & 0.657375735134 & 0.222586393133 & 0.0 & 0.0455172846776 & 0.0273958638253  \\ \midrule
-        4. & 0.949541641831 & 0.00049366 & 0.562073743338 & 0.266408875605 & 0.0 & 0.0931694990625 & 0.0273958638253 \\ \midrule
-        5. & 0.93768536446 & 0.000914 & 0.645386113734 & 0.262014445886 & 0.0 & 0.0 & 0.02937080484                  \\ \midrule
-        6. & 0.896706599209 & 0.01 & 0.65562195059 & 0.208167689584 & 0.0 & 0.0  & 0.0229169590345                    \\
+        1. & 0.944 & 0.0754   & 0.525 & 0.16  & 0.0 & 0.153  & 0.02947080484  \\ \midrule
+        2. & 1.2   & 0.039    & 0.686 & 0.21  & 0.0 & 0.239  & 0.0274253      \\ \midrule
+        3. & 0.953 & 0.000226 & 0.657 & 0.223 & 0.0 & 0.0455 & 0.027438253    \\ \midrule
+        4. & 0.95  & 0.000493 & 0.562 & 0.266 & 0.0 & 0.0932 & 0.027458638253 \\ \midrule
+        5. & 0.938 & 0.000914 & 0.645 & 0.262 & 0.0 & 0.0    & 0.0294         \\ \midrule
+        6. & 0.897 & 0.01     & 0.656 & 0.208 & 0.0 & 0.0    & 0.0229         \\
         \bottomrule
     \end{tabu}
     \caption{Index similarity scores of the top six {\em SRR} results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
@@ -326,7 +329,7 @@ limited by the fact that one cannot be certain how users would have behaved if
 presented with different results. Nonetheless, we have done our best to conduct
 the most fair and informative experiment and analysis.
 
-\section{The Experiment}
+\section{The Experiment}\label{sec:experiment}
 A key feature of {\em SRR} is that it can only re-rank the results of a query if
 a user has previously clicked on an item during an online session.
 Consequently, {\em SRR} can only affect the subset of queries that occur in a
@@ -343,27 +346,29 @@ online implementation of our technique would receive the top $N$ items from the
 search engine and re-rank them prior to showing any results to a user. Because
 of this, the final ranking would be independent of the total number of items
 actually seen by a user (determined by the number of pages a user clicked
-through).  Our test set $\chi$ therefore consists solely of queries within
+through).  Our test set $\Chi$ therefore consists solely of queries within
 $\zeta$ where either all items in the query resultset or at least $N=100$ items
 were shown to the user. For example, if a user stops searching after viewing
 only the 16 items on the first page (the default number of items on the first
-page), this query is not included in $\chi$, since it is unknown which other
+page), this query is not included in $\Chi$, since it is unknown which other
 items would have been considered for re-ranking. On the other hand, if the
 search engine found only 13 items in response to a query,  we have the complete
 query resultset and can therefore determine how {\em SRR} would have reordered
 the shown items. Similarly, if more than $N=100$ were shown to the user, we can
 determine the reordering regardless of whether the query resultset is truncated
-since {\em SRR} only considers and re-ranks the first $N=100$ items. $\chi$
+since {\em SRR} only considers and re-ranks the first $N=100$ items. $\Chi$
 makes up 25\% of $\zeta$, accounting for a total of 6\% of all queries.
 
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{CTRcompare.png}
-    \caption{CTR as a function of position from the original data (i.e. not re-ranked) for the test set $\chi$ (blue) and all queries (red).}
+    \protect\caption{CTR as a function of position from the original data (i.e.
+    not re-ranked) for the test set \protect\raisebox{2pt}{$\chi$} (blue) and
+    all queries (red).}
     \label{fig:ctr_vs_position}
 \end{figure}
 
-To construct $\chi$ we  must discard all queries with a number of shown results
+To construct $\Chi$ we  must discard all queries with a number of shown results
 less than $N=100$ that are also divisible by 16. The reason for this is that
 Walmart.com provides two options for the number of items shown per page: 16 or
 32. Thus, by performing the experiment on this subset of the data we precluded
@@ -373,32 +378,32 @@ desire for a large test set with our desire to use a value appropriately large
 for an online implementation. It is therefore quite possible that a larger value
 of $N$ (e.g. 1000) would achieve better results in the actual online scenario.
 
-While we must constrain $\chi$ in this way due to the nature of the available
+While we must constrain $\Chi$ in this way due to the nature of the available
 data, we stress that this subset is certainly biased with respect to queries in
 general. For starters, queries with short resultsets are more likely to have all
 of their resultset seen by a user, and therefore, are more likely to be included
-in $\chi$. It is not clear, however, if this particular bias tends to under- or
+in $\Chi$. It is not clear, however, if this particular bias tends to under- or
 overestimate the effectiveness of {\em SRR} since, as we will show, {\em SRR} is
 more effective on longer query results. Similarly, highly qualified
 queries---e.g. through the use of category or price filters---tend to have
-shorter resultsets, and hence, are more likely to be included in $\chi$.
+shorter resultsets, and hence, are more likely to be included in $\Chi$.
 
-Just as interesting are the ways in which the queries and resultsets of $\chi$
+Just as interesting are the ways in which the queries and resultsets of $\Chi$
 are not biased. In Fig. \ref{fig:ctr_vs_position} we show click-through-rate
 (CTR) as a function of position of the original data (i.e. not re-ranked) for
-both $\chi$ and query results in general. The two curves shown in the figure are
+both $\Chi$ and query results in general. The two curves shown in the figure are
 quite similar, indicating that the quantity and distribution of clicks within
-$\chi$ are essentially representative of those in general. A few other features
-of this figure warrant brief comment. First, we see that $\chi$ has a larger CTR
+$\Chi$ are essentially representative of those in general. A few other features
+of this figure warrant brief comment. First, we see that $\Chi$ has a larger CTR
 for the top two positions. This is likely due to the fact that highly qualified
 queries, which have shorter results and higher CTRs,  make up a higher
-proportion of $\chi$ than queries in general. While this difference does results
-in a slightly higher frequency of clicks in $\chi$, we have no reason to believe
+proportion of $\Chi$ than queries in general. While this difference does results
+in a slightly higher frequency of clicks in $\Chi$, we have no reason to believe
 that this alone results in a significant bias. Next, we see in the red curve a
 discontinuity appears at position 17 as a result of the pagebreak. In the entire
 dataset, the majoriy of queries are truncated at the first page, leading to
 significantly fewer views of items on other pages and thus fewer clicks. This
-discontinuity is absent from the blue curve since $\chi$ has a less severe
+discontinuity is absent from the blue curve since $\Chi$ has a less severe
 dropoff in viewership from one page to the next.  The bump at position 17 can be
 ascribe to users' tendency to disproportionately click on the topmost item shown
 on a page. Indeed, if we normalize for number of pages viewed by a user, we see
@@ -507,12 +512,12 @@ optimal configuration includes nonzero values for all five coefficients showing
 that their contributions are not fully redundant.
 
 With our optimized combination of coefficients we find that {\em SRR}
-significantly outperforms the original ordering on queries in $\chi$. As shown
+significantly outperforms the original ordering on queries in $\Chi$. As shown
 in Fig.  \ref{fig:compare_metric_performance}, the re-ranking achieves a 16\%
 increase in $\mathscr{C}$ compared to the original ordering. The implication is
 that items on the first page of the re-ranking are 16\% more likely to be
 clicked than those in the original ordering. With 1M queries in our test set
-$\chi$, these results are statistically significant, producing a 95\%
+$\Chi$, these results are statistically significant, producing a 95\%
 confidence interval of [15.8\%, 16.2\%] for $\mathscr{C}$.
 
 \begin{figure}[htbp!]
@@ -532,7 +537,7 @@ positions by setting the insert position $I_0 = 2$ such that the top two items
 remained fixed. While this does improve the metrics for {\em SRR}, we emphasize
 that choosing $I_0 = 0$ would not qualitatively change our results. Another
 obstacle overcome by {\em SRR} is that there is little room for improvement in
-first-page CTR, since the vast majority of clicks in $\chi$ (80\%) are already
+first-page CTR, since the vast majority of clicks in $\Chi$ (80\%) are already
 on the first page.
 
 To ensure that these results are not due to an underlying structure of the
@@ -588,38 +593,36 @@ exposure to more items.
     \label{fig:click_position_score_vs_query_length}
 \end{figure}
 
-\end{document}
-
 \section{Discussion}
 
 We have established that {\em SRR} significantly improves the ordering
-of search results by all three metrics on the dataset $\chi$. Note that $\chi$
+of search results by all three metrics on the dataset $\Chi$. Note that $\Chi$
 represents 25\% of $\zeta$ while the remaining 75\% of queries were truncated
-short. We call this set of truncated queries, $\tao$. As discussed in Section 6, 
-we cannot accurately test {\em SRR} on $\tao$ since it would have performed 
-differently on this set of queries (FOOTNOTE).
+short. We call this set of truncated queries, $\tau$. As discussed in Section
+\ref{sec:experiment}, we cannot accurately test {\em SRR} on $\tau$ since it
+would have performed differently on this set of queries (FOOTNOTE).
 
-Extrapolating from $\chi$ to $\tao$ is difficult since, the characteristics of
+Extrapolating from $\Chi$ to $\tau$ is difficult since, the characteristics of
 the two sets are inherently different, potentially introducing biases that
-affect {\em SRR}'s performance. For instance, queries in $\chi$ are ones in
+affect {\em SRR}'s performance. For instance, queries in $\Chi$ are ones in
 which the user search to the end or through at least $N=100$ itesm, potentially
 indicating disinterest in the first page results and favoring any reordering. On
-the other hand, queries in $\chi$ are on average shorter than those in $\tao$
+the other hand, queries in $\Chi$ are on average shorter than those in $\tau$
 and, as suggested by Figure \ref{fig:click_position_score_vs_query_length}, {\em SRR}
 performs better on longer queries. 
 
-While it is unclear whether {\em SRR} would do better or worse on $\tao$, we can
+While it is unclear whether {\em SRR} would do better or worse on $\tau$, we can
 infer a very loose lower bound on $\mathscr{C}$ over all of $\zeta$ by assuming
-that {\em SRR} performs as badly as it reasonably coult on $\tao$. When run on
-$\chi$, {\em SRR} on average demotes 8\% of all first-page clicks, but replaces
+that {\em SRR} performs as badly as it reasonably coult on $\tau$. When run on
+$\Chi$, {\em SRR} on average demotes 8\% of all first-page clicks, but replaces
 them with even more clicks from other pages. In the worst case, we assume that
-when run $\tao$, it would demote 8\% of first-page clicks but replace them with
+when run $\tau$, it would demote 8\% of first-page clicks but replace them with
 0 clicks from other pages. Assuming this pessimistic lower bound for the 75\% of 
-queries in $\zeta$ that make up $\tao$, {\em SRR} would still sligthly
+queries in $\zeta$ that make up $\tau$, {\em SRR} would still sligthly
 outperform the original ordering across all queries (+0.01\%).
 
-If instead we assume that {\em SRR} would perform similarly on $\tao$
-as it does on $\chi$, we can get a more realistic estimate of the impact that the
+If instead we assume that {\em SRR} would perform similarly on $\tau$
+as it does on $\Chi$, we can get a more realistic estimate of the impact that the
 algorithm would have overall. Broadening the scope of our results to all
 queries (even those outside of $\zeta$ which re-ranker could not impact), 
 we get an overall increase in $\mathscr{C}$ by 2\%, an overall increase in $\mathscr{P}$
@@ -630,3 +633,6 @@ increase the absolute size of this pool by 1\%. Since this pool
 comprises 85\% of all purchases, increasing it by 1\% would increase
 the total number of purchases on the website overall by 0.85\%, which
 is a significant increase for a search engine on the scale of Walmart’s.
+
+\end{document}
+
