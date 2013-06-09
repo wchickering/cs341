@@ -170,28 +170,28 @@ The top six original results are compared to the {\em SRR} results in Table
 \ref{tab:compare_orderings} where the first and third column represent the
 original ranking presented to David. Note that we rerank the 90th item from the
 original results to be the 3rd item in the {\em SRR} results.
-\begin{table}[htbp!]
-    \centering
-    \begin{tabu}{| c | p{7cm} | c | p{7cm} |}
-        \midrule
-\rowfont{\bfseries} \multicolumn{2}{|c|}{Original Ordering} & \multicolumn{2}{c|}{{\em SRR} Ordering} \\ \midrule
-        \midrule
-1  &   Great Value Purified Water, 24ct                 & 1  & Great Value Purified Water, 24ct \\ \midrule
-2  &   Nestle Waters Bottled Spring Water, 24ct         & 2  & Nestle Waters Bottled Spring Water, 24ct \\ \midrule
-3  &   Voss Water, 16.9 oz (Pack of 24)                 & 90 & Arrowhead Mountain Spring Water, 3 l \\ \midrule
-4  &   Clear American Cherry Sparkling Water, 1 l, 12pk & 63 & Great Value: Distilled Water, 1 Gal \\ \midrule
-5  &   Clear American Water, 1 l, 12ct                  & 38 & Arrowhead Mountain Spring Water, 2.5gal \\ \midrule
-6  &   Clear American Peach Sparkling Water, 1 l, 12ct  & 8  & Clear American Mandarin Orange Sparkling Water, 1 l, 12pk \\ \midrule
-    \end{tabu}
-    \caption{Original Ordering vs. {\em SRR} Ordering for ``water'' query}
-    \label{tab:compare_orderings}
-\end{table}
 Tables \ref{tab:original_sim_scores} and \ref{tab:rerank_sim_scores} show the
 similarity scores from each index for each item in the two orderings compared to
 David's lone previously clicked item. In each of these tables, the first column
 correponds to Table \ref{tab:compare_orderings} and the second column is the
 similarity metric from Equation (\ref{eqn:similarity_metric}) using our
 optimized tuning parameters.
+\begin{table}[p!]
+    \centering
+    \begin{tabu}{m{.3cm} m{6cm} m{.45cm} m{7cm} }
+        \rowfont{\bfseries} & Original Ordering & & {\em SRR} Ordering \\
+        \toprule
+        1. & Great Value Purified Water, 24ct         & 1.  & Great Value Purified Water, 24ct \\ \midrule
+        2. & Nestle Waters Bottled Spring Water, 24ct & 2.  & Nestle Waters Bottled Spring Water, 24ct \\ \midrule
+        3. & Voss Water, 16.9 oz (Pack of 24)         & 90. & Arrowhead Mountain Spring Water, 3 l \\ \midrule
+        4. & CA Cherry Sparkling Water, 1 l, 12pk     & 63. & Great Value: Distilled Water, 1 Gal \\ \midrule
+        5. & CA Water, 1 l, 12ct                      & 38. & Arrowhead Mountain Spring Water, 2.5gal \\ \midrule
+        6. & CA Peach Sparkling Water, 1 l, 12ct      & 8.  & CA Orange Sparkling Water, 1 l, 12pk \\
+        \bottomrule
+    \end{tabu}
+    \caption{Original Ordering vs. {\em SRR} Ordering for ``water'' query (CA=Clear American)}
+    \label{tab:compare_orderings}
+\end{table}
 \begin{table}[htbp!]
     \centering
     \begin{tabu}{ c n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5} }
@@ -356,6 +356,13 @@ determine the reordering regardless of whether the query resultset is truncated
 since {\em SRR} only considers and re-ranks the first $N=100$ items. $\chi$
 makes up 25\% of $\zeta$, accounting for a total of 6\% of all queries.
 
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=\textwidth]{CTRcompare.png}
+    \caption{CTR as a function of position from the original data (i.e. not re-ranked) for the test set $\chi$ (blue) and all queries (red).}
+    \label{fig:ctr_vs_position}
+\end{figure}
+
 To construct $\chi$ we  must discard all queries with a number of shown results
 less than $N=100$ that are also divisible by 16. The reason for this is that
 Walmart.com provides two options for the number of items shown per page: 16 or
@@ -397,14 +404,7 @@ ascribe to users' tendency to disproportionately click on the topmost item shown
 on a page. Indeed, if we normalize for number of pages viewed by a user, we see
 this bump at 17 in the overal dataset as well. Consistent with this analysis, we
 find another smaller drop in the red curve and smaller bump in the blue at
-possition 33.
-
-\begin{figure}[htbp!]
-    \centering
-    \includegraphics[width=\textwidth]{CTRcompare.png}
-    \caption{CTR as a function of position from the original data (i.e. not re-ranked) for the test set $\chi$ (blue) and all queries (red).}
-    \label{fig:ctr_vs_position}
-\end{figure}
+position 33.
 
 \section{Metrics}
 
