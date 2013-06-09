@@ -655,5 +655,24 @@ comprises 88\% of all purchases, increasing it by 3\% would increase
 the total number of purchases on the website overall by 2.6\%, which
 is a significant increase for a search engine on the scale of Walmart’s.
 
+\section{Conclusion and Future Work}
+
+{\em SRR} has a statistically significant positive effect on the original
+ordering of query results when we measure query results using first-page CTR
+$\mathscr{C}$, first-page purchase rate $\mathscr{P}$, and {\em click-position
+score} $\mathscr{S}$. The positive effect in each of these metrics suggests {\em
+SRR} would be a good candidate for A/B testing.
+
+There are more experiments and ideas we would like to explore. Only five
+distinct vector spaces have been implemented to measure similarity between items
+based on historical session data. There certainly are more possibilities.
+Another possible vector space would consider items similar if they were
+purchased together in the same user session. We did not experiment with the
+similarity metric used to compare items in each vector space. For this project,
+we chose to use Jaccard similarity for every vector space. Using only cosine
+similarity, or a mix of both Jaccard and cosine, would be worth evaluating.
+Another place for improvement is the clustering of queries in the {\em
+query-space} index.
+
 \end{document}
 
