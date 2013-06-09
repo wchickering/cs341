@@ -18,6 +18,17 @@
 \usepackage[mathscr]{euscript}
 \usepackage{dsfont}
 
+%% new column table for tabu to center paragraph cells
+% http://tug.org/mail-archives/texhax/2007-March/008042.html
+\usepackage{array}
+\newcolumntype{C}{>{\centering\arraybackslash}m{2.8cm}} 
+
+% to thicked table lines
+\usepackage{booktabs}
+
+% make rows in tables wider
+\renewcommand{\arraystretch}{1.4}% Wider
+
 \title{Improving Product Search with Session Re-Rank\\
     \large{a Walmart data mining project}}
 \author{Charles Celerier (cceleri), Bill Chickering (bchick),
@@ -162,15 +173,15 @@ original results to be the 3rd item in the {\em SRR} results.
 \begin{table}[htbp!]
     \centering
     \begin{tabu}{| c | p{7cm} | c | p{7cm} |}
-        \hline
-\rowfont{\bfseries} \multicolumn{2}{|c|}{Original Ordering} & \multicolumn{2}{c|}{{\em SRR} Ordering} \\ \hline
-        \hline
-1  &   Great Value Purified Water, 24ct                 & 1  & Great Value Purified Water, 24ct \\ \hline
-2  &   Nestle Waters Bottled Spring Water, 24ct         & 2  & Nestle Waters Bottled Spring Water, 24ct \\ \hline
-3  &   Voss Water, 16.9 oz (Pack of 24)                 & 90 & Arrowhead Mountain Spring Water, 3 l \\ \hline
-4  &   Clear American Cherry Sparkling Water, 1 l, 12pk & 63 & Great Value: Distilled Water, 1 Gal \\ \hline
-5  &   Clear American Water, 1 l, 12ct                  & 38 & Arrowhead Mountain Spring Water, 2.5gal \\ \hline
-6  &   Clear American Peach Sparkling Water, 1 l, 12ct  & 8  & Clear American Mandarin Orange Sparkling Water, 1 l, 12pk \\ \hline
+        \midrule
+\rowfont{\bfseries} \multicolumn{2}{|c|}{Original Ordering} & \multicolumn{2}{c|}{{\em SRR} Ordering} \\ \midrule
+        \midrule
+1  &   Great Value Purified Water, 24ct                 & 1  & Great Value Purified Water, 24ct \\ \midrule
+2  &   Nestle Waters Bottled Spring Water, 24ct         & 2  & Nestle Waters Bottled Spring Water, 24ct \\ \midrule
+3  &   Voss Water, 16.9 oz (Pack of 24)                 & 90 & Arrowhead Mountain Spring Water, 3 l \\ \midrule
+4  &   Clear American Cherry Sparkling Water, 1 l, 12pk & 63 & Great Value: Distilled Water, 1 Gal \\ \midrule
+5  &   Clear American Water, 1 l, 12ct                  & 38 & Arrowhead Mountain Spring Water, 2.5gal \\ \midrule
+6  &   Clear American Peach Sparkling Water, 1 l, 12ct  & 8  & Clear American Mandarin Orange Sparkling Water, 1 l, 12pk \\ \midrule
     \end{tabu}
     \caption{Original Ordering vs. {\em SRR} Ordering for ``water'' query}
     \label{tab:compare_orderings}
@@ -183,48 +194,60 @@ similarity metric from Equation (\ref{eqn:similarity_metric}) using our
 optimized tuning parameters.
 \begin{table}[htbp!]
     \centering
-    \begin{tabu}{ c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
-        \cline{2-8}
-        \rowfont{\bfseries} & \multicolumn{1}{c|}{S} & \multicolumn{1}{c|}{CTR} & \multicolumn{1}{c|}{Clicks} & \multicolumn{1}{c|}{Items} & \multicolumn{1}{c|}{Carts} & \multicolumn{1}{c|}{Queries} & \multicolumn{1}{c|}{Titles}  \\ \hline
+    \begin{tabu}{ c n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5} }
+    \rowfont{\bfseries} & \multicolumn{1}{c}{\Large$\sigma$} & \multicolumn{1}{c}{CTR} & \multicolumn{1}{c}{Clicks} & \multicolumn{1}{c}{Items} & \multicolumn{1}{c}{Carts} & \multicolumn{1}{c}{Queries} & {Titles}  \\
+        \toprule
         %% raw similarity scores
-        %\multicolumn{1}{|c|}{1} & 0.943746587049 & 0.0754 & 0.00227790432802 &  0.017955801105   &  0.0 &  0.0104712041885   &  0.0909090909091 \\ \hline
-        %\multicolumn{1}{|c|}{2} & 1.20210752946  & 0.0390 & 0.00389105058366 &  0.0251450676983  &  0.0 &  0.0254833040422   &  0.0833333333333 \\ \hline
-        %\multicolumn{1}{|c|}{3} & 0.357056025563 & 0.0254 & 0.0              &  0.0227882037534  &  0.0 & 0.00555212831585   &  0.0769230769231 \\ \hline
-        %\multicolumn{1}{|c|}{4} & 0.75268102742  & 0.0195 & 0.0016835016835  &  0.0233918128655  &  0.0 &  0.0016339869281   &  0.0666666666667 \\ \hline
-        %\multicolumn{1}{|c|}{5} & 0.736731785955 & 0.0153 & 0.00173310225303 &  0.016077170418   &  0.0 &  0.00390015600624  &  0.0666666666667 \\ \hline
-        %\multicolumn{1}{|c|}{6} & 0.174834647629 & 0.0129 & 0.0              &  0.00954198473282 &  0.0 &  0.000793021411578 &  0.0666666666667 \\ \hline
+        %1. & 0.943746587049 & 0.0754 & 0.00227790432802 &  0.017955801105   &  0.0 &  0.0104712041885   &  0.0909090909091 \\ \midrule
+        %2. & 1.20210752946  & 0.0390 & 0.00389105058366 &  0.0251450676983  &  0.0 &  0.0254833040422   &  0.0833333333333 \\ \midrule
+        %3. & 0.357056025563 & 0.0254 & 0.0              &  0.0227882037534  &  0.0 & 0.00555212831585   &  0.0769230769231 \\ \midrule
+        %4. & 0.75268102742  & 0.0195 & 0.0016835016835  &  0.0233918128655  &  0.0 &  0.0016339869281   &  0.0666666666667 \\ \midrule
+        %5. & 0.736731785955 & 0.0153 & 0.00173310225303 &  0.016077170418   &  0.0 &  0.00390015600624  &  0.0666666666667 \\ \midrule
+        %6. & 0.174834647629 & 0.0129 & 0.0              &  0.00954198473282 &  0.0 &  0.000793021411578 &  0.0666666666667 \\ \midrule
         
         % tuned scores
-        \multicolumn{1}{|c|}{1} & 0.943746587049 & 0.0754 & 0.525001355894 & 0.160481073286 & 0.0 & 0.153493353029 & 0.02937080484    \\ \hline
-        \multicolumn{1}{|c|}{2} & 1.20210752946 & 0.039 & 0.686161147707 & 0.210098155039 & 0.0 & 0.239452362893 & 0.0273958638253    \\ \hline
-        \multicolumn{1}{|c|}{3} & 0.357056025563 & 0.0254 & 0.0 & 0.194190538676 & 0.0 & 0.11176890762 & 0.0256965792667              \\ \hline
-        \multicolumn{1}{|c|}{4} & 0.75268102742 & 0.0195 & 0.451335466924 & 0.198294695203 & 0.0 & 0.060633906259 & 0.0229169590345   \\ \hline
-        \multicolumn{1}{|c|}{5} & 0.736731785955 & 0.0153 & 0.457935991834 & 0.146901991555 & 0.0 & 0.0936768435316 & 0.0229169590345 \\ \hline
-        \multicolumn{1}{|c|}{6} & 0.174834647629 & 0.0129 & 0.0 & 0.0967767348166 & 0.0 & 0.0422409537777 & 0.0229169590345           \\ \hline
+        1. & 0.943746587049 & 0.0754 & 0.525001355894 & 0.160481073286 & 0.0 & 0.153493353029 & 0.02937080484    \\ \midrule
+        2. & 1.20210752946 & 0.039 & 0.686161147707 & 0.210098155039 & 0.0 & 0.239452362893 & 0.0273958638253    \\ \midrule
+        3. & 0.357056025563 & 0.0254 & 0.0 & 0.194190538676 & 0.0 & 0.11176890762 & 0.0256965792667              \\ \midrule
+        4. & 0.75268102742 & 0.0195 & 0.451335466924 & 0.198294695203 & 0.0 & 0.060633906259 & 0.0229169590345   \\ \midrule
+        5. & 0.736731785955 & 0.0153 & 0.457935991834 & 0.146901991555 & 0.0 & 0.0936768435316 & 0.0229169590345 \\ \midrule
+        6. & 0.174834647629 & 0.0129 & 0.0 & 0.0967767348166 & 0.0 & 0.0422409537777 & 0.0229169590345           \\
+        \bottomrule
     \end{tabu}
     \caption{Index similarity scores of the top six original results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
     \label{tab:original_sim_scores}
 \end{table}
 \begin{table}[htbp!]
     \centering
-    \begin{tabu}{ c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
-        \cline{2-8}
-        \rowfont{\bfseries} & \multicolumn{1}{c|}{S} & \multicolumn{1}{c|}{CTR} & \multicolumn{1}{c|}{Clicks} & \multicolumn{1}{c|}{Items} & \multicolumn{1}{c|}{Carts} & \multicolumn{1}{c|}{Queries} & \multicolumn{1}{c|}{Titles}  \\ \hline
+    %\begin{tabu}{ c c  c }
+    %    \rowfont{\bfseries} & CTR of demoted items & CTR of promoted items  \\
+    %    \noalign{\smallskip}
+    %    \noalign{\smallskip}
+    %    \toprule
+    %    {\bfseries \em SRR} & 6.24\% & 1.79\% \\
+    %    \midrule
+    %    {\bfseries \em RRR} & 2.42\% & 3.67\% \\
+    %    \bottomrule
+    %\end{tabu}
+    \begin{tabu}{ c n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5} n{1}{5}}
+    \rowfont{\bfseries} & \multicolumn{1}{c}{\Large$\sigma$} & \multicolumn{1}{c}{CTR} & \multicolumn{1}{c}{Clicks} & \multicolumn{1}{c}{Items} & \multicolumn{1}{c}{Carts} & \multicolumn{1}{c}{Queries} & {Titles}  \\
+        \toprule
         %% raw similarity scores
-        %\multicolumn{1}{|c|}{1 } & 0.943746587049 & 0.0754     & 0.00227790432802 &  0.017955801105 &  0.0 &  0.0104712041885 &  0.0909090909091  \\ \hline
-        %\multicolumn{1}{|c|}{2 } & 1.20210752946  & 0.0390     & 0.00389105058366 &  0.0251450676983 &  0.0 &  0.0254833040422 &  0.0833333333333 \\ \hline
-        %\multicolumn{1}{|c|}{90} & 0.95310150677  & 0.00022623 & 0.00357142857143 &  0.027027027027 &  0.0 &  0.000920810313076 &  0.0833333333333\\ \hline
-        %\multicolumn{1}{|c|}{63} & 0.949541641831 & 0.00049366 & 0.00261096605744 &  0.0338345864662 &  0.0 &  0.00385802469136 &  0.0833333333333\\ \hline
-        %\multicolumn{1}{|c|}{38} & 0.93768536446  & 0.000914   & 0.00344234079174 &  0.0331384015595 &  0.0 &  0.0 &  0.0909090909091             \\ \hline
-        %\multicolumn{1}{|c|}{8 } & 0.896706599209 & 0.01       & 0.00355239786856 &  0.0248565965583 &  0.0 &  0.0 &  0.0666666666667             \\ \hline
+        %1.  & 0.943746587049 & 0.0754     & 0.00227790432802 &  0.017955801105 &  0.0 &  0.0104712041885 &  0.0909090909091  \\ \midrule
+        %2.  & 1.20210752946  & 0.0390     & 0.00389105058366 &  0.0251450676983 &  0.0 &  0.0254833040422 &  0.0833333333333 \\ \midrule
+        %90. & 0.95310150677  & 0.00022623 & 0.00357142857143 &  0.027027027027 &  0.0 &  0.000920810313076 &  0.0833333333333\\ \midrule
+        %63. & 0.949541641831 & 0.00049366 & 0.00261096605744 &  0.0338345864662 &  0.0 &  0.00385802469136 &  0.0833333333333\\ \midrule
+        %38. & 0.93768536446  & 0.000914   & 0.00344234079174 &  0.0331384015595 &  0.0 &  0.0 &  0.0909090909091             \\ \midrule
+        %8. & 0.896706599209 & 0.01       & 0.00355239786856 &  0.0248565965583 &  0.0 &  0.0 &  0.0666666666667             \\ \midrule
 
         % tuned scores
-        \multicolumn{1}{|c|}{1} & 0.943746587049 & 0.0754 & 0.525001355894 & 0.160481073286 & 0.0 & 0.153493353029 & 0.02937080484        \\ \hline
-        \multicolumn{1}{|c|}{2} & 1.20210752946 & 0.039 & 0.686161147707 & 0.210098155039 & 0.0 & 0.239452362893 & 0.0273958638253        \\ \hline
-        \multicolumn{1}{|c|}{3} & 0.95310150677 & 0.00022623 & 0.657375735134 & 0.222586393133 & 0.0 & 0.0455172846776 & 0.0273958638253  \\ \hline
-        \multicolumn{1}{|c|}{4} & 0.949541641831 & 0.00049366 & 0.562073743338 & 0.266408875605 & 0.0 & 0.0931694990625 & 0.0273958638253 \\ \hline
-        \multicolumn{1}{|c|}{5} & 0.93768536446 & 0.000914 & 0.645386113734 & 0.262014445886 & 0.0 & 0.0 & 0.02937080484                  \\ \hline
-        \multicolumn{1}{|c|}{6} & 0.896706599209 & 0.01 & 0.65562195059 & 0.208167689584 & 0.0 & 0.0 & 0.0229169590345                    \\ \hline
+        1. & 0.943746587049 & 0.0754 & 0.525001355894 & 0.160481073286 & 0.0 & 0.153493353029 & 0.02937080484        \\ \midrule
+        2. & 1.20210752946 & 0.039 & 0.686161147707 & 0.210098155039 & 0.0 & 0.239452362893 & 0.0273958638253        \\ \midrule
+        3. & 0.95310150677 & 0.00022623 & 0.657375735134 & 0.222586393133 & 0.0 & 0.0455172846776 & 0.0273958638253  \\ \midrule
+        4. & 0.949541641831 & 0.00049366 & 0.562073743338 & 0.266408875605 & 0.0 & 0.0931694990625 & 0.0273958638253 \\ \midrule
+        5. & 0.93768536446 & 0.000914 & 0.645386113734 & 0.262014445886 & 0.0 & 0.0 & 0.02937080484                  \\ \midrule
+        6. & 0.896706599209 & 0.01 & 0.65562195059 & 0.208167689584 & 0.0 & 0.0  & 0.0229169590345                    \\
+        \bottomrule
     \end{tabu}
     \caption{Index similarity scores of the top six {\em SRR} results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
     \label{tab:rerank_sim_scores}
@@ -470,12 +493,12 @@ solely by the similarity space irrespective of the original ordering.
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{000050_0_48chunk_k100_i2_n100_avg_click_position_score_0-0_16.png}
-    \caption{Clicks-position score $\mathsrc{S}$ as a function of individual similarity space coefficients $C_s$. For each curve, a single coefficient is varied with all other set to zero.}
+    \caption{Clicks-position score $\mathscr{S}$ as a function of individual similarity space coefficients $C_s$. For each curve, a single coefficient is varied with all other set to zero.}
     \label{fig:avg_clicks_position_score}
 \end{figure}
 
 We employ hueristics to manually optimize the coefficients $C_s$ and exponents
-$\apha_s$, which are outside the scope of this report. We do want to emphasize
+$\alpha_s$, which are outside the scope of this report. We do want to emphasize
 two important points regarding this optimization, however. First, as previously
 mentioned, we conduct this optimization on a set of data that is both disjoint
 with that used to construct the similarity spaces indexes and with that used to
@@ -484,12 +507,12 @@ optimal configuration includes nonzero values for all five coefficients showing
 that their contributions are not fully redundant.
 
 With our optimized combination of coefficients we find that {\em SRR}
-significantly outperforms the original ordering on queries in {\chi}. As shown
+significantly outperforms the original ordering on queries in $\chi$. As shown
 in Fig.  \ref{fig:compare_metric_performance}, the re-ranking achieves a 16\%
 increase in $\mathscr{C}$ compared to the original ordering. The implication is
 that items on the first page of the re-ranking are 16\% more likely to be
 clicked than those in the original ordering. With 1M queries in our test set
-{\chi}, these results are statistically significant, producing a 95\%
+$\chi$, these results are statistically significant, producing a 95\%
 confidence interval of [15.8\%, 16.2\%] for $\mathscr{C}$.
 
 \begin{figure}[htbp!]
@@ -509,7 +532,7 @@ positions by setting the insert position $I_0 = 2$ such that the top two items
 remained fixed. While this does improve the metrics for {\em SRR}, we emphasize
 that choosing $I_0 = 0$ would not qualitatively change our results. Another
 obstacle overcome by {\em SRR} is that there is little room for improvement in
-first-page CTR, since the vast majority of clicks in {\chi} (80\%) are already
+first-page CTR, since the vast majority of clicks in $\chi$ (80\%) are already
 on the first page.
 
 To ensure that these results are not due to an underlying structure of the
@@ -530,16 +553,18 @@ ordering in the face of a number of disadvantages.
 
 \begin{table}[htbp!]
     \centering
-    \begin{tabu}{ c | n{1}{5} | n{1}{5} |}
-        \cline{2-8}
-        \rowfont{\bfseries} & \multicolumn{1}{c|}{CTR of promoted items} &
-        \multicolumn{1}{c|}{CTR of demoted items} & \multicolumn{1}{c|}{CTR of
-        promoted items}  \\ \hline
-        \multicolumn{1}{|c|}{{\em SRR}} & 6.24\% & 1.79\% \\ \hline
-        \multicolumn{1}{|c|}{{\em RRR}} & 2.42\% & 3.67\% \\ \hline
+    \begin{tabu}{ c c  c }
+        \rowfont{\bfseries} & \multicolumn{1}{C}{CTR of demoted items} & \multicolumn{1}{C}{CTR of promoted items}  \\
+        \noalign{\smallskip}
+        \noalign{\smallskip}
+        \toprule
+        {\bfseries \em SRR} & 6.24\% & 1.79\% \\
+        \midrule
+        {\bfseries \em RRR} & 2.42\% & 3.67\% \\
+        \bottomrule
     \end{tabu}
     \caption{CTR of items promoted to the first page and demoted off the first
-    page. {\em SRR} siginificantly outperforms random re-ranking in both categories.
+    page. {\em SRR} siginificantly outperforms random re-ranking in both categories.}
     \label{tab:promote_demote_table}
 \end{table} 
 
@@ -550,7 +575,7 @@ for queries of any length, it gains greater improvements the longer a query is.
 This general trend makes sense; with more items to work with, {\em SRR} has a
 higher likelihood of finding an items more similar to a previously clicked one.
 The specifics of the scatter plot are a little less clear. There is a distinct
-jump in performance after moving to the second page ($L_q$ \gt 16). This
+jump in performance after moving to the second page ($L_q > 16$). This
 could be due to behavioral bias, as all these queries were seen by users who
 chose to search past the first page. We also see the rate of increase drop off
 after that jump. We speculate that this is due to diminshing returns for
@@ -568,37 +593,37 @@ exposure to more items.
 \section{Discussion}
 
 We have established that {\em SRR} significantly improves the ordering
-of search results by all three metrics on the dataset {\chi}. Note that {\chi}
-represents 25\% of {\zeta} while the remaining 75\% of queries were truncated
-short. We call this set of truncated queries, {\tao}. As discussed in Section 6, 
-we cannot accurately test {\em SRR} on {\tao} since it would have performed 
+of search results by all three metrics on the dataset $\chi$. Note that $\chi$
+represents 25\% of $\zeta$ while the remaining 75\% of queries were truncated
+short. We call this set of truncated queries, $\tao$. As discussed in Section 6, 
+we cannot accurately test {\em SRR} on $\tao$ since it would have performed 
 differently on this set of queries (FOOTNOTE).
 
-Extrapolating from {\chi} to {\tao} is difficult since, the characteristics of
+Extrapolating from $\chi$ to $\tao$ is difficult since, the characteristics of
 the two sets are inherently different, potentially introducing biases that
-affect {\em SRR}'s performance. For instance, queries in {\chi} are ones in
+affect {\em SRR}'s performance. For instance, queries in $\chi$ are ones in
 which the user search to the end or through at least $N=100$ itesm, potentially
 indicating disinterest in the first page results and favoring any reordering. On
-the other hand, queries in {\chi} are on average shorter than those in {\tao}
+the other hand, queries in $\chi$ are on average shorter than those in $\tao$
 and, as suggested by Figure \ref{fig:click_position_score_vs_query_length}, {\em SRR}
 performs better on longer queries. 
 
-While it is unclear whether {\em SRR} would do better or worse on {\tao}, we can
-infer a very loose lower bound on $\mathsrc{C}$ over all of {\zeta} by assuming
-that {\em SRR} performs as badly as it reasonably coult on {\tao}. When run on
-{\chi}, {\em SRR} on average demotes 8\% of all first-page clicks, but replaces
+While it is unclear whether {\em SRR} would do better or worse on $\tao$, we can
+infer a very loose lower bound on $\mathscr{C}$ over all of $\zeta$ by assuming
+that {\em SRR} performs as badly as it reasonably coult on $\tao$. When run on
+$\chi$, {\em SRR} on average demotes 8\% of all first-page clicks, but replaces
 them with even more clicks from other pages. In the worst case, we assume that
-when run {\tao}, it would demote 8\% of first-page clicks but replace them with
+when run $\tao$, it would demote 8\% of first-page clicks but replace them with
 0 clicks from other pages. Assuming this pessimistic lower bound for the 75\% of 
-queries in {\zeta} that make up {\tao}, {\em SRR} would still sligthly
+queries in $\zeta$ that make up $\tao$, {\em SRR} would still sligthly
 outperform the original ordering across all queries (+0.01\%).
 
-If instead we assume that {\em SRR} would perform similarly on {\tao}
-as it does on {\chi}, we can get a more realistic estimate of the impact that the
+If instead we assume that {\em SRR} would perform similarly on $\tao$
+as it does on $\chi$, we can get a more realistic estimate of the impact that the
 algorithm would have overall. Broadening the scope of our results to all
-queries (even those outside of {\zeta} which re-ranker could not impact), 
-we get an overall increase in $\mathsrc{C}$ by 2\%, an overall increase in $\mathsrc{P}$
-by 1\% and an overall increas in $\mathsrc{S}$ by 0.5\%. To get a better sense of what
+queries (even those outside of $\zeta$ which re-ranker could not impact), 
+we get an overall increase in $\mathscr{C}$ by 2\%, an overall increase in $\mathscr{P}$
+by 1\% and an overall increas in $\mathscr{S}$ by 0.5\%. To get a better sense of what
 this impact means, consider the pool of purchases that occur in the
 first page. Increasing the purchasing rate by 1\% for these items would
 increase the absolute size of this pool by 1\%. Since this pool
