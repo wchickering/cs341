@@ -192,7 +192,7 @@ optimized tuning parameters.
         6. & CA Peach Sparkling Water, 1 l, 12ct      & 8.  & CA Orange Sparkling Water, 1 l, 12pk \\
         \bottomrule
     \end{tabu}
-    \caption{Original Ordering vs. {\em SRR} Ordering for ``water'' query (CA=Clear American)}
+    \caption{Original Ordering vs. {\em SRR} Ordering for ``water'' query}
     \label{tab:compare_orderings}
 \end{table}
 \begin{table}[htbp!]
@@ -356,7 +356,7 @@ search engine found only 13 items in response to a query,  we have the complete
 query resultset and can therefore determine how {\em SRR} would have reordered
 the shown items. Similarly, if more than $N=100$ were shown to the user, we can
 determine the reordering regardless of whether the query resultset is truncated
-since {\em SRR} only considers and re-ranks the first $N=100$ items. $\chi$
+since {\em SRR} only considers and re-ranks the first $N=100$ items. $\Chi$
 makes up 30\% of $\zeta$, accounting for a total of 7.5\% of all queries.
 
 \begin{figure}[htbp!]
@@ -513,12 +513,12 @@ optimal configuration includes nonzero values for all five coefficients showing
 that their contributions are not fully redundant.
 
 With our optimized combination of coefficients we find that {\em SRR}
-significantly outperforms the original ordering on queries in $\chi$. As shown
+significantly outperforms the original ordering on queries in $\Chi$. As shown
 in Fig.  \ref{fig:compare_metric_performance}, the re-ranking achieves a 16.9\%
 increase in $\mathscr{C}$ compared to the original ordering. The implication is
 that items on the first page of the re-ranking are 16.9\% more likely to be
 clicked than those in the original ordering. With over 2M queries in our test set
-$\chi$, these results are statistically significant, producing a 95\%
+$\Chi$, these results are statistically significant, producing a 95\%
 confidence interval of [16.4\%, 17.4\%] for $\mathscr{C}$.
 
 \begin{figure}[htbp!]
@@ -538,7 +538,7 @@ positions by setting the insert position $I_0 = 2$ such that the top two items
 remained fixed. While this does improve the metrics for {\em SRR}, we emphasize
 that choosing $I_0 = 0$ would not qualitatively change our results. Another
 obstacle overcome by {\em SRR} is that there is little room for improvement in
-first-page CTR, since the majority of clicks in $\chi$ (58\%) are already
+first-page CTR, since the majority of clicks in $\Chi$ (58\%) are already
 on the first page.
 
 To ensure that these results are not due to an underlying structure of the
@@ -601,7 +601,7 @@ unclear to us.
 \section{Discussion}
 
 We have established that {\em SRR} significantly improves the ordering
-of search results by all three metrics on the dataset $\chi$. Note that $\chi$
+of search results by all three metrics on the dataset $\Chi$. Note that $\Chi$
 represents 30\% of $\zeta$ while the remaining 70\% of queries were truncated
 short. We call this set of truncated queries, $\tau$. As discussed in Section 6, 
 we cannot accurately test {\em SRR} on $\tau$ since it would have performed 
@@ -630,13 +630,13 @@ If instead we assume that {\em SRR} would perform similarly on $\tau$
 as it does on $\Chi$, we can get a more realistic estimate of the impact that the
 algorithm would have overall. Broadening the scope of our results to all
 queries (even those outside of $\zeta$ which re-ranker could not impact), 
-we get an overall increase in $\mathscr{C}$ by 2.2\% and an overall increase in $\mathscr{P}$
-by 1\%. To get a better sense of what
-this impact means, consider the pool of purchases that occur in the
-first page. Increasing the purchasing rate by 1\% for these items would
-increase the absolute size of this pool by 1\%. Since this pool
-comprises 88\% of all purchases, increasing it by 1\% would increase
-the total number of purchases on the website overall by 0.88\%, which
+we get an overall increase in $\mathscr{C}$ by 4.5\% and an overall increase in $\mathscr{P}$
+by 3.0\%. To get a better sense of what
+this impact means, consider the set of purchases that occur in the
+first page. Increasing the purchasing rate for these items by 3\% would
+increase the absolute size of this set by 3\%. Since this set
+comprises 88\% of all purchases, increasing it by 3\% would increase
+the total number of purchases on the website overall by 2.6\%, which
 is a significant increase for a search engine on the scale of Walmart’s.
 
 \end{document}
