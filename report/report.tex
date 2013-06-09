@@ -30,7 +30,7 @@
 Walmart.com maintains an online catalog of over 2M products. Consequently,
 enabling users to quickly find products that conform to their specific needs and
 tastes is especially challenging. Given the difficulty of its task,
-Walmart.com's product search engine does an impressive job in interpretting the
+Walmart.com's product search engine does an impressive job of interpretting the
 user-provided query and rapidly returning relevant results. Yet, there remains
 highly significant information that is not fully leveraged. The details of a user's online shopping session are indicative of a user's intent and
 compliment---indeed, provide context for---the user-provided query. In this report
@@ -41,7 +41,7 @@ on the first page of query results.
 \section{The Technique}
 
 {\em SRR} works by comparing previously clicked items with the top
-$N$ items returned by the search engine in reponse to a query. Items to be shown
+$N$ items returned by the search engine in reponse to a query. Items in the top $N$
 that are sufficiently similar to previously clicked items are promoted. The
 extent (i.e. number of positions) of the promotion for a particular item is a
 function of its similarity to previously clicked items, its original position,
@@ -78,12 +78,12 @@ The premise behind {\em click-space} is that two items are similar if they are
 both clicked within the same online shopping session. The dimensions, or
 objects, of this space are therefore past user-sessions. The {\em clicks-index}
 for the data presented in this report was contructed using approximately half of
-the Walmart provided data, or about 60M queries (about 120M page views).
+the provided data, or about 60M queries (about 120M page views).
 
-{\em Cart-space} is based on the notion that two items are similar is they ever
+{\em Cart-space} is based on the notion that two items are similar if they ever
 appear in a shopping cart together. The objects of this space are therefore
 shopping carts. The {\em clicks-index} for the data presented in this report was
-contructed using approximately half of the Walmart provided data.
+contructed using approximately half of the provided data.
 
 Items are also considered similar if they appear in a query together. The
 objects of {\em query-space} are therefore queries. We make a distinction,
@@ -144,7 +144,7 @@ The only fictitious part of the example will be our shopper's name, David.
 David is interested in the ``Primo Ceramic Crock Water Cooler with Stand'' and
 clicks on this item during his session. Sometime later he navigates to the
 ``Grocery $\rightarrow $Beverages $\rightarrow $Water'' category and searches
-for ``water''. He is presented with 300+ results and clicks 90th item, a 3 liter
+for ``water''. He is presented with 300+ results and clicks the 90th item, a 3 liter
 jug of water.
 
 The top six original results are compared to the {\em SRR} results in Table
@@ -270,7 +270,7 @@ that form four of the similarity spaces ({\em click-space}, {\em cart-space},
 {\em query-space}, and {\em item-space}) we use to identify relationships between 
 items in realtime (the remaining similarity space, {\em title-space}, was compiled
 separately using the provided item data). The second set, which consists of less 
-than 5\% of the data, was used for testing and optimization allowing us to refine 
+than 5\% of the data, was used for testing and optimization, allowing us to refine 
 our technique and tune its parameters. And the third set, which includes about 
 10\% of the data, was used in the experiments described and analyzed in this 
 report.
@@ -296,66 +296,80 @@ presented with different results. Nonetheless, we have done our best to conduct
 the most fair and informative experiment and analysis.
 
 \section{The Experiment}
+A key feature of {\em SRR} is that it can only re-rank the results of a query if 
+a user has previously clicked on an item during an online session.
+Consequently, {\em SRR} can only affect the subset of queries that occur in a 
+session with previous clicks. We denote this subset of queries as $\zeta$ and limit
+our experiment and analysis to this set. It turns 
+out that 25\% of all queries are in $\zeta$. Moreover, 28\% of all clicks and 
+33\% of all purchases occur within the query resultsets of $\zeta$, since
+there is a correlation between previous clicks and clicks/purchases in a query. 
+Thus an impact to this subset can have a significant impact overall.
 
 The goal for the experiment is to simulate {\em SRR} using the
 provided historical query data, which is limited to what users were actually
-shown. Since an online implementation of our technique would receive the top $N$
-items from the search engine for re-ranking prior to showing any results to a
-user, the final ranking would be independent of the total number of items
-actually shown (e.g. the number of page views requested by a user). Our test 
-set $\chi$ therefore consists solely of queries where either all items in the
-query resultset or at least $N=100$ were shown to the user. For example, if
-the search engine found only 13 items in response to a query, all of these
-items were shown to the user on a single page. In this case, we have the
+shown. An online implementation of our technique would receive the top $N$
+items from the search engine and re-rank them prior to showing any results to a
+user. Because of this, the final ranking would be independent of the total number of items
+actually seen by a user (determined by the number of pages a user clicked through). 
+Our test set $\chi$ therefore consists solely of queries within $\zeta$ where either all 
+items in the query resultset or at least $N=100$ items were shown to the user. For example, 
+if a user stops searching after viewing only the 16 items on the first page (the default number
+of items on the first page), this query is not included in $\chi$, since it is unknown 
+which other items would have been considered for re-ranking. On the other hand, if the search 
+engine found only 13 items in response to a query,  we have the
 complete query resultset and can therefore determine how {\em SRR}
-would have reordered the shown items. At the same time, if more than $N=100$
+would have reordered the shown items. Similarly, if more than $N=100$
 were shown to the user, we can determine the reordering regardless of whether
 the query resultset is truncated since {\em SRR} only considers
-and re-ranks the first $N=100$ items.
+and re-ranks the first $N=100$ items. $\chi$ makes up 25\% of $\zeta$, 
+accounting for a total of 6\% of all queries.
 
-To construct $\chi$ we therefore must discard all queries with a number of
+To construct $\chi$ we  must discard all queries with a number of
 shown results less than $N=100$ that are also divisible by 16. The reason for 
 this is that Walmart.com provides two options for the number of items shown per
 page: 16 or 32. Thus, by performing the experiment on this subset of the data we
 precluded queries where the top $N$ items are not available to our algorithm.
 The choice of $N=100$, meanwhile, is somewhat arbitrary and was made by
 balancing our desire for a large test set with our desire to use a value
-comparable to what would be appropriate for an online implementation. It is
-therefore quite possible that a
+appropriately large for an online implementation. It is therefore quite possible that a
 larger value of $N$ (e.g. 1000) would achieve better results in the actual
 online scenario.
 
-While we must constrain $\chi$ in this way given the nature of the available 
+While we must constrain $\chi$ in this way due to the nature of the available 
 data, we stress that this subset is certainly biased with respect to queries 
 in general. For starters, queries with short resultsets are more likely to 
 have all of their resultset seen by a user, and therefore, are more likely to 
 be included in $\chi$. It is not clear, however, if this particular bias
 tends to under- or overestimate the effectiveness of {\em SRR}
-since, as we will show, it is more effective on longer query results. Similarly,
+since, as we will show, {\em SRR} is more effective on longer query results. Similarly,
 highly qualified queries---e.g. through the use of category or price
-filters---tend to have shorter resultset, and hence, are more likely to be
+filters---tend to have shorter resultsets, and hence, are more likely to be
 included in $\chi$.
 
 % TODO: Need to comment on small differences in CTR vs position between $\chi$
 % and queries in general (e.g. CTR@1 is significantly higher in $\chi$).
-Just as interesting are the ways in which the queries and resultsets of $\chi$
-are not biased. In Fig. \ref{fig:ctr_vs_position} we show click-through-rate (CTR)
-as a function of position of the original data (i.e. not re-ranked) for both
+Just as interesting are the ways in which the queries and resultsets of $\chi$ appear
+not to be biased. In Fig. \ref{fig:ctr_vs_position} we show click-through-rate (CTR)
+as a function of position of the data in its original ordering for both
 $\chi$ and query results in general. The two curves shown in the figure are
-quite similar indicating that the quantity and distribution of clicks within $\chi$ 
+quite similar, indicating that the quantity and distribution of clicks within $\chi$ 
 are essentially representative of those in general. A few other features of
 this figure warrant brief comment. First, we see that $\chi$ has a larger CTR
 for the top two positions. This is likely due to the fact that highly qualified
 queries, which have shorter results and higher CTRs,  make up a higher proportion 
 of $\chi$ than queries in general. While this difference does results in a slightly
 higher frequency of clicks in $\chi$, we have no reason to believe that this alone
-results in significant bias. Next, we see in the red curve a discontinuity appears at
-position 17 as a result of the pagebreak. This discontinuity is absent from the
-blue curve due to the omission of truncated results. In its place, we find a local 
-maximum at position 17 that we ascribe to users' tendency to disproportionately
-click on the topmost item shown on a page. Indeed, an additional, though smaller, 
-maximum exists at position 33 corresponding to the topmost position of the third
-page also exists (not shown).
+results in a significant bias. Next, we see in the red curve a discontinuity appears at
+position 17 as a result of the pagebreak. In the entire dataset, the majoriy of queries
+are truncated at the first page, leading to significantly fewer views of items on other
+pages and thus fewer clicks. This discontinuity is absent from the
+blue curve since $\chi$ has a less severe dropoff in viewership from one page to the next. 
+The bump at position 17 can be ascribe to users' tendency to disproportionately
+click on the topmost item shown on a page. Indeed, if we normalize for number of pages
+viewed by a user, we see this bump at 17 in the overal dataset as well. Consistent with
+this analysis, we find another smaller drop in the red curve and smaller bump in the blue
+at possition 33.
 
 \begin{figure}[htbp!]
     \centering
@@ -364,29 +378,17 @@ page also exists (not shown).
     \label{fig:ctr_vs_position}
 \end{figure}
 
-A key feature of {\em SRR} is that it can only re-rank the results of a query if 
-user has previously clicked on an item during their an online session.
-Consequently, {\em SRR} can only affect the subset of queries that occur in a 
-session with previous clicks. We denote this subset of queries as $\zeta$. It turns 
-out that 25\% of all queries are in $\zeta$. Moreover, 28\% of all clicks and 
-33\% of all purchases occur within the query resultsets of $\zeta$, since
-there is a correlation between previous clicks and clicks/purchases in a query. 
-Thus an impact to this subset can have a significant impact overall.
-
-Within the dataset $\zeta$, we call the subset of queries restricted in this way 
-$\chi$. $\chi$ makes up 25\% of $\zeta$, accounting for a total of 6\% of all queries.
-
 \section{Metrics}
 
 A true test of the effectiveness of {\em SRR} would require online A/B
 testing. In the meantime, we can simulate the effect of {\em SSR} by running it
 on historical data and examining the new positions of clicked and purchased items.
 Assuming the user would have clicked or purchased the same items in this new ordering, 
-we can compare the distribution of clicks in the original ranking to that of yielded 
+we can compare the distribution of clicks in the original ranking to that yielded 
 by {\em SRR}.
 
 To compare two rankings of shown items, we focus on three key metrics. Our primary 
-metric is the first-page CTR $\mathscr{C}$, defined as the likelihood an item 
+metric is the first-page CTR $\mathscr{C}$, defined as the likelihood that an item 
 presented on the first page receives a click. As noted above, 75\% of all queries 
 are only one page long. This shows the importance of bringing desirable items to the 
 first page and it motivates our focus on $\mathscr{C}$. We calculate this metric by 
@@ -417,7 +419,7 @@ Somewhat similar to normalized discounted cumulative gain (NDCG), which is a com
 of search engine results, this score weighs the value of a clicked item by its position, 
 giving higher weights to items closer to the top. For $\mathscr{S}$, the weight given to 
 a click in position $i$ is the CTR at position i $\Gamma_i$. In this way, we equate how 
-often users click on a certain position to with how valuable it is to put a desirable 
+often users click on a certain position to how valuable it is to put a desirable 
 item there. Formally, we define {\em click-position score} as
 \begin{equation*}
     \mathscr{S} = \frac{1}{\left\vert{Q}\right\vert}\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i\right\}\Gamma_i.
