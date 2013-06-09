@@ -4,7 +4,6 @@
 \usepackage[inner=2.5cm,outer=2.5cm,bottom=1.8cm,top=1.8cm]{geometry}
 \usepackage{graphicx}% Include figure files
 \graphicspath{ {./graphics/} }
-%\usepackage{sidecap} % can be used for figures with side caption
 \usepackage{caption}
 \usepackage{numprint} % rounds numbers in tables
 \npdecimalsign{.}
@@ -12,11 +11,23 @@
 \captionsetup{justification=centering}
 \usepackage{wrapfig}
 \usepackage{tabu} % for changing individual row fonts
-%\usepackage{dcolumn} % Align table columns on decimal point
-%\usepackage{bm} % bold math
 \usepackage{amssymb, amsmath}
 \usepackage[mathscr]{euscript}
 \usepackage{dsfont}
+
+% for citing things
+\usepackage[hyphens]{url}
+\usepackage[bookmarks]{hyperref}
+%\usepackage{graphicx}
+%\usepackage{verbatim}
+\hypersetup{
+colorlinks,
+citecolor=black,
+filecolor=black,
+linkcolor=black,
+urlcolor=black
+}
+\usepackage{cite}
 
 % nicely written chi
 \def\Chi{\raisebox{2pt}{$\chi$}}
@@ -579,13 +590,13 @@ query length $L_q$. Figure \ref{fig:click_position_score_vs_query_length} shows
 the percent increase in $\mathscr{S}$ as a function of $L_q$. While it on
 average outperforms the original ordering for query results of any length, it
 gains greater improvement as $L_q$ increases.  This is an impressive feature of
-{\em SRR}, since as $L_q$ increases the density of clicked items decreases
+{\em SRR}, since as $L_q$ increases, the density of clicked items decreases
 making them more difficult to select. At the same time, longer results provide
 greater opportunity for improved ranking, which {\em SRR} successfully exploits
 as shown by the data.
 
-The specific trends within the data are more difficult to understand. Clearly,
-there exist linear trends for $L_q \in [1,16]$ and $L_q \in [17,32]$, which
+The specific trends within the data are more difficult to understand. There appear
+to be linear trends for $L_q \in [1,16]$ and $L_q \in [17,32]$, which
 correspond to single and double page results, respectively. Meanwhile, the
 trend for $L_q > 32$, while generally increasing, is less clear. We speculate
 that these trends are due to idiosyncrasies in user behavior but details remain
@@ -606,7 +617,12 @@ represents 30\% of $\zeta$ (the set of all queries occuring in sessions with
 previously clicked items) while the remaining 70\% of queries were truncated. 
 We call this set of truncated queries, $\tau$. As discussed in Section 6, 
 we cannot accurately test {\em SRR} on $\tau$ since it would have performed 
-differently on this set of queries (FOOTNOTE).
+differently on this set of queries. \footnote{We ran {\em SRR} on all of
+$\zeta$, treating truncated queries as complete ones of the length shown to the
+user.  The results were similar to those of $\Chi$ and in some metrics better:
+$\Delta$ $\mathscr{C}$ = 12.5\%, $\Delta$ $\mathscr{P}$ = 8.7\%, and $\Delta$
+$\mathscr{C}$ = 8.2\%. We omitted these results from the main paper because we
+feel that testing on all queries in $\zeta$ is not a representative experiment.}
 
 Extrapolating from $\Chi$ to $\tau$ is difficult due to inherently different
 characteristics of the two sets and doing so potentially introduces significant
@@ -623,13 +639,13 @@ longer queries.
 While it is unclear whether {\em SRR} would do better or worse on $\tau$, we
 can infer a very loose lower bound on $\mathscr{C}$ over all of $\zeta$ by
 assuming that {\em SRR} performs as badly as it reasonably could on $\tau$.
-When run on $\Chi$, {\em SRR} on average demotes 8\% of all first-page clicks,
+When run on $\Chi$, {\em SRR} on average demotes 6.8\% of all first-page clicks,
 but replaces them with even more clicks from other pages. In the worst case, we
-assume that when run on $\tau$, it would demote 8\% of first-page clicks but
+assume that when run on $\tau$, it would demote 6.8\% of first-page clicks but
 replace them with 0 clicks from other pages. Assuming this extremely
-pessimistic lower bound for the 75\% of queries in $\zeta$ that make up $\tau$,
+pessimistic lower bound for the 70\% of queries in $\zeta$ that make up $\tau$,
 {\em SRR} would still sligthly outperform the original ordering across all
-queries (+0.01\%).
+queries (+0.004\%).
 
 If instead we assume that {\em SRR} would perform similarly on $\tau$ as it
 does on $\Chi$, we can get a more plausible estimate of the impact that the
