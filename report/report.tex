@@ -484,13 +484,13 @@ optimal configuration includes nonzero values for all five coefficients showing
 that their contributions are not fully redundant.
 
 With our optimized combination of coefficients we find that {\em SRR}
-significantly outperforms Walmart’s original ordering on queries in {\chi}. As
-shown in Fig. \ref{fig:compare_metric_performance}, the re-ranking achieves a
-16\% increase in $\mathscr{C}$ compared to Walmart’s original ordering. The
-implication is that items on the first page of the re-ranking are 16\% more
-likely to be clicked than those in the original ranking. With 1M queries in our
-test set {\chi}, these results are statistically significant, producing a 95\%
-confidence interval of [15.8\%, 16.2\%] for $\Delta\mathscr{C}$.
+significantly outperforms the original ordering on queries in {\chi}. As shown
+in Fig.  \ref{fig:compare_metric_performance}, the re-ranking achieves a 16\%
+increase in $\mathscr{C}$ compared to the original ordering. The implication is
+that items on the first page of the re-ranking are 16\% more likely to be
+clicked than those in the original ordering. With 1M queries in our test set
+{\chi}, these results are statistically significant, producing a 95\%
+confidence interval of [15.8\%, 16.2\%] for $\mathscr{C}$.
 
 \begin{figure}[htbp!]
     \centering
@@ -560,4 +560,43 @@ exposure to more items.
 
 \end{document}
 
+\section{Discussion}
 
+We have established that {\em SRR} significantly improves the ordering
+of search results by all three metrics on the dataset {\chi}. Note that {\chi}
+represents 25\% of {\zeta} while the remaining 75\% of queries were truncated
+short. We call this set of truncated queries, {\tao}. As discussed in Section 6, 
+we cannot accurately test {\em SRR} on {\tao} since it would have performed 
+differently on this set of queries (FOOTNOTE).
+
+Extrapolating from {\chi} to {\tao} is difficult since, the characteristics of
+the two sets are inherently different, potentially introducing biases that
+affect {\em SRR}'s performance. For instance, queries in {\chi} are ones in
+which the user search to the end or through at least $N=100$ itesm, potentially
+indicating disinterest in the first page results and favoring any reordering. On
+the other hand, queries in {\chi} are on average shorter than those in {\tao}
+and, as suggested by Figure \ref{fig:click_position_score_vs_query_length}, {\em SRR}
+performs better on longer queries. 
+
+While it is unclear whether {\em SRR} would do better or worse on {\tao}, we can
+infer a very loose lower bound on $\mathsrc{C}$ over all of {\zeta} by assuming
+that {\em SRR} performs as badly as it reasonably coult on {\tao}. When run on
+{\chi}, {\em SRR} on average demotes 8\% of all first-page clicks, but replaces
+them with even more clicks from other pages. In the worst case, we assume that
+when run {\tao}, it would demote 8\% of first-page clicks but replace them with
+0 clicks from other pages. Assuming this pessimistic lower bound for the 75\% of 
+queries in {\zeta} that make up {\tao}, {\em SRR} would still sligthly
+outperform the original ordering across all queries (+0.01\%).
+
+If instead we assume that {\em SRR} would perform similarly on {\tao}
+as it does on {\chi}, we can get a more realistic estimate of the impact that the
+algorithm would have overall. Broadening the scope of our results to all
+queries (even those outside of {\zeta} which re-ranker could not impact), 
+we get an overall increase in $\mathsrc{C}$ by 2\%, an overall increase in $\mathsrc{P}$
+by 1\% and an overall increas in $\mathsrc{S}$ by 0.5\%. To get a better sense of what
+this impact means, consider the pool of purchases that occur in the
+first page. Increasing the purchasing rate by 1\% for these items would
+increase the absolute size of this pool by 1\%. Since this pool
+comprises 85\% of all purchases, increasing it by 1\% would increase
+the total number of purchases on the website overall by 0.85\%, which
+is a significant increase for a search engine on the scale of Walmart’s.
