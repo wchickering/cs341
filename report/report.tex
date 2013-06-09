@@ -153,25 +153,6 @@ not in {\em item-space}.
 
 \section{An Example}
 
-
-%\begin{wrapfigure}[4]{r}{0.1\textwidth}
-%    \vspace{-10pt}
-%    \centering
-%    \includegraphics[width=0.1\textwidth]{bottled_water.eps}
-%\end{wrapfigure}
-
-%\begin{wrapfigure}[5]{l}{0.08\textwidth}
-%    \vspace{-11pt}
-%    \centering
-%    \includegraphics[width=0.1\textwidth]{water_cooler.eps}
-%\end{wrapfigure}
-
-%\begin{wrapfigure}[5]{r}{0.1\textwidth}
-%    \vspace{-10pt}
-%    \centering
-%    \includegraphics[width=0.1\textwidth]{arrowhead_water.eps}
-%\end{wrapfigure}
-
 To illustrate the efficacy of our technique, we present a real query example.
 The only fictitious part of the example will be our shopper's name, David.
 David is interested in the ``Primo Ceramic Crock Water Cooler with Stand'' and
@@ -187,9 +168,9 @@ original results to be the 3rd item in the {\em SRR} results.
 Tables \ref{tab:original_sim_scores} and \ref{tab:rerank_sim_scores} show the
 similarity scores from each index for each item in the two orderings compared to
 David's lone previously clicked item. In each of these tables, the first column
-correponds to Table \ref{tab:compare_orderings} and the second column is the
-similarity metric from Equation (\ref{eqn:similarity_metric}) using our
-optimized tuning parameters.
+correponds to Table \ref{tab:compare_orderings}. The remaining columns are
+calculate from Equations (\ref{eqn:similarity_metric}) and
+(\ref{eqn:rerank_score}) using optimal tuning parameters.
 \begin{table}[p!]
     \centering
     \begin{tabu}{m{.3cm} m{6cm} m{.45cm} m{7cm} }
@@ -257,19 +238,18 @@ optimized tuning parameters.
         % tuned scores
         1. & 0.944 & 0.0754   & 0.525 & 0.16  & 0.0 & 0.153  & 0.02947080484  \\ \midrule
         2. & 1.2   & 0.039    & 0.686 & 0.21  & 0.0 & 0.239  & 0.0274253      \\ \midrule
-        3. & 0.953 & 0.000226 & 0.657 & 0.223 & 0.0 & 0.0455 & 0.027438253    \\ \midrule
-        4. & 0.95  & 0.000493 & 0.562 & 0.266 & 0.0 & 0.0932 & 0.027458638253 \\ \midrule
-        5. & 0.938 & 0.000914 & 0.645 & 0.262 & 0.0 & 0.0    & 0.0294         \\ \midrule
-        6. & 0.897 & 0.01     & 0.656 & 0.208 & 0.0 & 0.0    & 0.0229         \\
+        90. & 0.953 & 0.000226 & 0.657 & 0.223 & 0.0 & 0.0455 & 0.027438253    \\ \midrule
+        63. & 0.95  & 0.000493 & 0.562 & 0.266 & 0.0 & 0.0932 & 0.027458638253 \\ \midrule
+        38. & 0.938 & 0.000914 & 0.645 & 0.262 & 0.0 & 0.0    & 0.0294         \\ \midrule
+        8. & 0.897 & 0.01     & 0.656 & 0.208 & 0.0 & 0.0    & 0.0229         \\
         \bottomrule
     \end{tabu}
     \caption{Index similarity scores of the top six {\em SRR} results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
     \label{tab:rerank_sim_scores}
 \end{table} 
 
-The similarity scores from {\em title-space} are easily calculated by hand. We
-will show the calculation for the {\em item-space} similarity for the 90th item
-in the original ordering. By referring to the corresponding index for {\em
+We will show the calculation for the {\em item-space} similarity for the 90th
+item in the original ordering. By referring to the corresponding index for {\em
 item-space}, we can recall that the 90th item was clicked in a same session with
 39 different items and the previously clicked item was clicked in a same session
 with 455 different items. The titles of the 13 items found in common are:
@@ -289,16 +269,18 @@ with 455 different items. The titles of the 13 items found in common are:
     \item[] Augason Farms Emergency Water Storage Kit
 \end{itemize}
 We then calculate the similarity of the 90th item and the previously clicked
-item in {\em item-space} to be $13/(455+39-13)=0.0270$.
+item in {\em item-space} to be $13/(455+39-13)=0.0270$. The corresponding score
+shown in Table \ref{tab:rerank_sim_scores} was calculate from the optimal tuning
+parameters.
 
 We believe this example illustrates how our technique can form subtle
 relationships between items based on historical user session data. In this case,
 we have a shopper who had an interest in a water cooler and subsequently made a
 query for ``water''. If the shopper had been in a brick-and-mortar store, he
-likely would have been directed to the section of the store selling water jugs
-to use with the cooler he had picked up. In this case, {\em SRR} recognized
-David's previous click on a water cooler, related that water cooler to large
-water jugs, and showed David the water jug he was looking for all along.
+likely would have browsed water jugs to use with the cooler he had picked up. In
+this case, {\em SRR} recognized David's previous click on a water cooler,
+related that water cooler to large water jugs, and showed David the water jugs
+he was looking for all along.
 
 \section{The Data}
 
