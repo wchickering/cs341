@@ -67,11 +67,18 @@ where $C_s$ and $\alpha_s$ are tuning parameters. The score $\sigma$ attributed
 to an item to be shown is then the summation of composite similarities between
 itself and all previously clicked items plus the click-through-rate (CTR)
 $\Gamma_i$ of the item's original position $i$
-\begin{equation*}
-    \sigma = \sum_{B \in P}{S(A, B)} + \Gamma_i,
+\begin{equation*}\label{eqn:rerank_score}
+    \sigma(A) = \sum_{B \in P}{S(A, B)} + \Gamma_i,
 \end{equation*}
-
 where $P$ is the set of previously clicked items. 
+
+Another important parameter of {\em SRR} is the insert position $I_0$, which
+indicates that the top $I_0$ positions of the original ordering are to remain
+fixed. For the results discussed in this report, we use $I_0 = 2$, meaning that
+we never reorder the first two items of query results. We found this configuration
+maximized our metrics, although, we suspect this may largely be due to users'
+bias toward clicking on the first one or two positions indepedent of what is
+shown there. That is, $I_0 = 0$ might prove optimal for an online implementation.
 
 \section{Similarity Spaces}\label{sec:similarity_spaces}
 
@@ -395,7 +402,6 @@ by the number of total items in first-page positions. More formally
 \begin{equation*}
     \mathscr{C} = \frac{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i \wedge i \leq 16\right\}}{\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{i \leq 16\right\}},
 \end{equation*}
-
 where $Q$ is a set of query results, $L_q$ is the number of results for query $q$, and
 the number 16 is due to the fact that 16 items are shown on a page.
 
@@ -430,23 +436,42 @@ as we believe it is the simplest and has the clearest impact to overall CTRs.
 
 \section{Results}
 
-Figure \ref{fig:avg_clicks_position_score} shows the clicks-position score $\mathscr{S}$ 
-as a function of each of the coefficients $C_s$ discussed in sections \ref{sec:technique} 
-and \ref{sec:similarity_spaces}. Here, we vary a single coefficient, corresponding to
-to one of the five similarity spaces---{\em click-space}, {\em cart-space}, {\em 
-query-space}, {\em title-space}, or {\em item-space}---while setting the others to zero.
+Figure \ref{fig:avg_clicks_position_score} shows the clicks-position score
+$\mathscr{S}$ as a function of each of the coefficients $C_s$ discussed in
+sections \ref{sec:technique} and \ref{sec:similarity_spaces}. Here, we vary a
+single coefficient, corresponding to one of the five similarity spaces---{\em
+click-space}, {\em cart-space}, {\em query-space}, {\em title-space}, or {\em
+item-space}---while setting the others to zero. The ranking score for each of
+the top $N=100$ items is then determined by only two terms, as per Eqs.
+\ref{eqn:similarity_metric} and \ref{eqn:rerank_score}, as
+\begin{equation*}\label{eqn:single_coeff_score} 
+    \sigma(A) = \sum_{B \in P}{C_s(J_s(A,B))^{\alpha_s}} + \Gamma_i, 
+\end{equation*}
+where, as before, $P$ is the set of previously clicked items and $\Gamma_i$ is
+the CTR of the original position of item $A$. (Note that the exponents
+$\alpha_s$ are held fixed during these measurements.) Thus, since $\Gamma_i$ is
+a monotonically decreasing function of position $i$, when $C_s = 0$, {\em SRR}
+returns the original ordering.
+
 In each case, as $C_s$ is increased from zero, the degree of reordering is enhanced.
-And for each coefficient, this reordering is accompanied by an increase in $\mathscr{S}$
-indicating a greater concentration of clicked items, on average, near the top positions 
-of query results. Moreover, with the exception of {\em title-space}, the score increases 
-monotonically with each coefficient.
-
-
+And for each coefficient, this reordering is accompanied by an increase in
+$\mathscr{S}$ indicating a greater concentration of clicked items, on average,
+in the top positions of query results as compared to the original ordering.
+Moreover, with the exception of {\em title-space}, the score increases
+monotonically with each coefficient. In the case of {\em title-space}, a
+broad maximum can be seen around $C_s = 0.05$. This indicates that an
+optimal combination between the contributions from {\em title-space} 
+and CTRs exists, which maximizes $\mathscr{S}$. For all other coefficients,
+however, a maximum cannot be found. Rather, the value of $\mathscr{S}$
+asymptotically increases with value of $C_s$, which demonstrates that
+the optimal average ordering, according to the metric $\mathscr{S}$, is
+determined solely by the similarity space irrespective of the original
+ordering.
 
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{000050_0_48chunk_k100_i2_n100_avg_click_position_score_0-0_16.png}
-    \caption{average clicks position score}
+    \caption{Clicks-position score $\mathsrc{S}$ as a function of individual similarity space coefficients $C_s$. For each curve, a single coefficient is varied with all other set to zero.}
     \label{fig:avg_clicks_position_score}
 \end{figure}
 
