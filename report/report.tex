@@ -375,7 +375,9 @@ makes up 30\% of $\zeta$, accounting for a total of 7.5\% of all queries.
     \includegraphics[width=\textwidth]{CTRcompare.png}
     \protect\caption{CTR as a function of position from the original data (i.e.
     not re-ranked) for the test set \protect\raisebox{2pt}{$\chi$} (blue) and
-    all queries (red).}
+    all queries (red). {\em SRR} outperforms the original ordering in all
+    metrics: $\Delta$ $\mathscr{C}$ = 16.9\%, $\Delta$ $\mathscr{P}$ = 8.8\%, and $\Delta$
+$\mathscr{C}$ = 7.9\%}
     \label{fig:ctr_vs_position}
 \end{figure}
 
@@ -613,47 +615,49 @@ unclear to us.
 
 We have established that {\em SRR} significantly improves the ordering
 of search results by all three metrics on the dataset $\Chi$. Note that $\Chi$
-represents 30\% of $\zeta$ while the remaining 70\% of queries were truncated
-short. We call this set of truncated queries, $\tau$. As discussed in Section 6, 
+represents 30\% of $\zeta$ (the set of all queries occuring in sessions with
+previously clicked items) while the remaining 70\% of queries were truncated. 
+We call this set of truncated queries, $\tau$. As discussed in Section 6, 
 we cannot accurately test {\em SRR} on $\tau$ since it would have performed 
 differently on this set of queries. \footnote{We ran {\em SRR} on all of
 $\zeta$, treating truncated queries as complete ones of the length shown to the
-user.  The results were similar to those of $\Chi$ and in some metrics better:
+user.  The results were similar to those of $\Chi$:
 $\Delta$ $\mathscr{C}$ = 12.5\%, $\Delta$ $\mathscr{P}$ = 8.7\%, and $\Delta$
 $\mathscr{C}$ = 8.2\%. We omitted these results from the main paper because we
 feel that testing on all queries in $\zeta$ is not a representative experiment.}
 
-Extrapolating from $\Chi$ to $\tau$ is difficult since, the characteristics of
-the two sets are inherently different, potentially introducing biases that
-affect {\em SRR}'s performance. For instance, queries in $\Chi$ are ones in
-which the user search to the end or through at least $N=100$ itesm, potentially
-indicating disinterest in the first page results and favoring any reordering. On
-the other hand, queries in $\Chi$ are on average shorter than those in $\tau$
-and, as suggested by Figure \ref{fig:click_position_score_vs_query_length}, {\em SRR}
-performs better on longer queries. 
+Extrapolating from $\Chi$ to $\tau$ is difficult due to inherently different
+characteristics of the two sets and doing so potentially introduces significant
+error. For instance, query results in $\Chi$ were either completely shown or
+had at least the first $N=100$ items shown to the user. This may result in
+disproportionately large numbers of cases where users were dissatisfied with
+items in the top positions. (Although, the CTR versus position data of Fig.
+\ref{fig:ctr_vs_position} suggests this is not the case.) Perhaps more
+significant, queries in $\Chi$ are on average shorter than those in $\tau$ and,
+as demonstrated by the data in Fig.
+\ref{fig:click_position_score_vs_query_length}, {\em SRR} performs better on
+longer queries. 
 
-While it is unclear whether {\em SRR} would do better or worse on $\tau$, we can
-infer a very loose lower bound on $\mathscr{C}$ over all of $\zeta$ by assuming
-that {\em SRR} performs as badly as it reasonably coult on $\tau$. When run on
-$\Chi$, {\em SRR} on average demotes 6.8\% of all first-page clicks, but replaces
-them with even more clicks from other pages. In the worst case, we assume that
-when run $\tau$, it would demote 6.8\% of first-page clicks but replace them with
-0 clicks from other pages. Assuming this pessimistic lower bound for the 70\% of 
-queries in $\zeta$ that make up $\tau$, {\em SRR} would still very sligthly
-outperform the original ordering across all queries (+0.004\%).
+While it is unclear whether {\em SRR} would do better or worse on $\tau$, we
+can infer a very loose lower bound on $\mathscr{C}$ over all of $\zeta$ by
+assuming that {\em SRR} performs as badly as it reasonably could on $\tau$.
+When run on $\Chi$, {\em SRR} on average demotes 6.8\% of all first-page clicks,
+but replaces them with even more clicks from other pages. In the worst case, we
+assume that when run on $\tau$, it would demote 6.8\% of first-page clicks but
+replace them with 0 clicks from other pages. Assuming this extremely
+pessimistic lower bound for the 70\% of queries in $\zeta$ that make up $\tau$,
+{\em SRR} would still sligthly outperform the original ordering across all
+queries (+0.004\%).
 
-If instead we assume that {\em SRR} would perform similarly on $\tau$
-as it does on $\Chi$, we can get a more realistic estimate of the impact that the
+If instead we assume that {\em SRR} would perform similarly on $\tau$ as it
+does on $\Chi$, we can get a more plausible estimate of the impact that the
 algorithm would have overall. Broadening the scope of our results to all
-queries (even those outside of $\zeta$ which re-ranker could not impact), 
-we get an overall increase in $\mathscr{C}$ by 4.5\% and an overall increase in $\mathscr{P}$
-by 3.0\%. To get a better sense of what
-this impact means, consider the set of purchases that occur in the
-first page. Increasing the purchasing rate for these items by 3\% would
-increase the absolute size of this set by 3\%. Since this set
-comprises 88\% of all purchases, increasing it by 3\% would increase
-the total number of purchases on the website overall by 2.6\%, which
-is a significant increase for a search engine on the scale of Walmart’s.
+queries (even those outside of $\zeta$ which re-ranker could not impact), we
+get an overall increase in $\mathscr{C}$ of 4.5\% and an overall increase in
+$\mathscr{P}$ by 3.0\%. To get a better sense of what this impact means,
+consider the set of purchases that occur on the first page, which comprise 88\%
+of all purchases. This implies an overall increase of 2.6\% in purchases, which
+is quite substantial given the scale of Walmart.com.
 
 \section{Conclusion and Future Work}
 
