@@ -275,8 +275,6 @@ as we believe it is the simplest and has the clearest impact to overall CTRs.
 
 \section{An Example}
 
-To illustrate the efficacy of our technique, we present a real query example.
-The only fictitious part of the example will be our shopper's name, David.
 
 %\begin{wrapfigure}[4]{r}{0.1\textwidth}
 %    \vspace{-10pt}
@@ -296,6 +294,8 @@ The only fictitious part of the example will be our shopper's name, David.
 %    \includegraphics[width=0.1\textwidth]{arrowhead_water.eps}
 %\end{wrapfigure}
 
+To illustrate the efficacy of our technique, we present a real query example.
+The only fictitious part of the example will be our shopper's name, David.
 David is interested in the ``Primo Ceramic Crock Water Cooler with Stand'' and
 clicks on this item during his session. Sometime later he navigates to the
 ``Grocery $\rightarrow $Beverages $\rightarrow $Water'' category and searches
@@ -325,7 +325,7 @@ original results to be the 3rd item in the {\em SRR} results.
 Tables \ref{tab:original_sim_scores} and \ref{tab:rerank_sim_scores} show the
 similarity scores from each index for each item in the two orderings compared to
 David's lone previously clicked item. In each of these tables, the first column
-correponds to Table \ref{tab:original_sim_scores} and the second column is the
+correponds to Table \ref{tab:compare_orderings} and the second column is the
 similarity metric from Equation (\ref{eqn:similarity_metric}) using our
 optimized tuning parameters.
 \begin{table}[htbp!]
@@ -333,12 +333,21 @@ optimized tuning parameters.
     \begin{tabu}{ c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
         \cline{2-8}
         \rowfont{\bfseries} & \multicolumn{1}{c|}{S} & \multicolumn{1}{c|}{CTR} & \multicolumn{1}{c|}{Clicks} & \multicolumn{1}{c|}{Items} & \multicolumn{1}{c|}{Carts} & \multicolumn{1}{c|}{Queries} & \multicolumn{1}{c|}{Titles}  \\ \hline
-        \multicolumn{1}{|c|}{1} & 0.943746587049 & 0.0754 & 0.00227790432802 &  0.017955801105   &  0.0 &  0.0104712041885   &  0.0909090909091 \\ \hline
-        \multicolumn{1}{|c|}{2} & 1.20210752946  & 0.0390 & 0.00389105058366 &  0.0251450676983  &  0.0 &  0.0254833040422   &  0.0833333333333 \\ \hline
-        \multicolumn{1}{|c|}{3} & 0.357056025563 & 0.0254 & 0.0              &  0.0227882037534  &  0.0 & 0.00555212831585   &  0.0769230769231 \\ \hline
-        \multicolumn{1}{|c|}{4} & 0.75268102742  & 0.0195 & 0.0016835016835  &  0.0233918128655  &  0.0 &  0.0016339869281   &  0.0666666666667 \\ \hline
-        \multicolumn{1}{|c|}{5} & 0.736731785955 & 0.0153 & 0.00173310225303 &  0.016077170418   &  0.0 &  0.00390015600624  &  0.0666666666667 \\ \hline
-        \multicolumn{1}{|c|}{6} & 0.174834647629 & 0.0129 & 0.0              &  0.00954198473282 &  0.0 &  0.000793021411578 &  0.0666666666667 \\ \hline
+        %% raw similarity scores
+        %\multicolumn{1}{|c|}{1} & 0.943746587049 & 0.0754 & 0.00227790432802 &  0.017955801105   &  0.0 &  0.0104712041885   &  0.0909090909091 \\ \hline
+        %\multicolumn{1}{|c|}{2} & 1.20210752946  & 0.0390 & 0.00389105058366 &  0.0251450676983  &  0.0 &  0.0254833040422   &  0.0833333333333 \\ \hline
+        %\multicolumn{1}{|c|}{3} & 0.357056025563 & 0.0254 & 0.0              &  0.0227882037534  &  0.0 & 0.00555212831585   &  0.0769230769231 \\ \hline
+        %\multicolumn{1}{|c|}{4} & 0.75268102742  & 0.0195 & 0.0016835016835  &  0.0233918128655  &  0.0 &  0.0016339869281   &  0.0666666666667 \\ \hline
+        %\multicolumn{1}{|c|}{5} & 0.736731785955 & 0.0153 & 0.00173310225303 &  0.016077170418   &  0.0 &  0.00390015600624  &  0.0666666666667 \\ \hline
+        %\multicolumn{1}{|c|}{6} & 0.174834647629 & 0.0129 & 0.0              &  0.00954198473282 &  0.0 &  0.000793021411578 &  0.0666666666667 \\ \hline
+        
+        % tuned scores
+        \multicolumn{1}{|c|}{1} & 0.943746587049 & 0.0754 & 0.525001355894 & 0.160481073286 & 0.0 & 0.153493353029 & 0.02937080484    \\ \hline
+        \multicolumn{1}{|c|}{2} & 1.20210752946 & 0.039 & 0.686161147707 & 0.210098155039 & 0.0 & 0.239452362893 & 0.0273958638253    \\ \hline
+        \multicolumn{1}{|c|}{3} & 0.357056025563 & 0.0254 & 0.0 & 0.194190538676 & 0.0 & 0.11176890762 & 0.0256965792667              \\ \hline
+        \multicolumn{1}{|c|}{4} & 0.75268102742 & 0.0195 & 0.451335466924 & 0.198294695203 & 0.0 & 0.060633906259 & 0.0229169590345   \\ \hline
+        \multicolumn{1}{|c|}{5} & 0.736731785955 & 0.0153 & 0.457935991834 & 0.146901991555 & 0.0 & 0.0936768435316 & 0.0229169590345 \\ \hline
+        \multicolumn{1}{|c|}{6} & 0.174834647629 & 0.0129 & 0.0 & 0.0967767348166 & 0.0 & 0.0422409537777 & 0.0229169590345           \\ \hline
     \end{tabu}
     \caption{Index similarity scores of the top six original results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
     \label{tab:original_sim_scores}
@@ -348,22 +357,31 @@ optimized tuning parameters.
     \begin{tabu}{ c | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} | n{1}{5} |}
         \cline{2-8}
         \rowfont{\bfseries} & \multicolumn{1}{c|}{S} & \multicolumn{1}{c|}{CTR} & \multicolumn{1}{c|}{Clicks} & \multicolumn{1}{c|}{Items} & \multicolumn{1}{c|}{Carts} & \multicolumn{1}{c|}{Queries} & \multicolumn{1}{c|}{Titles}  \\ \hline
-        \multicolumn{1}{|c|}{1 } & 0.943746587049 & 0.0754     & 0.00227790432802 &  0.017955801105 &  0.0 &  0.0104712041885 &  0.0909090909091  \\ \hline
-        \multicolumn{1}{|c|}{2 } & 1.20210752946  & 0.0390     & 0.00389105058366 &  0.0251450676983 &  0.0 &  0.0254833040422 &  0.0833333333333 \\ \hline
-        \multicolumn{1}{|c|}{90} & 0.95310150677  & 0.00022623 & 0.00357142857143 &  0.027027027027 &  0.0 &  0.000920810313076 &  0.0833333333333\\ \hline
-        \multicolumn{1}{|c|}{63} & 0.949541641831 & 0.00049366 & 0.00261096605744 &  0.0338345864662 &  0.0 &  0.00385802469136 &  0.0833333333333\\ \hline
-        \multicolumn{1}{|c|}{38} & 0.93768536446  & 0.000914   & 0.00344234079174 &  0.0331384015595 &  0.0 &  0.0 &  0.0909090909091             \\ \hline
-        \multicolumn{1}{|c|}{8 } & 0.896706599209 & 0.01       & 0.00355239786856 &  0.0248565965583 &  0.0 &  0.0 &  0.0666666666667             \\ \hline
+        %% raw similarity scores
+        %\multicolumn{1}{|c|}{1 } & 0.943746587049 & 0.0754     & 0.00227790432802 &  0.017955801105 &  0.0 &  0.0104712041885 &  0.0909090909091  \\ \hline
+        %\multicolumn{1}{|c|}{2 } & 1.20210752946  & 0.0390     & 0.00389105058366 &  0.0251450676983 &  0.0 &  0.0254833040422 &  0.0833333333333 \\ \hline
+        %\multicolumn{1}{|c|}{90} & 0.95310150677  & 0.00022623 & 0.00357142857143 &  0.027027027027 &  0.0 &  0.000920810313076 &  0.0833333333333\\ \hline
+        %\multicolumn{1}{|c|}{63} & 0.949541641831 & 0.00049366 & 0.00261096605744 &  0.0338345864662 &  0.0 &  0.00385802469136 &  0.0833333333333\\ \hline
+        %\multicolumn{1}{|c|}{38} & 0.93768536446  & 0.000914   & 0.00344234079174 &  0.0331384015595 &  0.0 &  0.0 &  0.0909090909091             \\ \hline
+        %\multicolumn{1}{|c|}{8 } & 0.896706599209 & 0.01       & 0.00355239786856 &  0.0248565965583 &  0.0 &  0.0 &  0.0666666666667             \\ \hline
+
+        % tuned scores
+        \multicolumn{1}{|c|}{1} & 0.943746587049 & 0.0754 & 0.525001355894 & 0.160481073286 & 0.0 & 0.153493353029 & 0.02937080484        \\ \hline
+        \multicolumn{1}{|c|}{2} & 1.20210752946 & 0.039 & 0.686161147707 & 0.210098155039 & 0.0 & 0.239452362893 & 0.0273958638253        \\ \hline
+        \multicolumn{1}{|c|}{3} & 0.95310150677 & 0.00022623 & 0.657375735134 & 0.222586393133 & 0.0 & 0.0455172846776 & 0.0273958638253  \\ \hline
+        \multicolumn{1}{|c|}{4} & 0.949541641831 & 0.00049366 & 0.562073743338 & 0.266408875605 & 0.0 & 0.0931694990625 & 0.0273958638253 \\ \hline
+        \multicolumn{1}{|c|}{5} & 0.93768536446 & 0.000914 & 0.645386113734 & 0.262014445886 & 0.0 & 0.0 & 0.02937080484                  \\ \hline
+        \multicolumn{1}{|c|}{6} & 0.896706599209 & 0.01 & 0.65562195059 & 0.208167689584 & 0.0 & 0.0 & 0.0229169590345                    \\ \hline
     \end{tabu}
     \caption{Index similarity scores of the top six {\em SRR} results to \\ ``Primo Ceramic Crock Water Cooler with Stand''}
     \label{tab:rerank_sim_scores}
 \end{table} 
 
 The similarity scores from {\em title-space} are easily calculated by hand. We
-will show the calculation for the {\em item-space} similarity for the 90th item in
-the original ranking. By referring to the corresponding index for {\em
-item-space}, we can recall that the 90th item was clicked in the same query with
-39 different items and the previously clicked item was clicked in the same query
+will show the calculation for the {\em item-space} similarity for the 90th item
+in the original ranking. By referring to the corresponding index for {\em
+item-space}, we can recall that the 90th item was clicked in a same session with
+39 different items and the previously clicked item was clicked in a same session
 with 455 different items. The titles of the 13 items found in common are:
 \begin{itemize}
     \item[] Great Value: Distilled Water, 1 Gal
@@ -388,9 +406,9 @@ relationships between items based on historical user session data. In this case,
 we have a shopper who had an interest in a water cooler and subsequently made a
 query for ``water''. If the shopper had been in a brick-and-mortar store, he
 likely would have been directed to the section of the store selling water jugs
-to use with the cooler he had picked up. In this case, {\em SRR}
-recognized David's previously click, related the water cooler to large water
-jugs, and showed David the water jug he was looking for all along.
+to use with the cooler he had picked up. In this case, {\em SRR} recognized
+David's previous click on a water cooler, related that water cooler to large
+water jugs, and showed David the water jug he was looking for all along.
 
 \end{document}
 
