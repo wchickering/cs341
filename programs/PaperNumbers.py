@@ -624,7 +624,7 @@ def main():
     # scores by page length
     click_position_score_increase_by_pagelen = [0.0]*MAX_LENGTH
     for i in range(MAX_LENGTH):
-        if num_queries_by_pagelen[i] > 0:
+        if num_queries_by_pagelen[i] > 0 and click_position_score_orig_by_pagelen[i] > 0:
             click_position_score_increase_by_pagelen[i] = \
                     float(click_position_score_reordered_by_pagelen[i] - \
                     click_position_score_orig_by_pagelen[i]) / \
