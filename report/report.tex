@@ -533,7 +533,7 @@ positions by setting the insert position $I_0 = 2$ such that the top two items
 remained fixed. While this does improve the metrics for {\em SRR}, we emphasize
 that choosing $I_0 = 0$ would not qualitatively change our results. Another
 obstacle overcome by {\em SRR} is that there is little room for improvement in
-first-page CTR, since the majority of clicks in $\Chi$ (58\%) are already
+first-page CTR, since the majority of clicks in $\Chi$ are already
 on the first page.
 
 To ensure that these results are not due to an underlying structure of the
@@ -654,11 +654,25 @@ can be compared via the Jaccard similarity of sets of objects. The similarity
 spaces we have used ({\em click-space}, {\em cart-space}, {\em query-space}, 
 {\em title-space}, {\em item-space}) are not exhaustive---certainly others
 can be realized. We have provided compelling evidence using these 5 spaces,
-however, that {\em SRR} can significantly improve the quality of Walmart.com's
-existing query result rankings. Based on the statistically signicant
-improvements observed using first-page CTR $\mathscr{C}$, first-page purchase
-rate $\mathscr{P}$, and {\em click-position score} $\mathscr{S}$, we believe
-{\em SRR} would be a good candidate for A/B testing.
+however, that {\em SRR} can significant improve the quality of Walmart.com's
+existing query result rankings. 
+
+Using historical query data with resultsets confined to what was actually shown
+to a user, we carefully constructed and qualified an experiment with the goal
+of demonstrating the effectiveness (or lack thereof) of {\em SRR}. Using the
+three well defined metrics of first-page CTR $\mathscr{C}$, first-page
+purchasing rate $\mathscr{P}$, and {\em clicks-position score} $\mathscr{S}$,
+we have clearly shown that {\em SRR} indeed induces a significant improvement
+in the ordering of search results for a subset of queries ($\Chi$). Moreover,
+by comparing {\em SRR} to a similar re-ranking algorithm that assigns scores
+randomly, we have demonstrate that the success of {\em SRR} is not somehow an
+artifact of the data.
+
+{\em SRR} has a statistically significant positive effect on the original
+ordering of query results when we measure query results using first-page CTR
+$\mathscr{C}$, first-page purchase rate $\mathscr{P}$, and {\em click-position
+score} $\mathscr{S}$. The positive effect in each of these metrics suggests {\em
+SRR} would be a good candidate for A/B testing.
 
 There are more experiments and ideas we would like to explore. Only five
 distinct vector spaces have been implemented to measure similarity between items
