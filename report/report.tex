@@ -355,9 +355,7 @@ makes up 30\% of $\zeta$, accounting for a total of 7.5\% of all queries.
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{CTRcompare.png}
-    \protect\caption{CTR as a function of position from the original data (i.e.
-    not reordered) for the test set \protect\raisebox{2pt}{$\chi$} (blue) and
-    all queries (red).    
+    \protect\caption{CTR as a function of position from the original data (i.e. not reordered) for the test set \protect\raisebox{2pt}{$\chi$} (blue) and all queries (red).}
     \label{fig:ctr_vs_position}
 \end{figure}
 
@@ -512,30 +510,28 @@ increase in $\mathscr{C}$ compared to the original ordering. The implication is
 that items on the first page of the reordering are 16.9\% more likely to be
 clicked than those in the original ordering. With over 2M queries in our test set
 $\Chi$, these results are statistically significant, producing a 95\%
-confidence interval of [16.4\%, 17.4\%] for $\mathscr{C}$.
+confidence interval of [16.4\%, 17.4\%] for $\mathscr{C}$. Meanwhile, {\em SRR}
+also induces an increase in $\mathscr{P}$ of 8.8\% and in $\mathscr{S}$ of 7.9\%.
 
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{moneyshot.png}
-    \caption{Comparison of the original ordering (blue) to that of random reordering (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and click-position score $\mathscr{S}$. {\em SRR} outperforms the original ordering in all
-    metrics: $\Delta$ $\mathscr{C}$ = 16.9\%, $\Delta$ $\mathscr{P}$ = 8.8\%, and $\Delta$
-$\mathscr{C}$ = 7.9\%}
-}
+    \caption{Comparison of the original ordering (blue) to that of random reordering (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and {\em click-position score} $\mathscr{S}$. {\em SRR} outperforms the original ordering in all metrics: $\Delta$ $\mathscr{C}$ = 16.9\%, $\Delta$ $\mathscr{P}$ = 8.8\%, and $\Delta$ $\mathscr{C}$ = 7.9\%}
     \label{fig:compare_metric_performance}
 \end{figure}
 
-Notably, we see these results despite the benefit the original ordering receives
-from "position bias", the well-established phenomenon that users tend to click
-on items presented at the top of a list. Figure \ref{fig:ctr_vs_position} shows
-how dramatically more likely Walmart.com users are to click on items positioned
-near the top. It seems reasonable to suppose that "position bias" contributes
-to this distribution of CTRs. We compensate for the large CTR of the first two
-positions by setting the insert position $I_0 = 2$ such that the top two items
-remained fixed. While this does improve the metrics for {\em SRR}, we emphasize
-that choosing $I_0 = 0$ would not qualitatively change our results. Another
-obstacle overcome by {\em SRR} is that there is little room for improvement in
-first-page CTR, since the majority of clicks in $\Chi$ are already
-on the first page.
+Notably, we see these results despite the benefit the original ordering
+receives from "position bias", the well-established phenomenon that users tend
+to click on items presented at the top of a list. Figure
+\ref{fig:ctr_vs_position} shows how dramatically more likely Walmart.com users
+are to click on items positioned near the top. It seems reasonable to suppose
+that "position bias" contributes to this distribution of CTRs. We compensate
+for the large CTR of the first two positions by setting the insert position
+$I_0 = 2$ such that the top two items remained fixed. While this does improve
+the metrics for {\em SRR}, we emphasize that choosing $I_0 = 0$ would not
+qualitatively change our results. Another obstacle overcome by {\em SRR} is
+that there is little room for improvement in first-page CTR, since the majority
+of clicks in $\Chi$ are already on the first page.
 
 To ensure that these results are not due to an underlying structure of the
 data, we constructed a Random Re-Ranker {\em RRR}. {\em RRR} operates exactly
@@ -545,13 +541,14 @@ significantly hurts the results in all three metrics, suggesting that {\em SRR}
 achieves its success by intelligently deciding which items are more likely to
 be clicked. 
 
-Indeed, Table \ref{tab:promote_demote_table} compares the average
-CTR of items {\em SRR} moves on or off the first page to those chosen randomly. 
-By accurately determining a user’s preference for certain items, {\em SRR} promotes items with a
-significantly higher CTR than it would by blindly picking items from other pages. 
-Similarly, it demotes first-page items with a lower CTR than an average item on
-the first page. With these successful decisions, {\em SRR} manages to outperform the original
-ordering in the face of a number of disadvantages.
+Indeed, Table \ref{tab:promote_demote_table} compares the average CTR of items
+{\em SRR} moves on or off the first page to those chosen randomly.  By
+accurately determining a user’s preference for certain items, {\em SRR}
+promotes items with a significantly higher CTR than it would by blindly picking
+items from other pages.  Similarly, it demotes first-page items with a lower
+CTR than an average item on the first page. With these successful decisions,
+{\em SRR} manages to outperform the original ordering in the face of a number
+of disadvantages.
 
 \begin{table}[htbp!]
     \centering
@@ -629,7 +626,7 @@ but replaces them with even more clicks from other pages. In the worst case, we
 assume that when run on $\tau$, it would demote 6.8\% of first-page clicks but
 replace them with 0 clicks from other pages. Assuming this extremely
 pessimistic lower bound for the 70\% of queries in $\zeta$ that make up $\tau$,
-{\em SRR} would still sligthly outperform the original ordering across all
+{\em SRR} would still slightly outperform the original ordering across all
 queries (+0.004\%).
 
 If instead we assume that {\em SRR} would perform similarly on $\tau$ as it
@@ -642,7 +639,7 @@ consider the set of purchases that occur on the first page, which comprise 88\%
 of all purchases. This implies an overall increase of 2.6\% in purchases, which
 is quite substantial given the scale of Walmart.com.
 
-\section{Conclusion and Future Work}
+\section{Conclusion}
 
 We have reported on a novel technique of leveraging existing session
 information in order to improve the ranking of product search results. The
@@ -654,7 +651,7 @@ construct several indexes, each representing similarity space in which items
 can be compared via the Jaccard similarity of sets of objects. The similarity
 spaces we have used ({\em click-space}, {\em cart-space}, {\em query-space}, 
 {\em title-space}, {\em item-space}) are not exhaustive---certainly others
-can be realized. We have provided compelling evidence using these 5 spaces,
+can be realized. We have provided compelling evidence using these five spaces,
 however, that {\em SRR} can significant improve the quality of Walmart.com's
 existing query result rankings. 
 
@@ -667,19 +664,17 @@ we have clearly shown that {\em SRR} indeed induces a significant improvement
 in the ordering of search results for a subset of queries ($\Chi$). Moreover,
 by comparing {\em SRR} to a similar re-ranking algorithm that assigns scores
 randomly, we have demonstrate that the success of {\em SRR} is not somehow an
-artifact of the data.
+artifact of the data. Meanwhile, we find that the performance of {\em SRR}
+improves dramatically with query result length.
 
-There are more experiments and ideas we would like to explore. Only five
-distinct vector spaces have been implemented to measure similarity between items
-based on historical session data. There certainly are more possibilities.  A
-couple of unexplored ideas for vector spaces are considering items similar if
-they were purchased together in the same user session or similar if they are
-``close'' in the tree of shopping categories. We did not experiment with the
-similarity metric used to compare items in each vector space. For this project,
-we chose to use Jaccard similarity for every vector space. Using only cosine
-similarity, or a mix of both Jaccard and cosine, would be worth evaluating.
-Another place for improvement is the clustering of queries in the {\em
-query-space} index.
+The key results of our experiment include a 16.9\% increase in $\mathscr{C}$, 
+X.X\% increase in $\mathscr{P}$, and a X.X\% increase in $\mathscr{S}$ within
+our test set $\Chi$. Extrapolating these results to queries in general is
+quite challenging. In the case of $\mathscr{C}$, we establish a very conservative
+lower bound in which {\em SRR} barely shows an improvement. A more plausible
+estimate suggests an overall increase in $\mathscr{C}$ of 4.5\% and in $\mathscr{P}$
+of 2.6\%. Given the scale of Walmart.com's operation, we feel this warrants
+serious consideration for online A/B testing of {\em SRR}.
 
 \end{document}
 
