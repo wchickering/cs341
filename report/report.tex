@@ -444,7 +444,7 @@ of search engine results, this score weighs the value of a clicked item by its p
 giving higher weights to items closer to the top. For $\mathscr{S}$, the weight given to 
 a click in position $i$ is the CTR at position i, denoted $\Gamma_i$. In this way, we equate how 
 often users click on a certain position to how valuable it is to put a desirable 
-item there. Formally, we define {\em click-position score} as
+item there. Formally, we define click-position score as
 \begin{equation}
     \mathscr{S} = \frac{1}{\left\vert{Q}\right\vert}\sum_{q \in Q}\sum_{i=1}^{L_q}\mathds{1}\left\{click\; @\; i\right\}\Gamma_i.
 \end{equation}
@@ -456,8 +456,7 @@ as we believe it is the simplest and has the clearest impact to overall CTRs.
 
 \section{Results}
 
-Figure \ref{fig:avg_clicks_position_score} shows the {\em click-position score}
-$\mathscr{S}$ as a function of each of the coefficients $C_s$ discussed in
+Figure \ref{fig:avg_clicks_position_score} shows the click-position score $\mathscr{S}$ as a function of each of the coefficients $C_s$ discussed in
 sections \ref{sec:technique} and \ref{sec:similarity_spaces}. Here, we vary a
 single coefficient, corresponding to one of the five similarity spaces---{\em
 click-space}, {\em cart-space}, {\em query-space}, {\em title-space}, or {\em
@@ -516,7 +515,7 @@ also induces an increase in $\mathscr{P}$ of 8.8\% and in $\mathscr{S}$ of 7.9\%
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{moneyshot.png}
-    \caption{Comparison of the original ordering (blue) to that of random reordering (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and {\em click-position score} $\mathscr{S}$. {\em SRR} outperforms the original ordering in all metrics: $\Delta$ $\mathscr{C}$ = 16.9\%, $\Delta$ $\mathscr{P}$ = 8.8\%, and $\Delta$ $\mathscr{C}$ = 7.9\%}
+    \caption{Comparison of the original ordering (blue) to that of random reordering (grey) and {\em SRR} (blue) using all three metrics: front-page CTR $\mathscr{C}$, front-page purchase rate $\mathscr{P}$, and click-position score $\mathscr{S}$. {\em SRR} outperforms the original ordering in all metrics: $\Delta$ $\mathscr{C}$ = 16.9\%, $\Delta$ $\mathscr{P}$ = 8.8\%, and $\Delta$ $\mathscr{C}$ = 7.9\%}
     \label{fig:compare_metric_performance}
 \end{figure}
 
@@ -587,7 +586,7 @@ unclear to us.
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=\textwidth]{scorebylen.png}
-    \caption{Change in {\em click-position score} $\mathscr{S}$ as a function of query length $L_q$.}
+    \caption{Change in click-position score $\mathscr{S}$ as a function of query length $L_q$.}
     \label{fig:click_position_score_vs_query_length}
 \end{figure}
 
@@ -599,7 +598,7 @@ represents 30\% of $\zeta$ (the set of all queries occuring in sessions with
 previously clicked items) while the remaining 70\% of query results were truncated. 
 We call this set of truncated query results $\tau$. As discussed in Section 6, 
 we cannot accurately test {\em SRR} on $\tau$ since it would have performed 
-differently on this set of queries. \footnote{We ran {\em SRR} on all of
+differently on this set of queries.\footnote{We ran {\em SRR} on all of
 $\zeta$, treating truncated query results as complete ones of the length shown to the
 user.  The results were similar to those of $\Chi$:
 $\Delta$ $\mathscr{C}$ = 12.5\%, $\Delta$ $\mathscr{P}$ = 8.7\%, and $\Delta$
@@ -659,7 +658,7 @@ Using historical query data with resultsets confined to what was actually shown
 to a user, we carefully constructed and qualified an experiment with the goal
 of demonstrating the effectiveness of {\em SRR}. Using the
 three well defined metrics of first-page CTR $\mathscr{C}$, first-page
-purchasing rate $\mathscr{P}$, and {\em click-position score} $\mathscr{S}$,
+purchasing rate $\mathscr{P}$, and click-position score $\mathscr{S}$,
 we have clearly shown that {\em SRR} indeed induces a significant improvement
 in the ordering of search results for a subset of queries ($\Chi$). Moreover,
 by comparing {\em SRR} to a similar re-ranking algorithm that assigns scores
