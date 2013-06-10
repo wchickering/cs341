@@ -165,6 +165,26 @@ clicked with a common third item. Second, if items are clicked together in many
 sessions this will increase their Jaccard similarity in {\em click-space} but
 not in {\em item-space}.
 
+\section{The Data}
+
+Walmart.com has generously supplied us with a large dataset consisting of about
+250M pageviews comprising about 120M query results which occurred over about 30
+days. The data includes the user-provided rawqueries together with search
+attributes, visitorIds and sessionIds, shown items, clicked items, which items
+were placed in a shopping cart, and which items were ultimately purchased. In
+addition, they have provided detailed item information including title,
+description, category, and other details. The query data was randomized with
+respect to search time and then segregated into three disjoint sets. The first
+set, which consists of about half of the data, was re-structured into indexes
+that form four of the similarity spaces ({\em click-space}, {\em cart-space},
+{\em query-space}, and {\em item-space}) we use to identify relationships
+between items in realtime (the remaining similarity space, {\em title-space},
+was compiled separately using the provided item data). The second set, which
+consists of less than 5\% of the data, was used for testing and optimization,
+allowing us to refine our technique and tune its parameters. And the third set,
+which includes about 10\% of the data, was used in the experiments described and
+analyzed in this report.
+
 \section{An Example}
 
 To illustrate the efficacy of our technique, we present a real query example.
@@ -175,16 +195,6 @@ clicks on this item during his session. Sometime later he navigates to the
 for ``water''. He is presented with 300+ results and clicks the 90th item, a 3 liter
 jug of water.
 
-The top six original results are compared to the {\em SRR} results in Table
-\ref{tab:compare_orderings} where the first and third column represent the
-original ordering presented to David. Note that we reorder the 90th item from the
-original results to be the 3rd item in the {\em SRR} results.
-Tables \ref{tab:original_sim_scores} and \ref{tab:rerank_sim_scores} show the
-similarity scores from each index for each item in the two orderings compared to
-David's lone previously clicked item. In each of these tables, the first column
-correponds to Table \ref{tab:compare_orderings}. The remaining columns are
-calculated from Equations (\ref{eqn:similarity_metric}) and
-(\ref{eqn:rerank_score}) using optimal tuning parameters.
 \begin{table}[p!]
     \centering
     \begin{tabu}{m{.3cm} m{6cm} m{.45cm} m{7cm} }
@@ -262,6 +272,16 @@ calculated from Equations (\ref{eqn:similarity_metric}) and
     \label{tab:rerank_sim_scores}
 \end{table} 
 
+The top six original results are compared to the {\em SRR} results in Table
+\ref{tab:compare_orderings} where the first and third column represent the
+original ordering presented to David. Note that we reorder the 90th item from the
+original results to be the 3rd item in the {\em SRR} results.
+Tables \ref{tab:original_sim_scores} and \ref{tab:rerank_sim_scores} show the
+similarity scores from each index for each item in the two orderings compared to
+David's lone previously clicked item. In each of these tables, the first column
+correponds to Table \ref{tab:compare_orderings}. The remaining columns are
+calculated from Equations (\ref{eqn:similarity_metric}) and
+(\ref{eqn:rerank_score}) using optimal tuning parameters.
 We will show the calculation for the {\em item-space} similarity for the 90th
 item in the original ordering. By referring to the corresponding index for {\em
 item-space}, we can recall that the 90th item was clicked in a same session with
@@ -295,26 +315,6 @@ likely would have browsed water jugs to use with the cooler he had picked up. In
 this case, {\em SRR} recognized David's previous click on a water cooler,
 related that water cooler to large water jugs, and showed David the water jugs
 he was looking for all along.
-
-\section{The Data}
-
-Walmart.com has generously supplied us with a large dataset consisting of about
-250M pageviews comprising about 120M query results which occurred over about 30
-days. The data includes the user-provided rawqueries together with search
-attributes, visitorIds and sessionIds, shown items, clicked items, which items
-were placed in a shopping cart, and which items were ultimately purchased. In
-addition, they have provided detailed item information including title,
-description, category, and other details. The query data was randomized with
-respect to search time and then segregated into three disjoint sets. The first
-set, which consists of about half of the data, was re-structured into indexes
-that form four of the similarity spaces ({\em click-space}, {\em cart-space},
-{\em query-space}, and {\em item-space}) we use to identify relationships
-between items in realtime (the remaining similarity space, {\em title-space},
-was compiled separately using the provided item data). The second set, which
-consists of less than 5\% of the data, was used for testing and optimization,
-allowing us to refine our technique and tune its parameters. And the third set,
-which includes about 10\% of the data, was used in the experiments described and
-analyzed in this report.
 
 \section{The Technique vs The Experiment}
 
