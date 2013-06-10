@@ -67,7 +67,7 @@ click-through-rates and conversions on the first page of query results.
 \section{The Technique}\label{sec:technique}
 
 {\em SRR} works by comparing previously clicked items with the top $N$ items
-returned by the search engine in reponse to a query. Items in the top $N$ that
+returned by the search engine in response to a query. Items in the top $N$ that
 are sufficiently similar to previously clicked items are promoted. The extent
 (i.e. number of positions) of the promotion for a particular item is a function
 of its similarity to previously clicked items, its original position, and the
@@ -77,10 +77,10 @@ The similarity between an item to be shown and a previously clicked item is
 determined within five distinct vector spaces: {\em click-space}, {\em
 cart-space}, {\em query-space}, {\em title-space}, {\em item-space}. The
 non-unique representation of an item within each of these spaces may be thought
-of as a binary vector or a set of objects. (MapReduce jobs process historic
+of as a binary vector or a set of objects. (MapReduce jobs process historical
 query data to construct indexes whose keys are itemids and values are lists of
 the appropriate objects. Great care went into ensuring that index entries can be
-accessed in $\mathcal{O}(1)$ and that two entries can be merged to compute their
+accessed in $\mathcal{O}(1)$ time and that two entries can be merged to compute their
 intersection or union in linear time.) The similarity $J_s(A, B)$ of two items,
 $A$ and $B$, within a particular space $s$ is determined using Jaccard
 similarity. Similarities within particular spaces are then weighted and summed
@@ -102,7 +102,7 @@ indicates that the top $I_0$ positions of the original ordering are to remain
 fixed. For the results discussed in this report, we use $I_0 = 2$, meaning that
 we never reorder the first two items of query results. We found this configuration
 maximized our metrics, although, we suspect this may largely be due to users'
-bias toward clicking on the first one or two positions indepedent of what is
+bias toward clicking on the first one or two positions independent of what is
 shown there. That is, $I_0 = 0$ might prove optimal for an online implementation.
 
 \section{Similarity Spaces}\label{sec:similarity_spaces}
@@ -136,7 +136,7 @@ the query clustering policy.
 
 {\em Title-space} is straightfoward. Each item is associated with a set of terms
 from its title. We ignore case, but at present do not stem, discard stop words,
-or weigh terms in any way. 
+or weight terms in any way. 
 
 Finally, the structure of {\em item-space} is unique because it involves a level
 of indirection. The premise here is that if items A and B are clicked in a
@@ -316,7 +316,7 @@ engine to deliver to the algorithm the top $N$ items in response to a {\em
 user-query} {\em independent of the number of items ultimately shown to the
 user}. As a consequence, it is difficult, if not impossible, to simulate our
 technique using shown query results that are truncated because a user only
-viewed one or two pages.  Even more generally, the use of historic data to
+viewed one or two pages.  Even more generally, the use of historical data to
 demonstrate the consequences of a online ranking algorithm is intrinsically
 limited by the fact that one cannot be certain how users would have behaved if
 presented with different results. Nonetheless, we have done our best to conduct
@@ -440,7 +440,7 @@ The first two metrics focus on whether or not a desirable item was presented on 
 first page. To obtain a more granular picture of where desirable items are positioned, 
 we also compute a third metric which we call {\em click-position score} $\mathscr{S}$. 
 Somewhat similar to normalized discounted cumulative gain (NDCG), which is a common metric
-of search engine results, this score weighs the value of a clicked item by its position, 
+of search engine results, this score weights the value of a clicked item by its position, 
 giving higher weights to items closer to the top. For $\mathscr{S}$, the weight given to 
 a click in position $i$ is the CTR at position i, denoted $\Gamma_i$. In this way, we equate how 
 often users click on a certain position to how valuable it is to put a desirable 
