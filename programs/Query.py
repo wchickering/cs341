@@ -64,6 +64,9 @@ class Query:
                      "purchased_shown_items":self.purchased_shown_items,\
                      "reordered_shown_items":self.reordered_shown_items})
 
+    def __len__(self):
+        return len(self.shown_items)
+
 def main():
     return
 
