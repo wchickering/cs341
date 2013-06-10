@@ -51,15 +51,18 @@ if __name__ == '__main__':
     queriesFo = open(sys.argv[1])
 
     ctrs = {}
+    queryLengthCount = {}
 
     for line in queriesFo:
         query = Query.Query(line)
         try:
             ctrs[len(query)].ingestQuery(query)
+            queryLengthCount[len(query)] += 1
         except KeyError:
             ctrs[len(query)] = CTR()
             ctrs[len(query)].ingestQuery(query)
+            queryLengthCount[len(query)] = 1
     
     for k in ctrs.keys():
-        print '{"'+str(k)+'": '+json.dumps(ctrs[k], cls=CTREncoder)+'}'
+        print '{"'+str(k)+'": '+json.dumps(ctrs[k], cls=CTREncoder)+', "queries": '+str(queryLengthCount[k])+'}'
 
