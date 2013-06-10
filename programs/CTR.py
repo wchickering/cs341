@@ -64,5 +64,5 @@ if __name__ == '__main__':
             queryLengthCount[len(query)] = 1
     
     for k in ctrs.keys():
-        print '{"'+str(k)+'": '+json.dumps(ctrs[k], cls=CTREncoder)+', "queries": '+str(queryLengthCount[k])+'}'
+        print '{"'+str(k)+'": '+json.dumps(ctrs[k], cls=CTREncoder)+', "numQueries": '+str(queryLengthCount[k])+'}'
 
