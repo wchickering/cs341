@@ -46,7 +46,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     import Query
-    from pprint import pprint
+    import math
 
     queriesFo = open(sys.argv[1])
 
@@ -55,14 +55,15 @@ if __name__ == '__main__':
 
     for line in queriesFo:
         query = Query.Query(line)
+        pages = math.ceil(len(query)/16.0)
         try:
-            ctrs[len(query)].ingestQuery(query)
-            queryLengthCount[len(query)] += 1
+            ctrs[pages].ingestQuery(query)
+            queryLengthCount[pages] += 1
         except KeyError:
-            ctrs[len(query)] = CTR()
-            ctrs[len(query)].ingestQuery(query)
-            queryLengthCount[len(query)] = 1
+            ctrs[pages] = CTR()
+            ctrs[pages].ingestQuery(query)
+            queryLengthCount[pages] = 1
     
     for k in ctrs.keys():
-        print '{"'+str(k)+'": '+json.dumps(ctrs[k], cls=CTREncoder)+', "numQueries": '+str(queryLengthCount[k])+'}'
+        print '{"lengthInPages": '+str(k)+', "CTRs": '+json.dumps(ctrs[k], cls=CTREncoder)+', "numQueries": '+str(queryLengthCount[k])+'}'
 
