@@ -60,5 +60,6 @@ if __name__ == '__main__':
             ctrs[len(query)] = CTR()
             ctrs[len(query)].ingestQuery(query)
     
-    print json.dumps(ctrs, cls=CTREncoder)
+    for k in ctrs.keys():
+        print '{"'+str(k)+'": '+json.dumps(ctrs[k], cls=CTREncoder)+'}'
 
