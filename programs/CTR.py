@@ -13,11 +13,12 @@ class CTR:
             except KeyError:
                 self.ctf[click_position] = 1
         self.numClicks += len(query.clicked_shown_items)
+		self.numQueries += 1
 
     def CTRByPositionDict(self):
         ctr = {}
         for k in self.ctf.keys():
-            ctr[k] = self.ctf[k] / self.numClicks
+            ctr[k] = self.ctf[k] / self.numQueries
         return ctr
 
     def CTFByPositionDict(self):
