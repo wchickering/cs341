@@ -569,7 +569,9 @@ def main():
     
     # for extrapolation
     percent_increase_clicks = float(front_page_diff)/total_shown_clicks_front_page
+    percent_increase_clicks_no_extrap = float(front_page_diff)/test_data_front_page_clicks
     percent_increase_purchases = float(purch_front_reordered-purch_front_orig)/purch_front_orig
+    percent_increase_purchases_no_extrap = float(purch_front_reordered-purch_front_orig)/test_data_front_page_purchases
     extrap_front_page_diff_clicks = percent_increase_clicks*rankable_data_front_page_clicks
     extrap_front_page_diff_purchases = percent_increase_purchases*rankable_data_front_page_purchases
     percent_increase_total_clicks = float(extrap_front_page_diff_clicks)/\
@@ -951,7 +953,7 @@ def main():
         "{0:.4f}".format((1-perc_purchase_ratio_95)*percent_increase_purchases), \
         ",", "{0:.4f}".format((1+perc_purchase_ratio_95)*percent_increase_purchases), "]"
     print 'precent_increase_total_purchases = \t', \
-        "{0:.4f}".format(float(purch_front_reordered - purch_front_orig)/test_data_purchases)
+        "{0:.4f}".format(percent_increase_total_purchases)
     print '95_perc_confidence_interval = \t\t[', \
         "{0:.4f}".format((1-perc_purchase_ratio_95)*percent_increase_total_purchases), \
         ",", "{0:.4f}".format((1+perc_purchase_ratio_95)*percent_increase_total_purchases), "]"
@@ -987,6 +989,8 @@ def main():
     print '% clicks on first page that get demoted in CHI = ', \
             float(total_clicks_moved_off_front_page)/total_shown_clicks_front_page
     print
+    print 'perc increase clicks no extrap = ', percent_increase_clicks_no_extrap
+    print 'perc increase purchases no extrap = ', percent_increase_purchases_no_extrap
     
 
 
